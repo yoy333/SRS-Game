@@ -20,6 +20,10 @@ export class Game extends Scene{
 
     create ()
     {
+        //this.scale.resize(window.innerWidth/2, window.innerHeight/2);
+        // this.cameras.main.setZoom(1.1)
+        this.cameras.main.setPosition(0,0)
+
         //Create the Tilemap
         const map = this.make.tilemap({ key: 'tilemap' })
 
@@ -32,13 +36,21 @@ export class Game extends Scene{
 
         if(!grass||!dirt)
             throw new Error("tileset failed")
-        map.createLayer(0, [grass, dirt])
+        let ground = map.createLayer(0, [grass, dirt])
+        ground?.setScale(2)
+
+
+        //grass.setTileSize(64, 64)
+        //dirt.setTileSize(64, 64)
 
         this.input.on('pointerdown', ()=>{
             let tileClicked = map.getTileAtWorldXY(this.input.x, this.input.y)
-            if(tileClicked)
+            if(tileClicked){
                 console.log(tileClicked.x, tileClicked.y)
-            else
+                let x = tileClicked.getCenterX()
+                let y = tileClicked.getCenterY()
+                this.add.image(x,y,'swordIcon')
+            }else
                 console.log("no tile clicked")
         })
 

@@ -32,6 +32,8 @@ export class Preloader extends Scene
         // load the PNG files
         this.load.image('Grass', 'tilemap/Grass.png')
         this.load.image('Dirt', 'tilemap/Tilled_Dirt_v2.png')
+        this.load.image('Pieces', 'Fences.png')
+        this.load.image('swordIcon', 'fb155.png')
 
         // load the JSON file
         this.load.tilemapTiledJSON('tilemap', 'tilemap/DemoBoard.json')

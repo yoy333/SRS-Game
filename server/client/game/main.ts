@@ -13,9 +13,10 @@ initiateDiscordSDK();
 
 var config : Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
-  parent: 'phaser-example',
-  width: 800,
-  height: 600,
+  parent: 'viewport',
+  width: 1920/2,
+  height: 1080/2,
+  autoCenter: Phaser.Scale.CENTER_BOTH,
   scene: [
         Boot,
         Preloader,
