@@ -1,8 +1,9 @@
 import { Scene } from 'phaser';
 import io, {type Socket} from 'socket.io-client'
 import {playerInfo} from '../../../common/SocketProtocols'
-import { ClientModelManager } from '../managers/ClientModelManager';
+import { ClientModelManager } from '../lib/ClientModelManager';
 import {InputManager} from '../managers/InputManager'
+import { IconButton } from '../lib/IconButton';
 export class Game extends Scene{
 
     socket?: typeof Socket;
@@ -34,11 +35,8 @@ export class Game extends Scene{
         ground?.setScale(2)
 
         let selected = "";
-
-        this.add.sprite(384, 48, 'buttons', 3).setScale(2.5)
-        let swordButton = this.add.image(384, 48, 'swordIcon')
-        swordButton.setInteractive();
-        swordButton.on('pointerdown', ()=>{
+        
+        new IconButton(this.add, 384,48).setCallback(()=>{
             selected = "swordIcon"
         })
 
