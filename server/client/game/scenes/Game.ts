@@ -20,10 +20,6 @@ export class Game extends Scene{
 
     create ()
     {
-        //this.scale.resize(window.innerWidth/2, window.innerHeight/2);
-        // this.cameras.main.setZoom(1.1)
-        this.cameras.main.setPosition(0,0)
-
         //Create the Tilemap
         const map = this.make.tilemap({ key: 'tilemap' })
 
@@ -31,25 +27,30 @@ export class Game extends Scene{
         const grass = map.addTilesetImage('Grass')
         const dirt = map.addTilesetImage('Dirt')
         
-        // create the layers we want in the right order
-        //map.createStaticLayer('Background', tileset)
 
         if(!grass||!dirt)
             throw new Error("tileset failed")
         let ground = map.createLayer(0, [grass, dirt])
         ground?.setScale(2)
 
+        let selected = "";
 
-        //grass.setTileSize(64, 64)
-        //dirt.setTileSize(64, 64)
+        this.add.sprite(384, 48, 'buttons', 3).setScale(2.5)
+        let swordButton = this.add.image(384, 48, 'swordIcon')
+        swordButton.setInteractive();
+        swordButton.on('pointerdown', ()=>{
+            selected = "swordIcon"
+        })
 
         this.input.on('pointerdown', ()=>{
             let tileClicked = map.getTileAtWorldXY(this.input.x, this.input.y)
             if(tileClicked){
                 console.log(tileClicked.x, tileClicked.y)
+                if(selected==="")
+                    return;
                 let x = tileClicked.getCenterX()
                 let y = tileClicked.getCenterY()
-                this.add.image(x,y,'swordIcon')
+                this.add.image(x,y,selected)
             }else
                 console.log("no tile clicked")
         })
