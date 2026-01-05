@@ -1,0 +1,8 @@
+1. Board class
+    a) store gamestate
+    b) store last move
+    c) sendAble Info
+    d) hold references to all pieces
+2. Piece class
+    a) piece logic
+    b) implement Visual

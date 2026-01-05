@@ -4,6 +4,8 @@ import {playerInfo} from '../../../common/SocketProtocols'
 import { ClientModelManager } from '../lib/ClientModelManager';
 import {InputManager} from '../managers/InputManager'
 import { IconButton } from '../lib/IconButton';
+import { DefaultPiece, Piece } from '../lib/Piece';
+import { Board } from '../lib/Board';
 export class Game extends Scene{
 
     socket?: typeof Socket;
@@ -19,36 +21,32 @@ export class Game extends Scene{
         
     }
 
+    board?: Board
+
     create ()
     {
-        //Create the Tilemap
-        const map = this.make.tilemap({ key: 'tilemap' })
+        this.board = new Board(this.make, 0,0)
 
-        // add the tileset image we are using
-        const grass = map.addTilesetImage('Grass')
-        const dirt = map.addTilesetImage('Dirt')
-        
-
-        if(!grass||!dirt)
-            throw new Error("tileset failed")
-        let ground = map.createLayer(0, [grass, dirt])
-        ground?.setScale(2)
-
-        let selected = "";
+        let selected:string|Piece = "";
         
         new IconButton(this.add, 384,48).setCallback(()=>{
             selected = "swordIcon"
         })
 
         this.input.on('pointerdown', ()=>{
-            let tileClicked = map.getTileAtWorldXY(this.input.x, this.input.y)
+            if(!this.board){
+                console.warn("no board when clicking")
+                return;
+            }
+            let tileClicked = this.board?.rep.getTileAtWorldXY(this.input.x, this.input.y)
             if(tileClicked){
                 console.log(tileClicked.x, tileClicked.y)
+                //if(this.board?.rep.)
                 if(selected==="")
                     return;
-                let x = tileClicked.getCenterX()
-                let y = tileClicked.getCenterY()
-                this.add.image(x,y,selected)
+                else if(selected == "swordIcon"){
+                    this.board.spawnPiece(DefaultPiece, this.add, tileClicked.x, tileClicked.y)
+                }
             }else
                 console.log("no tile clicked")
         })

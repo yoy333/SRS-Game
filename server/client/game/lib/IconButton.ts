@@ -1,20 +1,20 @@
 import {Visual, visualRep} from './Visual'
 import{GameObjects} from 'phaser'
 export class IconButton implements Visual{
-    background: visualRep
-    rep: visualRep
+    reps:Array<visualRep>
+    numReps: number = 2
     constructor(addPlugin: GameObjects.GameObjectFactory, x: number, y: number){
-        [this.background, this.rep] = this.createReps(addPlugin, x, y)
+        this.reps = this.createReps(addPlugin, x, y)
     }
 
     createReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number){
         let background = addPlugin.sprite(x, y, 'buttons', 3).setScale(2.5)
-        let rep = addPlugin.image(384, 48, 'swordIcon')
-        return [background, rep]
+        let icon = addPlugin.image(384, 48, 'swordIcon')
+        return [icon, background]
     }
 
     setCallback(onClick:()=>void){
-        this.rep.setInteractive();
-        this.rep.on('pointerdown', onClick)
+        this.reps[0].setInteractive();
+        this.reps[0].on('pointerdown', onClick)
     }
 }
