@@ -1,6 +1,5 @@
 import { Scene } from 'phaser';
 import io, {type Socket} from 'socket.io-client'
-import {playerInfo} from '../../../common/SocketProtocols'
 import { ClientModelManager } from '../lib/ClientModelManager';
 import {InputManager} from '../managers/InputManager'
 import { IconButton } from '../lib/IconButton';
@@ -38,7 +37,7 @@ export class Game extends Scene{
                 console.warn("no board when clicking")
                 return;
             }
-            let tileClicked = this.board?.rep.getTileAtWorldXY(this.input.x, this.input.y)
+            let tileClicked = this.board?.reps[0].getTileAtWorldXY(this.input.x, this.input.y)
             if(tileClicked){
                 if(selected===""){
                     

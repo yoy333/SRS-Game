@@ -1,19 +1,21 @@
 import { GameObjects, Tilemaps } from "phaser"
 import { Piece } from "./Piece"
+import { Visual, visualPlugin } from "../client/game/lib/Visual"
 
 export type coordContent = Piece | null
-export class Board{
+export class Board implements Visual<Tilemaps.Tilemap>{
     rows = 10
     columns = 10
-    rep: Tilemaps.Tilemap
+    reps: Array<Tilemaps.Tilemap>
+    numReps = 1
     lookup: coordContent[][]
 
     constructor(makePlugin: GameObjects.GameObjectCreator, x: number, y: number){
-        this.rep  = this.createReps(makePlugin, x, y)
+        this.reps  = this.createReps(makePlugin, x, y)
         this.lookup = Array.from({ length: this.rows }, () => new Array(this.columns).fill(null));
     }
 
-    createReps(makePlugin: GameObjects.GameObjectCreator, x: number, y: number):  Tilemaps.Tilemap{
+    createReps(makePlugin: GameObjects.GameObjectCreator, x: number, y: number):  Array<Tilemaps.Tilemap>{
         //Create the Tilemap
         const map = makePlugin.tilemap({ key: 'tilemap' })
 
@@ -27,7 +29,7 @@ export class Board{
         let ground = map.createLayer(0, [grass, dirt])
         ground?.setScale(2)
         
-        return map
+        return [map]
     }
 
     spawnPiece(pieceType: typeof Piece, addPlugin:GameObjects.GameObjectFactory, x:number, y:number):Piece{

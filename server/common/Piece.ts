@@ -1,10 +1,11 @@
-import { Board } from "../../../common/Board";
-import { Visual, visualRep } from "./Visual";
-import { GameObjects } from "phaser";
+import { Board } from "./Board";
+import { Visual, visualRep } from "../client/game/lib/Visual";
+import { Game, GameObjects } from "phaser";
 
-export class Piece implements Visual{
-    reps:Array<visualRep>
-    numReps: number = 1;
+type image = GameObjects.Image
+export class Piece implements Visual<image>{
+    reps:Array<image>
+    numReps = 1;
     frame = ''
     board:Board
     coordX:number
@@ -18,8 +19,8 @@ export class Piece implements Visual{
         //this.reps = this.createReps(addPlugin,x,y)
     }
 
-    createReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): Array<visualRep> {
-        let tile = this.board.rep.getTileAt(x,y)
+    createReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): Array<image> {
+        let tile = this.board.reps[0].getTileAt(x,y)
         if(!tile)
             throw new Error(`no tile at (${x}, ${y})`)
         let worldX = tile.getCenterX()
@@ -35,7 +36,7 @@ export class Piece implements Visual{
         this.coordX = x;
         this.coordY = y;
 
-        let tile = this.board.rep.getTileAt(x,y)
+        let tile = this.board.reps[0].getTileAt(x,y)
         if(!tile)
             throw new Error(`no tile at (${x}, ${y})`)
         let worldX = tile.getCenterX()
