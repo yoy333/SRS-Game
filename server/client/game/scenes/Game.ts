@@ -1,59 +1,42 @@
 import { Scene } from 'phaser';
 import io, {type Socket} from 'socket.io-client'
 import { ClientModelManager } from '../lib/ClientModelManager';
-import {InputManager} from '../managers/InputManager'
+import {InputManager} from '../../../common/InputManager'
 import { IconButton } from '../lib/IconButton';
 import { DefaultPiece, Piece } from '../../../common/Piece';
 import { Board } from '../../../common/Board';
+import { GameObjects } from 'phaser';
 export class Game extends Scene{
 
     socket?: typeof Socket;
     model?: ClientModelManager;
-    keys?: InputManager
+    inputManager: InputManager
 
     constructor ()
     {
         super('Game');
+        this.inputManager = new InputManager()
+        this.board = new Board()
     }
 
     preload(){
         
     }
 
-    board?: Board
+    board: Board
 
     create ()
     {
-        this.board = new Board(this.make, 0,0)
+        this.board.createReps(this.make, 0, 0)
 
-        let selected:string|Piece = "";
-        
         new IconButton(this.add, 384,48).setCallback(()=>{
-            selected = "swordIcon"
+            this.inputManager.selected = "swordIcon"
         })
 
         this.input.on('pointerdown', ()=>{
-            if(!this.board){
-                console.warn("no board when clicking")
-                return;
-            }
             let tileClicked = this.board?.reps[0].getTileAtWorldXY(this.input.x, this.input.y)
             if(tileClicked){
-                if(selected===""){
-                    
-                }else if(selected === "swordIcon" && this.board.lookup[tileClicked.y][tileClicked.x]==null){
-                    this.board.spawnPiece(DefaultPiece, this.add, tileClicked.x, tileClicked.y)
-                    return;
-                }else if(selected instanceof Piece){
-                    this.board.movePiece(selected.coordX, selected.coordY, tileClicked.x, tileClicked.y)
-                    selected = ""
-                    return;
-                }
-                let selectedPiece = this.board.lookup[tileClicked.y][tileClicked.x]
-                if(selectedPiece != null){
-                    selected = selectedPiece
-                    return;
-                }
+                this.inputManager.proccessClick(this.add, this.board, tileClicked.x, tileClicked.y)
             }else{
                 console.log("no tile clicked")
             }

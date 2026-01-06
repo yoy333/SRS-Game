@@ -1,5 +1,36 @@
 import { Input } from "phaser"
-import {Input as InputProtocol} from '../../../common/SocketProtocols'
+import {Input as InputProtocol} from './SocketProtocols'
+import { GameObjects } from "phaser";
+import { Board } from "./Board";
+import {Piece, DefaultPiece } from "./Piece";
+
+export class InputManager{
+    selected:string|Piece = "";
+
+    constructor(){
+
+    }
+
+    proccessClick(addPlugin: GameObjects.GameObjectFactory, board:Board, x:number, y:number){
+        if(this.selected===""){
+            
+        }else if(this.selected === "swordIcon" && board.lookup[y][x]==null){
+            board.spawnPiece(DefaultPiece, addPlugin, x, y)
+            return;
+        }else if(this.selected instanceof Piece){
+            board.movePiece(this.selected.coordX, this.selected.coordY, x, y)
+            this.selected = ""
+            return;
+        }
+        let selectedPiece = board.lookup[y][x]
+        if(selectedPiece != null){
+            this.selected = selectedPiece
+            return;
+        }
+    }
+}
+
+/*
 
 type keysPlugin = Input.InputPlugin
 
@@ -51,4 +82,4 @@ export class InputManager{
         return true;
         //if(left !== this.leftKeyPressed || right !== this.rightKeyPressed || up !== this.upKeyPressed)
     }
-}
+}*/

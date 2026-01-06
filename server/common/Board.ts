@@ -10,14 +10,14 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     numReps = 1
     lookup: coordContent[][]
 
-    constructor(makePlugin: GameObjects.GameObjectCreator, x: number, y: number){
-        this.reps  = this.createReps(makePlugin, x, y)
+    constructor(){
+        this.reps  = []
         this.lookup = Array.from({ length: this.rows }, () => new Array(this.columns).fill(null));
     }
 
     createReps(makePlugin: GameObjects.GameObjectCreator, x: number, y: number):  Array<Tilemaps.Tilemap>{
         //Create the Tilemap
-        const map = makePlugin.tilemap({ key: 'tilemap' })
+        let map = makePlugin.tilemap({ key: 'tilemap' })
 
         // add the tileset image we are using
         const grass = map.addTilesetImage('Grass')
@@ -29,7 +29,8 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         let ground = map.createLayer(0, [grass, dirt])
         ground?.setScale(2)
         
-        return [map]
+        this.reps = [map]
+        return this.reps
     }
 
     spawnPiece(pieceType: typeof Piece, addPlugin:GameObjects.GameObjectFactory, x:number, y:number):Piece{
