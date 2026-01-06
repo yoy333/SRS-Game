@@ -13,7 +13,7 @@ import jsdom from 'jsdom'
 const { JSDOM } = jsdom;
 
 
-const PORT = 5173;
+const PORT = 8080;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -59,6 +59,7 @@ app.use('/phaserAssets', express.static(gameAssetsDir));
 app.get('/', function (req, res) {
   console.log(__dirname);
   res.sendFile(path.join(distDir, 'index.html'));
+  //res.sendFile(path.join(distDir, "localhost:5173/"))
 });
 
 // SPA fallback: for any non-/game/* path, return dist index.html

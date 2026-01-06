@@ -10,6 +10,7 @@ export default ({ mode }) => {
         clientPort: 5173,
       },
     },
+    publicDir:'assets',
     // build:{
     //   lib: {
     //     entry: 'game/main.ts',
@@ -18,5 +19,6 @@ export default ({ mode }) => {
     //     fileName: 'bundle'
     //   }
     // }
+    //origin:'localhost:8080'
   });
 };

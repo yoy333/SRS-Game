@@ -4,8 +4,8 @@ import {playerInfo} from '../../../common/SocketProtocols'
 import { ClientModelManager } from '../lib/ClientModelManager';
 import {InputManager} from '../managers/InputManager'
 import { IconButton } from '../lib/IconButton';
-import { DefaultPiece, Piece } from '../lib/Piece';
-import { Board } from '../lib/Board';
+import { DefaultPiece, Piece } from '../../../common/Piece';
+import { Board } from '../../../common/Board';
 export class Game extends Scene{
 
     socket?: typeof Socket;
@@ -40,15 +40,24 @@ export class Game extends Scene{
             }
             let tileClicked = this.board?.rep.getTileAtWorldXY(this.input.x, this.input.y)
             if(tileClicked){
-                console.log(tileClicked.x, tileClicked.y)
-                //if(this.board?.rep.)
-                if(selected==="")
-                    return;
-                else if(selected == "swordIcon"){
+                if(selected===""){
+                    
+                }else if(selected === "swordIcon" && this.board.lookup[tileClicked.y][tileClicked.x]==null){
                     this.board.spawnPiece(DefaultPiece, this.add, tileClicked.x, tileClicked.y)
+                    return;
+                }else if(selected instanceof Piece){
+                    this.board.movePiece(selected.coordX, selected.coordY, tileClicked.x, tileClicked.y)
+                    selected = ""
+                    return;
                 }
-            }else
+                let selectedPiece = this.board.lookup[tileClicked.y][tileClicked.x]
+                if(selectedPiece != null){
+                    selected = selectedPiece
+                    return;
+                }
+            }else{
                 console.log("no tile clicked")
+            }
         })
 
         //map.getTileAt(0,0)

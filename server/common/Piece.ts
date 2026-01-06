@@ -1,4 +1,4 @@
-import { Board } from "./Board";
+import { Board } from "../../../common/Board";
 import { Visual, visualRep } from "./Visual";
 import { GameObjects } from "phaser";
 

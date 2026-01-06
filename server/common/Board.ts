@@ -35,4 +35,23 @@ export class Board{
         this.lookup[y][x] = piece
         return piece
     }
+
+    movePiece(startX:number, startY: number, endX:number, endY:number){
+        let piece = this.lookup[startY][startX]
+        console.log(piece)
+
+        this.lookup[endY][endX] = piece;
+
+        if(!piece){
+            console.warn(`no piece selected at (${startX}, ${startY})`)
+            return;
+        }
+        piece.setCoord(endX, endY)
+
+        this.lookup[startY][startX] = null;
+    }
+
+    getPiece(x:number, y:number):coordContent{
+        return this.lookup[y][x]
+    }
 }
