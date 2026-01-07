@@ -1,4 +1,4 @@
-import {Board} from '../scenes/board'
+import {Board} from '../scenes/GameServer'
 
 import {playerInfo, Sendalbe, Input} from '../../../common/SocketProtocols'
 

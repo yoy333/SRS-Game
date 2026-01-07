@@ -10,6 +10,7 @@ export class Piece implements Visual<image>{
     board:Board
     coordX:number
     coordY:number
+    key = ''
 
     constructor(addPlugin: GameObjects.GameObjectFactory, board:Board, x: number, y: number){
         this.reps = []
@@ -47,6 +48,7 @@ export class Piece implements Visual<image>{
 
 export class DefaultPiece extends Piece{
     frame = 'swordIcon'
+    static key = 'default'
     constructor(addPlugin: GameObjects.GameObjectFactory, board:Board, x: number, y: number){
         super(addPlugin,board,x,y)
         this.reps = this.createReps(addPlugin, x, y)

@@ -1,7 +1,7 @@
 import { Scene } from 'phaser';
 import io, {type Socket} from 'socket.io-client'
 import { ClientModelManager } from '../lib/ClientModelManager';
-import {InputManager} from '../../../common/InputManager'
+import {InputManager} from '../lib/InputManager'
 import { IconButton } from '../lib/IconButton';
 import { DefaultPiece, Piece } from '../../../common/Piece';
 import { Board } from '../../../common/Board';
@@ -27,6 +27,13 @@ export class Game extends Scene{
 
     create ()
     {
+        this.socket = io();
+
+        this.socket.on('playerAssignment', (playerNumber:number)=>{
+            this.board.playerNumber = playerNumber
+            console.log("I am Player "+playerNumber)
+        })
+
         this.board.createReps(this.make, 0, 0)
 
         new IconButton(this.add, 384,48).setCallback(()=>{
@@ -35,8 +42,8 @@ export class Game extends Scene{
 
         this.input.on('pointerdown', ()=>{
             let tileClicked = this.board?.reps[0].getTileAtWorldXY(this.input.x, this.input.y)
-            if(tileClicked){
-                this.inputManager.proccessClick(this.add, this.board, tileClicked.x, tileClicked.y)
+            if(tileClicked&&this.socket){
+                this.inputManager.proccessClick(this.socket, this.add, this.board, tileClicked.x, tileClicked.y)
             }else{
                 console.log("no tile clicked")
             }
@@ -45,8 +52,6 @@ export class Game extends Scene{
         //map.getTileAt(0,0)
         
         // this.model = new ClientModelManager(this.add)
-
-        // this.socket = io();
 
         // this.socket.on('gameState',  (players:playerInfo[]) => {
         //     if(!this.socket)

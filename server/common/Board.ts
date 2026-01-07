@@ -9,10 +9,12 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     reps: Array<Tilemaps.Tilemap>
     numReps = 1
     lookup: coordContent[][]
+    playerNumber:number;
 
     constructor(){
         this.reps  = []
         this.lookup = Array.from({ length: this.rows }, () => new Array(this.columns).fill(null));
+        this.playerNumber = 1
     }
 
     createReps(makePlugin: GameObjects.GameObjectCreator, x: number, y: number):  Array<Tilemaps.Tilemap>{

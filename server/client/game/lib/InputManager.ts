@@ -1,8 +1,9 @@
 import { Input } from "phaser"
-import {Input as InputProtocol} from './SocketProtocols'
+//import {Input as InputProtocol} from '../../../common/SocketProtocols'
 import { GameObjects } from "phaser";
-import { Board } from "./Board";
-import {Piece, DefaultPiece } from "./Piece";
+import { Board } from "../../../common/Board";
+import {Piece, DefaultPiece } from "../../../common/Piece";
+
 
 export class InputManager{
     selected:string|Piece = "";
@@ -11,11 +12,12 @@ export class InputManager{
 
     }
 
-    proccessClick(addPlugin: GameObjects.GameObjectFactory, board:Board, x:number, y:number){
+    proccessClick(socket:SocketIOClient.Socket, addPlugin: GameObjects.GameObjectFactory, board:Board, x:number, y:number){
         if(this.selected===""){
             
         }else if(this.selected === "swordIcon" && board.lookup[y][x]==null){
             board.spawnPiece(DefaultPiece, addPlugin, x, y)
+            socket.emit('spawn', DefaultPiece.key, x, y)
             return;
         }else if(this.selected instanceof Piece){
             board.movePiece(this.selected.coordX, this.selected.coordY, x, y)
