@@ -16,7 +16,7 @@ export class Game extends Scene{
     {
         super('Game');
         this.inputManager = new InputManager()
-        this.board = new Board()
+        this.board = new Board(true)
     }
 
     preload(){
@@ -47,6 +47,19 @@ export class Game extends Scene{
             }else{
                 console.log("no tile clicked")
             }
+        })
+
+        this.socket.on('otherSpawn', (message: Array<any>)=>{
+            let [pieceTypeKey, x, y] = message;
+            let pieceType = Piece
+            if(pieceTypeKey==DefaultPiece.key)
+                pieceType = DefaultPiece
+            this.board.spawnPiece(pieceType, this.add, x, y, this.board.otherPlayerNumber)
+        })
+
+        this.socket.on('otherMove', (message:any[])=>{
+            let [startX, startY, endX, endY] = message;
+            this.board.movePiece(startX, startY, endX, endY)
         })
 
         //map.getTileAt(0,0)

@@ -1,6 +1,6 @@
 import { GameObjects, Tilemaps } from "phaser"
 import { Piece } from "./Piece"
-import { Visual, visualPlugin } from "../client/game/lib/Visual"
+import { Visual } from "../client/game/lib/Visual"
 
 export type coordContent = Piece | null
 export class Board implements Visual<Tilemaps.Tilemap>{
@@ -9,15 +9,20 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     reps: Array<Tilemaps.Tilemap>
     numReps = 1
     lookup: coordContent[][]
-    playerNumber:number;
+    playerNumber:number = 0;
+    isClientSide:boolean
+    //0 by default until assigned
 
-    constructor(){
+
+    constructor(isClientSide:boolean){
         this.reps  = []
         this.lookup = Array.from({ length: this.rows }, () => new Array(this.columns).fill(null));
-        this.playerNumber = 1
+        this.isClientSide = isClientSide
     }
 
     createReps(makePlugin: GameObjects.GameObjectCreator, x: number, y: number):  Array<Tilemaps.Tilemap>{
+        if(!this.isClientSide)
+            throw new Error("Cannot create reps server-side")
         //Create the Tilemap
         let map = makePlugin.tilemap({ key: 'tilemap' })
 
@@ -35,15 +40,21 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         return this.reps
     }
 
-    spawnPiece(pieceType: typeof Piece, addPlugin:GameObjects.GameObjectFactory, x:number, y:number):Piece{
-        let piece = new pieceType(addPlugin, this, x, y);
+    spawnPiece(pieceType: typeof Piece, addPlugin:GameObjects.GameObjectFactory, x:number, y:number, playerOwner?:number):Piece{
+        if(playerOwner == undefined)
+            playerOwner = this.playerNumber
+        let piece = new pieceType(addPlugin, this, x, y, this.isClientSide, playerOwner);
         this.lookup[y][x] = piece
         return piece
     }
 
+    canMovePiece(startX:number, startY: number, endX:number, endY:number){
+        let piece = this.lookup[startY][startX]
+        return this.playerNumber == piece?.playerOwner
+    }
+
     movePiece(startX:number, startY: number, endX:number, endY:number){
         let piece = this.lookup[startY][startX]
-        console.log(piece)
 
         this.lookup[endY][endX] = piece;
 
@@ -58,5 +69,12 @@ export class Board implements Visual<Tilemaps.Tilemap>{
 
     getPiece(x:number, y:number):coordContent{
         return this.lookup[y][x]
+    }
+
+    get otherPlayerNumber(){
+        if(this.playerNumber==1)
+            return 2;
+        else
+            return 1;
     }
 }

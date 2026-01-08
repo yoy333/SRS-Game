@@ -17,12 +17,19 @@ export class InputManager{
             
         }else if(this.selected === "swordIcon" && board.lookup[y][x]==null){
             board.spawnPiece(DefaultPiece, addPlugin, x, y)
-            socket.emit('spawn', DefaultPiece.key, x, y)
+            console.log(DefaultPiece.key)
+            socket.emit('spawn', [DefaultPiece.key, x, y])
             return;
         }else if(this.selected instanceof Piece){
-            board.movePiece(this.selected.coordX, this.selected.coordY, x, y)
-            this.selected = ""
-            return;
+            let moveCoords = [this.selected.coordX, this.selected.coordY, x, y] as const
+            if(board.canMovePiece(...moveCoords)){
+                board.movePiece(...moveCoords)
+                socket.emit('move', moveCoords)
+                this.selected = ""
+                return;
+            }else{
+                console.log("illegal move")
+            }
         }
         let selectedPiece = board.lookup[y][x]
         if(selectedPiece != null){

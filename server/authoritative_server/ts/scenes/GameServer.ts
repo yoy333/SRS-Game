@@ -18,7 +18,7 @@ export class GameServer extends Scene{
         this.io = io
         this.sockets = []
         this.connectedPlayers = 0;
-        this.board = new Board()
+        this.board = new Board(false)
     }
 
     preload(){
@@ -28,7 +28,6 @@ export class GameServer extends Scene{
     //model?: ModelManager
 
     create() {
-        this.board.createReps(this.make, 0,0)
         //this.model = new ModelManager(this)
         this.io.on('connection',  (socket:defaultSocket)=>{
             console.log(`user ${socket.id} connected`);
@@ -44,8 +43,21 @@ export class GameServer extends Scene{
                 let pieceType = Piece
                 if(pieceTypeKey==DefaultPiece.key)
                     pieceType = DefaultPiece
-                this.board.spawnPiece(pieceType, this.add, x, y)
-                console.log(this.board.getPiece(x,y))
+
+                let playerNumber:number;
+                if(socket.id == this.sockets[0].id)
+                    playerNumber = 1;
+                else
+                    playerNumber = 0;
+
+                this.board.spawnPiece(pieceType, this.add, x, y, playerNumber)
+                socket.broadcast.emit('otherSpawn', message)
+            })
+
+            socket.on('move', (message:any[])=>{
+                let [startX, startY, endX, endY] = message;
+                this.board.movePiece(startX, startY, endX, endY)
+                socket.broadcast.emit('otherMove', message)
             })
 
             /*socket.on('playerInput', (inputData)=>{

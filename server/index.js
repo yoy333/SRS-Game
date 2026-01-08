@@ -17,6 +17,9 @@ const PORT = 8080;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+//express.static.mime.define({'text/javascript': ['ts']});
+
 app.use(express.static(__dirname + '/client/dist/'));
 
 // Allow express to parse JSON bodies

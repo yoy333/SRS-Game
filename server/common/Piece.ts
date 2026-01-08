@@ -11,16 +11,21 @@ export class Piece implements Visual<image>{
     coordX:number
     coordY:number
     key = ''
-
-    constructor(addPlugin: GameObjects.GameObjectFactory, board:Board, x: number, y: number){
+    isClientSide:boolean
+    playerOwner:number
+    constructor(addPlugin: GameObjects.GameObjectFactory, board:Board, x: number, y: number, isClientSide:boolean, playerOwner:number){
         this.reps = []
         this.board = board;
         this.coordX = x;
         this.coordY = y;
+        this.isClientSide = isClientSide;
+        this.playerOwner = playerOwner;
         //this.reps = this.createReps(addPlugin,x,y)
     }
 
     createReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): Array<image> {
+        if(!this.isClientSide)
+            throw new Error("Cannot create reps server-side")
         let tile = this.board.reps[0].getTileAt(x,y)
         if(!tile)
             throw new Error(`no tile at (${x}, ${y})`)
@@ -37,9 +42,14 @@ export class Piece implements Visual<image>{
         this.coordX = x;
         this.coordY = y;
 
-        let tile = this.board.reps[0].getTileAt(x,y)
+        if(this.isClientSide)
+            this.updateRep();
+    }
+
+    updateRep(){
+        let tile = this.board.reps[0].getTileAt(this.coordX,this.coordY)
         if(!tile)
-            throw new Error(`no tile at (${x}, ${y})`)
+            throw new Error(`no tile at (${this.coordX}, ${this.coordY})`)
         let worldX = tile.getCenterX()
         let worldY = tile.getCenterY()
         this.reps[0].setPosition(worldX, worldY)
@@ -49,8 +59,9 @@ export class Piece implements Visual<image>{
 export class DefaultPiece extends Piece{
     frame = 'swordIcon'
     static key = 'default'
-    constructor(addPlugin: GameObjects.GameObjectFactory, board:Board, x: number, y: number){
-        super(addPlugin,board,x,y)
-        this.reps = this.createReps(addPlugin, x, y)
+    constructor(addPlugin: GameObjects.GameObjectFactory, board:Board, x: number, y: number, isClientSide:boolean, playerOwner:number){
+        super(addPlugin,board,x,y, isClientSide, playerOwner)
+        if(this.isClientSide)
+            this.reps = this.createReps(addPlugin, x, y)
     }
 }
