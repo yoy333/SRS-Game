@@ -6,6 +6,10 @@ export default ({ mode }) => {
   return defineConfig({
     envDir: '../',
     server: {
+      proxy:{
+        '/phaserAssets': 'http://localhost:8080',
+        '/http' : 'https://localhost:8080'
+      },
       hmr: {
         clientPort: 5173,
       },

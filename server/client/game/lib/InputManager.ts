@@ -17,7 +17,7 @@ export class InputManager{
             
         }else if(this.selected === "swordIcon" && board.lookup[y][x]==null){
             board.spawnPiece(DefaultPiece, addPlugin, x, y)
-            console.log(DefaultPiece.key)
+            //console.log(DefaultPiece.key)
             socket.emit('spawn', [DefaultPiece.key, x, y])
             return;
         }else if(this.selected instanceof Piece){

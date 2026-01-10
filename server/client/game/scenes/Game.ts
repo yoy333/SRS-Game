@@ -27,7 +27,8 @@ export class Game extends Scene{
 
     create ()
     {
-        this.socket = io();
+        console.log("this is a change")
+        this.socket = io("http://localhost:8080/");
 
         this.socket.on('playerAssignment', (playerNumber:number)=>{
             this.board.playerNumber = playerNumber
@@ -45,7 +46,7 @@ export class Game extends Scene{
             if(tileClicked&&this.socket){
                 this.inputManager.proccessClick(this.socket, this.add, this.board, tileClicked.x, tileClicked.y)
             }else{
-                console.log("no tile clicked")
+                //console.log("no tile clicked")
             }
         })
 

@@ -7,11 +7,14 @@ import http from 'http'
 const server = new http.Server(app);
 
 import { Server as SocketIOServer } from 'socket.io';
-const io = new SocketIOServer(server);
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: '*'
+  }
+});
 
 import jsdom from 'jsdom'
 const { JSDOM } = jsdom;
-
 
 const PORT = 8080;
 
@@ -23,7 +26,7 @@ const __dirname = path.dirname(__filename);
 app.use(express.static(__dirname + '/client/dist/'));
 
 // Allow express to parse JSON bodies
-app.use(express.json());
+//app.use(express.json());
 
 //discord OAUTH
 app.post("/api/token", async (req, res) => {
@@ -61,8 +64,9 @@ app.use('/phaserAssets', express.static(gameAssetsDir));
 
 app.get('/', function (req, res) {
   console.log(__dirname);
-  res.sendFile(path.join(distDir, 'index.html'));
-  //res.sendFile(path.join(distDir, "localhost:5173/"))
+  //res.sendFile(path.join(distDir, 'index.html'));
+  res.sendFile("https://localhost:5173/")
+  //res.redirect("https://localhost:5173/")
 });
 
 // SPA fallback: for any non-/game/* path, return dist index.html
