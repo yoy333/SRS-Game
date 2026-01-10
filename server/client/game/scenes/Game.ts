@@ -1,15 +1,13 @@
 import { Scene } from 'phaser';
 import io, {type Socket} from 'socket.io-client'
-import { ClientModelManager } from '../lib/ClientModelManager';
 import {InputManager} from '../lib/InputManager'
 import { IconButton } from '../lib/IconButton';
 import { DefaultPiece, Piece } from '../../../common/Piece';
 import { Board } from '../../../common/Board';
-import { GameObjects } from 'phaser';
+//import { GameObjects } from 'phaser';
 export class Game extends Scene{
 
     socket?: typeof Socket;
-    model?: ClientModelManager;
     inputManager: InputManager
 
     constructor ()
@@ -27,7 +25,6 @@ export class Game extends Scene{
 
     create ()
     {
-        console.log("this is a change")
         this.socket = io("http://localhost:8080/");
 
         this.socket.on('playerAssignment', (playerNumber:number)=>{
@@ -62,46 +59,9 @@ export class Game extends Scene{
             let [startX, startY, endX, endY] = message;
             this.board.movePiece(startX, startY, endX, endY)
         })
-
-        //map.getTileAt(0,0)
-        
-        // this.model = new ClientModelManager(this.add)
-
-        // this.socket.on('gameState',  (players:playerInfo[]) => {
-        //     if(!this.socket)
-        //         throw new Error("no socket :(")
-        //     this.model?.addAllPlayers(this.add, players, this.socket?.id)
-        // });
-
-        // this.socket.on('newPlayer', (player:playerInfo)=>{
-        //     this.model?.addPlayer(this.add, player, 'otherPlayer');
-        // });
-        // this.socket.on('playerDisconnect',  (id:string)=>{
-        //     console.log(id)
-        //     this.model?.removePlayer(id)
-        // });
-
-        // this.input.once('pointerdown', () => {
-
-        //     this.scene.start('GameOver');
-
-        // });
-
-        // this.socket.on('playerUpdates',  (players:playerInfo[])=>{
-        //     this.model?.updateAllPos(players)
-        // });
-
-        // this.keys = new InputManager(this.input)
     }
 
     update(){
-        // let inputs = this.keys?.getInputs()
-
-        // if(!this.socket)
-        //     throw new Error("no socket")
-
-        // if(this.keys?.didInputChange())
-        //     this.socket.emit('playerInput', inputs);
 
     }
 }

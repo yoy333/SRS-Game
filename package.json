@@ -4,12 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "restart": "npm run build && npm run start",
     "start": "node server/index.js",
     "build-client": "cd server/client && vite build",
     "build-server": "cd server/authoritative_server && vite build",
     "build": "npm run build-client && npm run build-server",
-    "dev": "ts-node server/index.js"
+    "restart": "npm run build && npm run start",
+    "dev": "cd server/client && vite dev",
+    "test": "npm run dev & npm run start"
   },
   "keywords": [],
   "author": "",
@@ -30,9 +31,6 @@
     "@types/express": "^5.0.5",
     "@types/jsdom": "^27.0.0",
     "@types/node": "^24.10.0",
-    "cors": "^2.8.5",
-    "http-proxy-middleware": "^3.0.5",
-    "ts-node": "^10.9.2",
     "vite": "^7.2.4"
   }
 }

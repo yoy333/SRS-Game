@@ -1,6 +1,5 @@
 import {Scene} from 'phaser'
 
-import {ModelManager} from '../managers/ModelManager'
 import { Server as SocketIOServer, Socket, DefaultEventsMap } from 'socket.io';
 //import { Input } from '../../../common/SocketProtocols';
 import {io} from '../main'
@@ -25,17 +24,14 @@ export class GameServer extends Scene{
         
     }
 
-    //model?: ModelManager
 
     create() {
-        //this.model = new ModelManager(this)
         this.io.on('connection',  (socket:defaultSocket)=>{
             console.log(`user ${socket.id} connected`);
             this.tryAddPlayer(socket)
             socket.on('disconnect',  () => {
                 console.log(`user ${socket.id} disconnected`)
                 this.removePlayer(socket)
-                //this.model.removePlayer(socket.id);
             });
 
             socket.on('spawn', (message:Array<any>)=>{
@@ -45,7 +41,7 @@ export class GameServer extends Scene{
                     pieceType = DefaultPiece
 
                 let playerNumber:number;
-                if(socket.id == this.sockets[0].id)
+                if(socket.id == this.sockets[0]?.id)
                     playerNumber = 1;
                 else
                     playerNumber = 0;
@@ -59,59 +55,40 @@ export class GameServer extends Scene{
                 this.board.movePiece(startX, startY, endX, endY)
                 socket.broadcast.emit('otherMove', message)
             })
-
-            /*socket.on('playerInput', (inputData)=>{
-                this.handlePlayerInput(socket.id, inputData);
-            });*/
-            /*
-            if(!this.model)
-                throw new Error("model manager undefined")
-
-            let newPlayer = this.model.addPlayer(socket.id);
-
-            let gameState = this.model.getGameState()
-            let info = newPlayer.getInfo()
-
-
-            // send the players object to the new player
-            socket.emit('gameState', gameState);
-            // update all other players of the new player
-            socket.broadcast.emit('newPlayer', info);*/
         });
     }
 
-    sockets:Array<defaultSocket>
+    sockets:Array<defaultSocket|null>
     connectedPlayers:number
 
     tryAddPlayer(socket:defaultSocket){
-        if(this.connectedPlayers<2){
-            this.connectedPlayers++;
-            this.sockets.push(socket)
-            socket.emit('playerAssignment', this.connectedPlayers)
+        if(!this.sockets[0]?.id){
+            this.sockets[0] = socket; 
+            socket.emit('playerAssignment', 1)
+        }else if(!this.sockets[1]?.id){
+            this.sockets[1] = socket;
+            socket.emit('playerAssignment', 2)
         }else{
-            console.log("spectator added: "+socket.id)
+            this.sockets.push(socket)
             socket.emit('playerAssignment', 0)
         }
     }
 
     removePlayer(socket:defaultSocket){
         this.connectedPlayers--;
+        this.sockets.forEach((possibleDisconnected, index)=>{
+            if(possibleDisconnected?.id == socket.id)
+                this.sockets[index] = null;
+        })
+        console.log(this.sockets.map((socket:defaultSocket|null)=>{
+            return socket?.id
+        }))
         this.io.emit('playerDisconnect', socket.id);
     }
 
     update(){
-        //this.model?.updatePlayPos()
-        //window.io.emit('playerUpdates', this.model?.getGameState());
+        
     }
 
-    // handlePlayerInput(playerId:string, input:Input) {
-    //     /*this.model?.players.forEach((player, id) => {
-    //         if (playerId === id) {
-    //             let player = this.model?.players.get(id)
-    //             if(!player)
-    //                 throw new Error("player not found at id: "+id)
-    //             player.input = input;
-    //         }
-    //     });*/
-    // }
+
 } 
