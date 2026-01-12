@@ -34,9 +34,7 @@ export class Game extends Scene{
 
         this.board.createReps(this.make, 0, 0)
 
-        new IconButton(this.add, 384,48).setCallback(()=>{
-            this.inputManager.selected = "swordIcon"
-        })
+        new IconButton(this.add, this.inputManager, 384,48, DefaultPiece.key)
 
         this.input.on('pointerdown', ()=>{
             let tileClicked = this.board?.reps[0].getTileAtWorldXY(this.input.x, this.input.y)
@@ -59,6 +57,11 @@ export class Game extends Scene{
             let [startX, startY, endX, endY] = message;
             this.board.movePiece(startX, startY, endX, endY)
         })
+
+        // this.socket.on('gameState', (message:string)=>{
+        //     let lookup = JSON.parse(message)
+        //     console.log(lookup)
+        // })
     }
 
     update(){

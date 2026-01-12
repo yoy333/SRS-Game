@@ -63,9 +63,8 @@ app.use('/phaserAssets', express.static(gameAssetsDir));
 //app.use(express.static(distDir));
 
 app.get('/', function (req, res) {
-  console.log(__dirname);
-  //res.sendFile(path.join(distDir, 'index.html'));
-  res.sendFile("https://localhost:5173/")
+  res.sendFile(path.join(distDir, 'index.html'));
+  //res.sendFile("https://localhost:5173/")
   //res.redirect("https://localhost:5173/")
 });
 

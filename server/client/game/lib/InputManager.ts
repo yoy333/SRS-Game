@@ -15,9 +15,8 @@ export class InputManager{
     proccessClick(socket:SocketIOClient.Socket, addPlugin: GameObjects.GameObjectFactory, board:Board, x:number, y:number){
         if(this.selected===""){
             
-        }else if(this.selected === "swordIcon" && board.lookup[y][x]==null){
+        }else if(this.selected === DefaultPiece.key && board.lookup[y][x]==null){
             board.spawnPiece(DefaultPiece, addPlugin, x, y)
-            //console.log(DefaultPiece.key)
             socket.emit('spawn', [DefaultPiece.key, x, y])
             return;
         }else if(this.selected instanceof Piece){
@@ -38,57 +37,3 @@ export class InputManager{
         }
     }
 }
-
-/*
-
-type keysPlugin = Input.InputPlugin
-
-
-
-export class InputManager{
-    cursors?:Phaser.Types.Input.Keyboard.CursorKeys
-    leftKeyPressed = false
-    rightKeyPressed = false
-    upKeyPressed = false
-
-    constructor(input:keysPlugin){
-        if(!input.keyboard)
-            throw new Error("no keyboard detected")
-
-        this.cursors = input.keyboard.createCursorKeys();
-
-        // this.leftKeyPressed = false;
-        // this.rightKeyPressed = false;
-        // this.upKeyPressed = false;
-    }
-
-    getInputs():InputProtocol{
-        if(!this.cursors)
-            throw new Error("no cursors")
-
-        if (this.cursors.left.isDown) {
-            this.leftKeyPressed = true;
-        } else if (this.cursors.right.isDown) {
-            this.rightKeyPressed = true;
-        } else {
-            this.leftKeyPressed = false;
-            this.rightKeyPressed = false;
-        }
-        if (this.cursors.up.isDown) {
-            this.upKeyPressed = true;
-        } else {
-            this.upKeyPressed = false;
-        }
-
-        return {
-            left: this.leftKeyPressed,
-            right: this.rightKeyPressed,
-            up: this.upKeyPressed
-        }
-    }
-
-    didInputChange():boolean{
-        return true;
-        //if(left !== this.leftKeyPressed || right !== this.rightKeyPressed || up !== this.upKeyPressed)
-    }
-}*/

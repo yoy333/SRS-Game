@@ -63,16 +63,22 @@ export class GameServer extends Scene{
 
     tryAddPlayer(socket:defaultSocket){
         if(!this.sockets[0]?.id){
-            this.sockets[0] = socket; 
+            this.sockets[0] = socket;
             socket.emit('playerAssignment', 1)
+            // this.sendGameState(socket)
         }else if(!this.sockets[1]?.id){
             this.sockets[1] = socket;
             socket.emit('playerAssignment', 2)
+            // this.sendGameState(socket)
         }else{
             this.sockets.push(socket)
             socket.emit('playerAssignment', 0)
         }
     }
+
+    // sendGameState(socket:defaultSocket){
+    //     socket.emit('gameState', this.board.lookup)
+    // }
 
     removePlayer(socket:defaultSocket){
         this.connectedPlayers--;
@@ -80,9 +86,6 @@ export class GameServer extends Scene{
             if(possibleDisconnected?.id == socket.id)
                 this.sockets[index] = null;
         })
-        console.log(this.sockets.map((socket:defaultSocket|null)=>{
-            return socket?.id
-        }))
         this.io.emit('playerDisconnect', socket.id);
     }
 

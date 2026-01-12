@@ -6,7 +6,6 @@ type image = GameObjects.Image
 export class Piece implements Visual<image>{
     reps:Array<image>
     numReps = 1;
-    frame = ''
     board:Board
     coordX:number
     coordY:number
@@ -31,10 +30,10 @@ export class Piece implements Visual<image>{
             throw new Error(`no tile at (${x}, ${y})`)
         let worldX = tile.getCenterX()
         let worldY = tile.getCenterY()
-        if(this.frame==""){
-            console.log('no frame specified')
+        if(this.key==""){
+            console.warn('no key specified')
         }
-        let primaryRep = addPlugin.image(worldX,worldY,this.frame)
+        let primaryRep = addPlugin.image(worldX,worldY,this.key)
         return [primaryRep]
     }
 
@@ -57,8 +56,8 @@ export class Piece implements Visual<image>{
 }
 
 export class DefaultPiece extends Piece{
-    frame = 'swordIcon'
     static key = 'default'
+    key = 'default'
     constructor(addPlugin: GameObjects.GameObjectFactory, board:Board, x: number, y: number, isClientSide:boolean, playerOwner:number){
         super(addPlugin,board,x,y, isClientSide, playerOwner)
         if(this.isClientSide)

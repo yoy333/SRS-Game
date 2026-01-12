@@ -1,4 +1,6 @@
 import { Scene } from 'phaser';
+import { DefaultPiece } from '../../../common/Piece';
+
 
 export class Preloader extends Scene
 {
@@ -32,7 +34,7 @@ export class Preloader extends Scene
         // load the PNG files
         this.load.image('Grass', 'tilemap/Grass.png')
         this.load.image('Dirt', 'tilemap/Tilled_Dirt_v2.png')
-        this.load.image('swordIcon', 'fb155.png' )
+        this.load.image(DefaultPiece.key, 'fb155.png' )
         this.load.spritesheet('buttons', 'ClassicalButtons.png', {
             frameWidth:16,
             frameHeight: 16
