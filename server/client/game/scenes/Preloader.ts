@@ -1,6 +1,8 @@
 import { Scene } from 'phaser';
 import { DefaultPiece } from '../../../common/Piece';
-
+import { Board } from '../../../common/Board';
+import { Piece } from '../../../common/Piece';
+import { IconButton } from '../lib/IconButton';
 
 export class Preloader extends Scene
 {
@@ -27,21 +29,9 @@ export class Preloader extends Scene
     {
         this.load.setPath('phaserAssets');
 
-        //this.load.image('ship', 'spaceShips_001.png');
-
-        //this.load.image('otherPlayer', 'enemyBlack5.png');
-
-        // load the PNG files
-        this.load.image('Grass', 'tilemap/Grass.png')
-        this.load.image('Dirt', 'tilemap/Tilled_Dirt_v2.png')
-        this.load.image(DefaultPiece.key, 'fb155.png' )
-        this.load.spritesheet('buttons', 'ClassicalButtons.png', {
-            frameWidth:16,
-            frameHeight: 16
-        })
-
-        // load the JSON file
-        this.load.tilemapTiledJSON('tilemap', 'tilemap/DemoBoard.json')
+        Board.loadReps(this.load)
+        Piece.loadReps(this.load)
+        IconButton.loadReps(this.load)
     }
 
     create ()

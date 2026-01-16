@@ -11,11 +11,13 @@ import { initiateDiscordSDK, discordSdk } from '../utils/discordSdk';
 
 initiateDiscordSDK();
 
+const RATIO = 3/4
+
 var config : Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   parent: 'viewport',
-  width: 1920/2,
-  height: 1080/2,
+  width: Math.round(1920*RATIO),
+  height: Math.round(1080*RATIO),
   autoCenter: Phaser.Scale.CENTER_BOTH,
   scene: [
         Boot,

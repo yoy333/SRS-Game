@@ -1,6 +1,7 @@
+import { Board } from '../../../common/Board'
 import { InputManager } from './InputManager'
 import {Visual, visualRep} from './Visual'
-import{Game, GameObjects, Input} from 'phaser'
+import{GameObjects, Loader} from 'phaser'
 type spriteOrImage = GameObjects.Sprite | GameObjects.Image
 export class IconButton implements Visual<spriteOrImage>{
     reps:Array<spriteOrImage>
@@ -18,8 +19,8 @@ export class IconButton implements Visual<spriteOrImage>{
 
 
     createReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number){
-        let background = addPlugin.sprite(x, y, 'buttons', 3).setScale(2.5)
-        let icon = addPlugin.image(x, y, this.pieceKey).setZ(1)
+        let background = addPlugin.sprite(x, y, 'cards', 0).setScale(2/3)
+        let icon = addPlugin.sprite(x, y, this.pieceKey, 0)//.setZ(1)
         //let dragable = addPlugin.image(x, y, this.pieceKey).setVisible(false).setZ(-1)
         // icon.setInteractive({dragable:true})
         // icon.on('drag', (pointer:any, x:number, y:number)=>{
@@ -33,6 +34,18 @@ export class IconButton implements Visual<spriteOrImage>{
         //     dragable.setPosition(x,y)
         // })
         return [icon, background]//, dragable]
+    }
+
+    static loadReps(loadPlugin:Loader.LoaderPlugin){
+        // loadPlugin.spritesheet('buttons', 'ClassicalButtons.png', {
+        //     frameWidth:16,
+        //     frameHeight: 16
+        // })
+        loadPlugin.spritesheet('cards', 'V1_Cards.png', {
+            frameWidth:256,
+            frameHeight:256,
+            margin: 0,
+        })
     }
 
     createInteraction(inputManager:InputManager){

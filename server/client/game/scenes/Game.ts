@@ -34,7 +34,7 @@ export class Game extends Scene{
 
         this.board.createReps(this.make, 0, 0)
 
-        new IconButton(this.add, this.inputManager, 384,48, DefaultPiece.key)
+        new IconButton(this.add, this.inputManager, 768,96, DefaultPiece.key)
 
         this.input.on('pointerdown', ()=>{
             let tileClicked = this.board?.reps[0].getTileAtWorldXY(this.input.x, this.input.y)

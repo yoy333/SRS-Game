@@ -1,6 +1,7 @@
 import { GameObjects, Tilemaps } from "phaser"
 import { Piece } from "./Piece"
 import { Visual } from "../client/game/lib/Visual"
+import { Loader } from "phaser"
 
 export type coordContent = Piece | null
 export class Board implements Visual<Tilemaps.Tilemap>{
@@ -27,17 +28,21 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         let map = makePlugin.tilemap({ key: 'tilemap' })
 
         // add the tileset image we are using
-        const grass = map.addTilesetImage('Grass')
-        const dirt = map.addTilesetImage('Dirt')
+        const tiles = map.addTilesetImage('V1_Tiles')
         
 
-        if(!grass||!dirt)
+        if(!tiles)
             throw new Error("tileset failed")
-        let ground = map.createLayer(0, [grass, dirt])
-        ground?.setScale(2)
+        let ground = map.createLayer(0, tiles)
+        //ground?.setScale(2)
         
         this.reps = [map]
         return this.reps
+    }
+
+    static loadReps(loadPlugin:Loader.LoaderPlugin){
+        loadPlugin.image('V1_Tiles', 'tilemap/V1_Tiles.png')
+        loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/DemoBoard.json')
     }
 
     spawnPiece(pieceType: typeof Piece, addPlugin:GameObjects.GameObjectFactory, x:number, y:number, playerOwner?:number):Piece{

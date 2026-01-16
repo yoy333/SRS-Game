@@ -1,2 +1,2 @@
-1. Vite dev
+1. Seperate RepManager from piece
 2. Colyseus

@@ -1,10 +1,11 @@
 import { Board } from "./Board";
 import { Visual, visualRep } from "../client/game/lib/Visual";
 import { Game, GameObjects } from "phaser";
+import { Loader } from "phaser";
 
-type image = GameObjects.Image
-export class Piece implements Visual<image>{
-    reps:Array<image>
+type sprite = GameObjects.Sprite
+export class Piece implements Visual<sprite>{
+    reps:Array<sprite>
     numReps = 1;
     board:Board
     coordX:number
@@ -22,7 +23,7 @@ export class Piece implements Visual<image>{
         //this.reps = this.createReps(addPlugin,x,y)
     }
 
-    createReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): Array<image> {
+    createReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): Array<sprite> {
         if(!this.isClientSide)
             throw new Error("Cannot create reps server-side")
         let tile = this.board.reps[0].getTileAt(x,y)
@@ -33,8 +34,16 @@ export class Piece implements Visual<image>{
         if(this.key==""){
             console.warn('no key specified')
         }
-        let primaryRep = addPlugin.image(worldX,worldY,this.key)
+        let primaryRep = addPlugin.sprite(worldX,worldY,this.key, 0)
         return [primaryRep]
+    }
+
+    static loadReps(loadPlugin:Loader.LoaderPlugin){
+        loadPlugin.spritesheet(DefaultPiece.key, 'Placeholder.png', {
+            frameWidth:64,
+            frameHeight:64,
+            margin:32
+        })    
     }
 
     setCoord(x:number, y:number){
@@ -52,6 +61,13 @@ export class Piece implements Visual<image>{
         let worldX = tile.getCenterX()
         let worldY = tile.getCenterY()
         this.reps[0].setPosition(worldX, worldY)
+    }
+
+    static createFromKey(key:string, addPlugin: GameObjects.GameObjectFactory, board:Board, x: number, y: number, isClientSide:boolean, playerOwner:number):Piece{
+        switch(key){
+            case DefaultPiece.key: return new DefaultPiece(addPlugin, board, x, y, isClientSide, playerOwner);
+            default: return new Piece(addPlugin, board, x, y, isClientSide, playerOwner);
+        }
     }
 }
 
