@@ -45,6 +45,29 @@ export class Game extends Scene{
             }
         })
 
+        this.inputManager.onMove = (startX:number, startY:number, endX:number, endY:number)=>{
+            let moveCoords = [startX, startY, endX, endY] as const
+            if(this.board.canMovePiece(...moveCoords)){
+                this.board.movePiece(...moveCoords)
+                if(!this.socket)
+                    throw new Error("no socket :(")
+                this.socket.emit('move', moveCoords)
+            }else{
+                console.log("illegal move")
+            }
+        }
+
+        this.inputManager.onSpawn = (pieceType: typeof Piece, x:number, y:number, playerOwner?:number) => {
+            if(this.board.canSpawnPiece(pieceType, x, y, playerOwner)){
+                this.board.spawnPiece(DefaultPiece, this.add, x, y)
+                if(!this.socket)
+                    throw new Error("no socket :(")
+                this.socket.emit('spawn', [DefaultPiece.key, x, y])
+            }else{
+                console.log("illegal spawn")
+            }
+        }
+
         this.socket.on('otherSpawn', (message: Array<any>)=>{
             let [pieceTypeKey, x, y] = message;
             let pieceType = Piece

@@ -45,6 +45,14 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/DemoBoard.json')
     }
 
+    canSpawnPiece(pieceType: typeof Piece, x:number, y:number, playerOwner?:number){
+        if(playerOwner == undefined)
+            playerOwner = this.playerNumber
+
+        //Fix Later
+        return true;
+    }
+
     spawnPiece(pieceType: typeof Piece, addPlugin:GameObjects.GameObjectFactory, x:number, y:number, playerOwner?:number):Piece{
         if(playerOwner == undefined)
             playerOwner = this.playerNumber

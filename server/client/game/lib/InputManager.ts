@@ -16,19 +16,15 @@ export class InputManager{
         if(this.selected===""){
             
         }else if(this.selected === DefaultPiece.key && board.lookup[y][x]==null){
-            board.spawnPiece(DefaultPiece, addPlugin, x, y)
-            socket.emit('spawn', [DefaultPiece.key, x, y])
+            if(this.onSpawn)
+                this.onSpawn(DefaultPiece, x, y)
             return;
         }else if(this.selected instanceof Piece){
             let moveCoords = [this.selected.coordX, this.selected.coordY, x, y] as const
-            if(board.canMovePiece(...moveCoords)){
-                board.movePiece(...moveCoords)
-                socket.emit('move', moveCoords)
-                this.selected = ""
-                return;
-            }else{
-                console.log("illegal move")
-            }
+            if(this.onMove)
+                this.onMove(...moveCoords)
+            this.selected = ""
+            return;
         }
         let selectedPiece = board.lookup[y][x]
         if(selectedPiece != null){
@@ -36,4 +32,8 @@ export class InputManager{
             return;
         }
     }
+
+    onMove?:(startX:number, startY:number, endX:number, endY:number)=>void
+
+    onSpawn?:(pieceType: typeof Piece, x:number, y:number, playerOwner?:number)=>void
 }
