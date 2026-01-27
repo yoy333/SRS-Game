@@ -36,15 +36,10 @@ export class GameServer extends Scene{
 
             socket.on('spawn', (message:Array<any>)=>{
                 let [pieceTypeKey, x, y] = message;
-                let pieceType = Piece
-                if(pieceTypeKey==DefaultPiece.key)
-                    pieceType = DefaultPiece
+                let pieceType = Piece.classFromKey(pieceTypeKey)
 
-                let playerNumber:number;
-                if(socket.id == this.sockets[0]?.id)
-                    playerNumber = 1;
-                else
-                    playerNumber = 0;
+                // server must check player ownership in case of hijacked calls
+                let playerNumber = this.getPlayerAssignment(socket.id)
 
                 this.board.spawnPiece(pieceType, this.add, x, y, playerNumber)
                 socket.broadcast.emit('otherSpawn', message)
@@ -52,7 +47,10 @@ export class GameServer extends Scene{
 
             socket.on('move', (message:any[])=>{
                 let [startX, startY, endX, endY] = message;
-                this.board.movePiece(startX, startY, endX, endY)
+                let playerNumber = this.getPlayerAssignment(socket.id)
+
+                if(this.board.canMovePiece(startX, startY, endX, endY, playerNumber))
+                    this.board.movePiece(startX, startY, endX, endY)
                 socket.broadcast.emit('otherMove', message)
             })
         });
@@ -87,6 +85,15 @@ export class GameServer extends Scene{
                 this.sockets[index] = null;
         })
         this.io.emit('playerDisconnect', socket.id);
+    }
+
+    getPlayerAssignment(id:string){
+        if(id == this.sockets[0]?.id)
+            return 1;
+        else if(id == this.sockets[1]?.id)
+            return 2;
+        else
+            return 0;
     }
 
     update(){

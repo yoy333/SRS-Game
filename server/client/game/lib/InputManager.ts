@@ -6,31 +6,58 @@ import {Piece, DefaultPiece } from "../../../common/Piece";
 
 
 export class InputManager{
-    selected:string|Piece = "";
+    //selected:string|Piece = "";
 
     constructor(){
 
     }
 
     proccessClick(socket:SocketIOClient.Socket, addPlugin: GameObjects.GameObjectFactory, board:Board, x:number, y:number){
-        if(this.selected===""){
-            
-        }else if(this.selected === DefaultPiece.key && board.lookup[y][x]==null){
+        if(!this.selectionForSpawn && !this.selectionForMove){
+            // do nothing
+        }else if(this.selectionForSpawn){
+            let pieceType = this.selectionForSpawn
             if(this.onSpawn)
-                this.onSpawn(DefaultPiece, x, y)
-            return;
-        }else if(this.selected instanceof Piece){
-            let moveCoords = [this.selected.coordX, this.selected.coordY, x, y] as const
+                this.onSpawn(pieceType, x, y)
+            this.selectionForSpawn = undefined;
+            return
+        }else if(this.selectionForMove){
+            console.log("trying to move")
+            let moveCoords = [this.selectionForMove.coordX, this.selectionForMove.coordY, x, y] as const
             if(this.onMove)
                 this.onMove(...moveCoords)
-            this.selected = ""
+            this.selectionForMove = undefined;
             return;
         }
+
+        // if you click on a piece, select it for movement
         let selectedPiece = board.lookup[y][x]
         if(selectedPiece != null){
-            this.selected = selectedPiece
+            this.selectForMove(selectedPiece)
+            console.log("selected for movement: "+x+", "+y)
             return;
         }
+    }
+
+    private selectionForSpawn?:typeof Piece;
+    private selectionForMove?:Piece;
+
+    getSelectionForSpawn():typeof Piece|undefined{
+        return this.selectionForSpawn
+    }
+
+    getSelectionForMove():Piece|undefined{
+        return this.selectionForMove
+    }
+
+    selectForSpawn(pieceType: typeof Piece){
+        this.selectionForSpawn = pieceType
+        this.selectionForMove = undefined;
+    }
+
+    selectForMove(piece: Piece){
+        this.selectionForSpawn = undefined;
+        this.selectionForMove = piece;
     }
 
     onMove?:(startX:number, startY:number, endX:number, endY:number)=>void
