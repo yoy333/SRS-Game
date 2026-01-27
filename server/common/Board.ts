@@ -49,8 +49,10 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         if(playerOwner == undefined)
             playerOwner = this.playerNumber
 
-        //Fix Later
-        return true;
+        if(this.lookup[y][x]==null)
+            return true;
+        else
+            return false;
     }
 
     spawnPiece(pieceType: typeof Piece, addPlugin:GameObjects.GameObjectFactory, x:number, y:number, playerOwner?:number):Piece{

@@ -64,9 +64,14 @@ export class Piece implements Visual<sprite>{
     }
 
     static createFromKey(key:string, addPlugin: GameObjects.GameObjectFactory, board:Board, x: number, y: number, isClientSide:boolean, playerOwner:number):Piece{
+        let pieceType:typeof Piece = (this.classFromKey(key))
+        return new pieceType(addPlugin, board, x, y, true, playerOwner)
+    }
+
+    static classFromKey(key:string):typeof Piece{
         switch(key){
-            case DefaultPiece.key: return new DefaultPiece(addPlugin, board, x, y, isClientSide, playerOwner);
-            default: return new Piece(addPlugin, board, x, y, isClientSide, playerOwner);
+            case DefaultPiece.key: return DefaultPiece;
+            default: return Piece
         }
     }
 }

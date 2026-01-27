@@ -2,6 +2,7 @@ import { Board } from '../../../common/Board'
 import { InputManager } from './InputManager'
 import {Visual, visualRep} from './Visual'
 import{GameObjects, Loader} from 'phaser'
+import { Piece } from '../../../common/Piece'
 type spriteOrImage = GameObjects.Sprite | GameObjects.Image
 export class IconButton implements Visual<spriteOrImage>{
     reps:Array<spriteOrImage>
@@ -51,7 +52,7 @@ export class IconButton implements Visual<spriteOrImage>{
     createInteraction(inputManager:InputManager){
         this.reps[0].setInteractive()
         this.reps[0].on('pointerdown', ()=>{
-            inputManager.selected = this.pieceKey;
+            inputManager.selectForSpawn(Piece.classFromKey(this.pieceKey));
         })
     }
 

@@ -59,7 +59,7 @@ export class Game extends Scene{
 
         this.inputManager.onSpawn = (pieceType: typeof Piece, x:number, y:number, playerOwner?:number) => {
             if(this.board.canSpawnPiece(pieceType, x, y, playerOwner)){
-                this.board.spawnPiece(DefaultPiece, this.add, x, y)
+                this.board.spawnPiece(pieceType, this.add, x, y)
                 if(!this.socket)
                     throw new Error("no socket :(")
                 this.socket.emit('spawn', [DefaultPiece.key, x, y])
@@ -70,9 +70,7 @@ export class Game extends Scene{
 
         this.socket.on('otherSpawn', (message: Array<any>)=>{
             let [pieceTypeKey, x, y] = message;
-            let pieceType = Piece
-            if(pieceTypeKey==DefaultPiece.key)
-                pieceType = DefaultPiece
+            let pieceType = Piece.classFromKey(pieceTypeKey)
             this.board.spawnPiece(pieceType, this.add, x, y, this.board.otherPlayerNumber)
         })
 

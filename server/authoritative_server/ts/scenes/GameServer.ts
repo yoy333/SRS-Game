@@ -36,9 +36,7 @@ export class GameServer extends Scene{
 
             socket.on('spawn', (message:Array<any>)=>{
                 let [pieceTypeKey, x, y] = message;
-                let pieceType = Piece
-                if(pieceTypeKey==DefaultPiece.key)
-                    pieceType = DefaultPiece
+                let pieceType = Piece.classFromKey(pieceTypeKey)
 
                 let playerNumber:number;
                 if(socket.id == this.sockets[0]?.id)
