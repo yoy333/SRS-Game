@@ -49,7 +49,7 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         if(playerOwner == undefined)
             playerOwner = this.playerNumber
 
-        if(this.lookup[y][x]==null)
+        if(this.lookup[y][x]==null&&this.playerNumber!=0)
             return true;
         else
             return false;
@@ -63,9 +63,11 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         return piece
     }
 
-    canMovePiece(startX:number, startY: number, endX:number, endY:number){
+    canMovePiece(startX:number, startY: number, endX:number, endY:number, playerNumber?:number){
         let piece = this.lookup[startY][startX]
-        return this.playerNumber == piece?.playerOwner
+        if(!playerNumber)
+            playerNumber = this.playerNumber
+        return (this.playerNumber == piece?.playerOwner && playerNumber == piece.playerOwner)
     }
 
     movePiece(startX:number, startY: number, endX:number, endY:number){
