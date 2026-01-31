@@ -63,11 +63,25 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         return piece
     }
 
+    doesOwnPiece(piecePlayerNumber:number):boolean{
+        return this.playerNumber == piecePlayerNumber;
+    }
+
+    isSpaceFull(x:number, y:number):boolean{
+        return !this.isSpaceEmpty(x,y);
+    }
+
+    isSpaceEmpty(x:number, y:number):boolean{
+        return this.lookup[y][x] == null;
+    }
+
     canMovePiece(startX:number, startY: number, endX:number, endY:number, playerNumber?:number){
         let piece = this.lookup[startY][startX]
         if(!playerNumber)
             playerNumber = this.playerNumber
-        return (this.playerNumber == piece?.playerOwner && playerNumber == piece.playerOwner)
+        if(!piece)
+            return false;
+        return (this.doesOwnPiece(playerNumber) && this.isSpaceEmpty(endX, endY))
     }
 
     movePiece(startX:number, startY: number, endX:number, endY:number){

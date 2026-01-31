@@ -22,7 +22,6 @@ export class InputManager{
             this.selectionForSpawn = undefined;
             return
         }else if(this.selectionForMove){
-            console.log("trying to move")
             let moveCoords = [this.selectionForMove.coordX, this.selectionForMove.coordY, x, y] as const
             if(this.onMove)
                 this.onMove(...moveCoords)
