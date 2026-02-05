@@ -12,7 +12,8 @@ export class InputManager{
 
     }
 
-    proccessClick(socket:SocketIOClient.Socket, addPlugin: GameObjects.GameObjectFactory, board:Board, x:number, y:number){
+    proccessClick(socket:SocketIOClient.Socket, addPlugin: GameObjects.GameObjectFactory, board:Board, perspectiveX:number, perspectiveY:number){
+        let [x, y] = board.adjustIfFlip(perspectiveX, perspectiveY)
         if(!this.selectionForSpawn && !this.selectionForMove){
             // do nothing
         }else if(this.selectionForSpawn){

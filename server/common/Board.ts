@@ -1,7 +1,8 @@
 import { GameObjects, Tilemaps } from "phaser"
 import { Piece } from "./Piece"
 import { Visual } from "../client/game/lib/Visual"
-import { Loader } from "phaser"
+import { Loader, Geom } from "phaser"
+
 
 export type coordContent = Piece | null
 export class Board implements Visual<Tilemaps.Tilemap>{
@@ -21,6 +22,11 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         this.isClientSide = isClientSide
     }
 
+    static flipPoint(x:number, y:number):[number, number]{
+        y = 9-y
+        return [x, y]
+    }
+
     createReps(makePlugin: GameObjects.GameObjectCreator, x: number, y: number):  Array<Tilemaps.Tilemap>{
         if(!this.isClientSide)
             throw new Error("Cannot create reps server-side")
@@ -29,7 +35,6 @@ export class Board implements Visual<Tilemaps.Tilemap>{
 
         // add the tileset image we are using
         const tiles = map.addTilesetImage('V1_Tiles')
-        
 
         if(!tiles)
             throw new Error("tileset failed")
@@ -56,11 +61,19 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     }
 
     spawnPiece(pieceType: typeof Piece, addPlugin:GameObjects.GameObjectFactory, x:number, y:number, playerOwner?:number):Piece{
+        console.log(`spawning from: ${x}, ${y}`)
         if(playerOwner == undefined)
             playerOwner = this.playerNumber
         let piece = new pieceType(addPlugin, this, x, y, this.isClientSide, playerOwner);
         this.lookup[y][x] = piece
         return piece
+    }
+
+    adjustIfFlip(x:number, y:number):[number, number]{
+        if(this.playerNumber == this.otherPlayerNumber)
+            return Board.flipPoint(x, y);
+        else
+            return [x,y];
     }
 
     doesOwnPiece(piecePlayerNumber:number):boolean{
@@ -84,7 +97,9 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         return (this.doesOwnPiece(playerNumber) && this.isSpaceEmpty(endX, endY))
     }
 
-    movePiece(startX:number, startY: number, endX:number, endY:number){
+    movePiece(startX:number, startY:number, endX:number, endY:number){
+        console.log(`moving from ${startX}, ${startY} to ${endX}, ${endY}`)
+
         let piece = this.lookup[startY][startX]
 
         this.lookup[endY][endX] = piece;

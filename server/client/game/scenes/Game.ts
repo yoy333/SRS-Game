@@ -4,7 +4,7 @@ import {InputManager} from '../lib/InputManager'
 import { IconButton } from '../lib/IconButton';
 import { DefaultPiece, Piece } from '../../../common/Piece';
 import { Board } from '../../../common/Board';
-//import { GameObjects } from 'phaser';
+import { Geom } from 'phaser';
 export class Game extends Scene{
 
     socket?: typeof Socket;
