@@ -11,7 +11,7 @@ import { initiateDiscordSDK, discordSdk } from '../utils/discordSdk';
 
 initiateDiscordSDK();
 
-const RATIO = 3/4
+const RATIO = 2/3
 
 var config : Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,

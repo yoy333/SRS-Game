@@ -23,7 +23,7 @@ export class Piece implements Visual<sprite>{
 
         this.coordX = x;
         this.coordY = y;
-        if(playerOwner == board.otherPlayerNumber)
+        if(board.playerNumber == 2)
             [this.perspectiveX, this.perspectiveY] = Board.flipPoint(x, y)
         else
             [this.perspectiveX, this.perspectiveY] = [x, y]

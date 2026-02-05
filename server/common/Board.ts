@@ -6,8 +6,8 @@ import { Loader, Geom } from "phaser"
 
 export type coordContent = Piece | null
 export class Board implements Visual<Tilemaps.Tilemap>{
-    rows = 10
-    columns = 10
+    static rows = 10
+    static columns = 10
     reps: Array<Tilemaps.Tilemap>
     numReps = 1
     lookup: coordContent[][]
@@ -18,12 +18,13 @@ export class Board implements Visual<Tilemaps.Tilemap>{
 
     constructor(isClientSide:boolean){
         this.reps  = []
-        this.lookup = Array.from({ length: this.rows }, () => new Array(this.columns).fill(null));
+        this.lookup = Array.from({ length: Board.rows }, () => new Array(Board.columns).fill(null));
         this.isClientSide = isClientSide
     }
 
     static flipPoint(x:number, y:number):[number, number]{
-        y = 9-y
+        // -1 because it starts at 0
+        y = (Board.rows-1)-y
         return [x, y]
     }
 
@@ -50,11 +51,36 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/DemoBoard.json')
     }
 
+    isOnHomeRow(y:number){
+        //console.log("checking "+y)
+        if(this.playerNumber == 2){
+            if(y==0)
+                return true;
+            else
+                return false;
+        }else if(this.playerNumber == 1){
+            if(y==Board.rows-1)
+                return true;
+            else
+                return false;
+        }else{
+            // if player is spectator they have no home row
+            return false
+        }
+    }
+
+    isNotSpectator():boolean{
+        return this.playerNumber != 0
+    }
+
     canSpawnPiece(pieceType: typeof Piece, x:number, y:number, playerOwner?:number){
+        // console.log(`inputs ${x}, ${y}`)
         if(playerOwner == undefined)
             playerOwner = this.playerNumber
 
-        if(this.lookup[y][x]==null&&this.playerNumber!=0)
+        if(this.isSpaceEmpty(x,y)&&
+            this.isOnHomeRow(y)&&
+            this.isNotSpectator())
             return true;
         else
             return false;
@@ -70,7 +96,7 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     }
 
     adjustIfFlip(x:number, y:number):[number, number]{
-        if(this.playerNumber == this.otherPlayerNumber)
+        if(this.playerNumber == 2)
             return Board.flipPoint(x, y);
         else
             return [x,y];
@@ -98,7 +124,7 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     }
 
     movePiece(startX:number, startY:number, endX:number, endY:number){
-        console.log(`moving from ${startX}, ${startY} to ${endX}, ${endY}`)
+        // console.log(`moving from ${startX}, ${startY} to ${endX}, ${endY}`)
 
         let piece = this.lookup[startY][startX]
 
