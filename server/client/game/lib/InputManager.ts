@@ -34,7 +34,7 @@ export class InputManager{
         let selectedPiece = board.lookup[y][x]
         if(selectedPiece != null){
             this.selectForMove(selectedPiece)
-            console.log("selected for movement: "+x+", "+y)
+            // console.log("selected for movement: "+x+", "+y)
             return;
         }
     }

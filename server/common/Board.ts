@@ -52,6 +52,7 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     }
 
     isOnHomeRow(y:number){
+
         //console.log("checking "+y)
         if(this.playerNumber == 2){
             if(y==0)
@@ -73,6 +74,7 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         return this.playerNumber != 0
     }
 
+    // move to Game Rules
     canSpawnPiece(pieceType: typeof Piece, x:number, y:number, playerOwner?:number){
         // console.log(`inputs ${x}, ${y}`)
         if(playerOwner == undefined)
@@ -87,7 +89,7 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     }
 
     spawnPiece(pieceType: typeof Piece, addPlugin:GameObjects.GameObjectFactory, x:number, y:number, playerOwner?:number):Piece{
-        console.log(`spawning from: ${x}, ${y}`)
+        // console.log(`spawning from: ${x}, ${y}`)
         if(playerOwner == undefined)
             playerOwner = this.playerNumber
         let piece = new pieceType(addPlugin, this, x, y, this.isClientSide, playerOwner);
@@ -102,6 +104,7 @@ export class Board implements Visual<Tilemaps.Tilemap>{
             return [x,y];
     }
 
+    // move to Game Rules
     doesOwnPiece(piecePlayerNumber:number):boolean{
         return this.playerNumber == piecePlayerNumber;
     }
@@ -114,17 +117,21 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         return this.lookup[y][x] == null;
     }
 
+    // move to Game Rules
     canMovePiece(startX:number, startY: number, endX:number, endY:number, playerNumber?:number){
         let piece = this.lookup[startY][startX]
         if(!playerNumber)
             playerNumber = this.playerNumber
         if(!piece)
             return false;
-        return (this.doesOwnPiece(playerNumber) && this.isSpaceEmpty(endX, endY))
+
+        return (this.doesOwnPiece(playerNumber) &&
+                this.isSpaceEmpty(endX, endY)&&
+                piece.withinMovementPattern(endX, endY))
     }
 
     movePiece(startX:number, startY:number, endX:number, endY:number){
-        // console.log(`moving from ${startX}, ${startY} to ${endX}, ${endY}`)
+        console.log(`moving from ${startX}, ${startY} to ${endX}, ${endY}`)
 
         let piece = this.lookup[startY][startX]
 

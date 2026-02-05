@@ -4,6 +4,9 @@ import { Game, GameObjects } from "phaser";
 import { Loader, Geom } from "phaser";
 
 type sprite = GameObjects.Sprite
+type point = [number, number]
+type pattern = Set<point>
+const emptyPattern:pattern = new Set()
 export class Piece implements Visual<sprite>{
     reps:Array<sprite>
     numReps = 1;
@@ -17,6 +20,9 @@ export class Piece implements Visual<sprite>{
     key = ''
     isClientSide:boolean
     playerOwner:number
+
+    relativeMovementPattern:pattern = emptyPattern;
+
     constructor(addPlugin: GameObjects.GameObjectFactory, board:Board, x:number, y:number, isClientSide:boolean, playerOwner:number){
         this.reps = []
         this.board = board;
@@ -39,7 +45,7 @@ export class Piece implements Visual<sprite>{
             throw new Error("Cannot create reps server-side")
         let x = this.perspectiveX;
         let y = this.perspectiveY;
-        console.log(`creating rep at ${x}, ${y}`)
+        // console.log(`creating rep at ${x}, ${y}`)
         let tile = this.board.reps[0].getTileAt(x,y)
         if(!tile)
             throw new Error(`no tile at (${x}, ${y})`)
@@ -66,17 +72,10 @@ export class Piece implements Visual<sprite>{
         this.coordX = x;
         this.coordY = y;
 
-        [this.perspectiveX, this.perspectiveY] = this.flipPoint(x,y)
+        [this.perspectiveX, this.perspectiveY] = this.board.adjustIfFlip(x,y)
         
         if(this.isClientSide)
             this.updateRep();
-    }
-
-    flipPoint(x:number, y:number):[number, number]{
-        if(this.playerOwner == this.board.otherPlayerNumber)
-            return Board.flipPoint(x, y)
-        else
-            return [x,y]
     }
 
     updateRep(){
@@ -86,6 +85,21 @@ export class Piece implements Visual<sprite>{
         let worldX = tile.getCenterX()
         let worldY = tile.getCenterY()
         this.reps[0].setPosition(worldX, worldY)
+    }
+
+    withinMovementPattern(x:number, y:number):boolean{
+        for(let point of this.relativeMovementPattern){
+            let [checkX, checkY] = point;
+            if(this.playerOwner == 2)
+                checkY *= -1
+            const absX = this.coordX+checkX
+            const absY = this.coordY+checkY
+            if(absX == x && absY == y)
+                return true;
+        }
+        console.log(x)
+        console.log(y)
+        return false;
     }
 
     static createFromKey(key:string, addPlugin: GameObjects.GameObjectFactory, board:Board, x: number, y: number, isClientSide:boolean, playerOwner:number):Piece{
@@ -102,6 +116,14 @@ export class Piece implements Visual<sprite>{
     }
 }
 
+const square_1:pattern = new Set([
+    [-1, -1], [0, -1], [1, -1],
+    [-1, 0],  [0, 0],  [1, 0],
+    [-1, 1],  [0, 1],  [1, 1]
+])
+const forward_1:pattern = new Set([
+    [-1, -1], [0, -1], [1, -1]
+])
 export class DefaultPiece extends Piece{
     static key = 'default'
     key = 'default'
@@ -110,4 +132,6 @@ export class DefaultPiece extends Piece{
         if(this.isClientSide)
             this.reps = this.createReps(addPlugin)
     }
+
+    relativeMovementPattern: Set<point> = forward_1
 }
