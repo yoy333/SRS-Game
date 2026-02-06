@@ -146,6 +146,29 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         this.lookup[startY][startX] = null;
     }
 
+    areEnemyPieces(x:Piece, y:Piece):boolean{
+        let xPlayerNumber = x?.playerOwner;
+        let yPlayerNumber = y?.playerOwner;
+        return xPlayerNumber != yPlayerNumber
+    }
+
+    //move to Game Rules
+    canAttackPiece(attackerX:number, attackerY:number, defenderX:number, defenderY:number){
+        let attackingPiece = this.getPiece(attackerX, attackerY)
+        let defendingPiece = this.getPiece(defenderX, defenderY)
+        if(!attackingPiece || !defendingPiece)
+            return false;
+
+        return (this.areEnemyPieces(attackingPiece, defendingPiece) &&
+                this.isSpaceFull(defenderX, defenderY)&&
+                attackingPiece.withinAttackingPattern(defenderX, defenderY))
+    }
+
+    attackPiece(attackerX:number, attackerY:number, defenderX:number, defenderY:number){
+        let defendingPiece = this.getPiece(defenderX, defenderY)
+        defendingPiece?.die()        
+    }
+
     getPiece(x:number, y:number):coordContent{
         return this.lookup[y][x]
     }

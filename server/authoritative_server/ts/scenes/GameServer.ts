@@ -53,6 +53,17 @@ export class GameServer extends Scene{
                    
                 socket.broadcast.emit('otherMove', message)
             })
+
+            socket.on('attack', (message:any[])=>{
+                let [attackerX, attackerY, defenderX, defenderY] = message;
+                let playerNumber = this.getPlayerAssignment(socket.id)
+
+                if(this.board.canAttackPiece(attackerX, attackerY, defenderX, defenderY)){
+                    this.board.movePiece(attackerX, attackerY, defenderX, defenderY)
+                }
+                   
+                socket.broadcast.emit('otherAttack', message)
+            })
         });
     }
 

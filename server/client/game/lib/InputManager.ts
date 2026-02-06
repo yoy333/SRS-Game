@@ -6,7 +6,6 @@ import {Piece, DefaultPiece } from "../../../common/Piece";
 
 
 export class InputManager{
-    //selected:string|Piece = "";
 
     constructor(){
 
@@ -14,9 +13,7 @@ export class InputManager{
 
     proccessClick(socket:SocketIOClient.Socket, addPlugin: GameObjects.GameObjectFactory, board:Board, perspectiveX:number, perspectiveY:number){
         let [x, y] = board.adjustIfFlip(perspectiveX, perspectiveY)
-        if(!this.selectionForSpawn && !this.selectionForMove){
-            // do nothing
-        }else if(this.selectionForSpawn){
+        if(this.selectionForSpawn){
             let pieceType = this.selectionForSpawn
             if(this.onSpawn)
                 this.onSpawn(pieceType, x, y)
@@ -24,35 +21,45 @@ export class InputManager{
             return
         }else if(this.selectionForMove){
             let moveCoords = [this.selectionForMove.coordX, this.selectionForMove.coordY, x, y] as const
+            //if double click
+            if(moveCoords[0]==moveCoords[2] && moveCoords[1]==moveCoords[3]){
+                console.log("selection for attack")
+                this.selectForAttack(this.selectionForMove)
+                return;
+            }
             if(this.onMove)
                 this.onMove(...moveCoords)
             this.selectionForMove = undefined;
             return;
+        }else if(this.selectionForAttack){
+            if(this.onAttack)
+                this.onAttack(this.selectionForAttack.coordX, this.selectionForAttack.coordY, x, y)
+        }else{
+            this.clearSelection()
         }
 
         // if you click on a piece, select it for movement
         let selectedPiece = board.lookup[y][x]
         if(selectedPiece != null){
             this.selectForMove(selectedPiece)
-            // console.log("selected for movement: "+x+", "+y)
             return;
         }
     }
 
-    private selectionForSpawn?:typeof Piece;
-    private selectionForMove?:Piece;
+    selectionForSpawn?:typeof Piece;
+    selectionForMove?:Piece;
+    selectionForAttack?:Piece
 
-    getSelectionForSpawn():typeof Piece|undefined{
-        return this.selectionForSpawn
-    }
-
-    getSelectionForMove():Piece|undefined{
-        return this.selectionForMove
+    clearSelection(){
+        this.selectionForSpawn = undefined
+        this.selectionForMove = undefined
+        this.selectionForAttack = undefined
     }
 
     selectForSpawn(pieceType: typeof Piece){
-        this.selectionForSpawn = pieceType
+        this.selectionForSpawn = pieceType;
         this.selectionForMove = undefined;
+        this.selectionForAttack = undefined;
     }
 
     selectForMove(piece: Piece){
@@ -60,7 +67,17 @@ export class InputManager{
         this.selectionForMove = piece;
     }
 
+    selectForAttack(piece:Piece){
+        this.selectionForAttack = piece;
+        this.selectionForSpawn = undefined;
+        this.selectionForMove = undefined
+    }
+
+    prop: number = 0
+
     onMove?:(startX:number, startY:number, endX:number, endY:number)=>void
 
     onSpawn?:(pieceType: typeof Piece, x:number, y:number, playerOwner?:number)=>void
+
+    onAttack?: (attackerX:number, attackerY:number, defenderX:number, defenderY:number)=>void
 }

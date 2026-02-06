@@ -22,6 +22,7 @@ export class Piece implements Visual<sprite>{
     playerOwner:number
 
     relativeMovementPattern:pattern = emptyPattern;
+    relativeAttackingPattern:pattern = emptyPattern;
 
     constructor(addPlugin: GameObjects.GameObjectFactory, board:Board, x:number, y:number, isClientSide:boolean, playerOwner:number){
         this.reps = []
@@ -97,9 +98,27 @@ export class Piece implements Visual<sprite>{
             if(absX == x && absY == y)
                 return true;
         }
-        console.log(x)
-        console.log(y)
         return false;
+    }
+
+    withinAttackingPattern(x:number, y:number):boolean{
+        for(let point of this.relativeAttackingPattern){
+            let [checkX, checkY] = point;
+            if(this.playerOwner == 2)
+                checkY *= -1
+            const absX = this.coordX+checkX
+            const absY = this.coordY+checkY
+            if(absX == x && absY == y)
+                return true;
+        }
+        return false;
+    }
+
+    die(){
+        this.reps.forEach((rep:GameObjects.Sprite)=>{
+            rep.destroy(true)
+        })
+        this.board.lookup[this.coordY][this.coordX] = null
     }
 
     static createFromKey(key:string, addPlugin: GameObjects.GameObjectFactory, board:Board, x: number, y: number, isClientSide:boolean, playerOwner:number):Piece{
@@ -133,5 +152,6 @@ export class DefaultPiece extends Piece{
             this.reps = this.createReps(addPlugin)
     }
 
-    relativeMovementPattern: Set<point> = forward_1
+    relativeMovementPattern: pattern = forward_1
+    relativeAttackingPattern: pattern = square_1;
 }
