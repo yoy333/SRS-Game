@@ -1,10 +1,9 @@
-import {Scene} from 'phaser'
+import {Scene, Geom} from 'phaser'
 
 import { Server as SocketIOServer, Socket, DefaultEventsMap } from 'socket.io';
-//import { Input } from '../../../common/SocketProtocols';
 import {io} from '../main'
 import { Board } from '../../../common/Board';
-import { DefaultPiece, Piece } from '../../../common/Piece';
+import { Piece } from '../../../common/Piece';
 
 export type defaultSocket = Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
 
@@ -37,7 +36,6 @@ export class GameServer extends Scene{
             socket.on('spawn', (message:Array<any>)=>{
                 let [pieceTypeKey, x, y] = message;
                 let pieceType = Piece.classFromKey(pieceTypeKey)
-
                 // server must check player ownership in case of hijacked calls
                 let playerNumber = this.getPlayerAssignment(socket.id)
 
@@ -49,9 +47,22 @@ export class GameServer extends Scene{
                 let [startX, startY, endX, endY] = message;
                 let playerNumber = this.getPlayerAssignment(socket.id)
 
-                if(this.board.canMovePiece(startX, startY, endX, endY, playerNumber))
+                if(this.board.canMovePiece(startX, startY, endX, endY, playerNumber)){
                     this.board.movePiece(startX, startY, endX, endY)
+                }
+                   
                 socket.broadcast.emit('otherMove', message)
+            })
+
+            socket.on('attack', (message:any[])=>{
+                let [attackerX, attackerY, defenderX, defenderY] = message;
+                let playerNumber = this.getPlayerAssignment(socket.id)
+
+                if(this.board.canAttackPiece(attackerX, attackerY, defenderX, defenderY)){
+                    this.board.movePiece(attackerX, attackerY, defenderX, defenderY)
+                }
+                   
+                socket.broadcast.emit('otherAttack', message)
             })
         });
     }

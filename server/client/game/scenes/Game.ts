@@ -4,7 +4,6 @@ import {InputManager} from '../lib/InputManager'
 import { IconButton } from '../lib/IconButton';
 import { DefaultPiece, Piece } from '../../../common/Piece';
 import { Board } from '../../../common/Board';
-//import { GameObjects } from 'phaser';
 export class Game extends Scene{
 
     socket?: typeof Socket;
@@ -68,6 +67,17 @@ export class Game extends Scene{
             }
         }
 
+        this.inputManager.onAttack = (attackerX, attackerY, defenderX, defenderY) => {
+            if(this.board.canAttackPiece(attackerX, attackerY, defenderX, defenderY)){
+                this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
+                if(!this.socket)
+                    throw new Error("no socket :(")
+                this.socket.emit('attack', [attackerX, attackerY, defenderX, defenderY])
+            }else{
+                console.log("illegal attack")
+            }
+        }
+
         this.socket.on('otherSpawn', (message: Array<any>)=>{
             let [pieceTypeKey, x, y] = message;
             let pieceType = Piece.classFromKey(pieceTypeKey)
@@ -77,6 +87,11 @@ export class Game extends Scene{
         this.socket.on('otherMove', (message:any[])=>{
             let [startX, startY, endX, endY] = message;
             this.board.movePiece(startX, startY, endX, endY)
+        })
+
+        this.socket.on('otherAttack', (message:any[])=>{
+            let [attackerX, attackerY, defenderX, defenderY] = message;
+            this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
         })
 
         // this.socket.on('gameState', (message:string)=>{
