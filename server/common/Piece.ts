@@ -1,5 +1,5 @@
 import { Board } from "./Board";
-import { Visual, visualRep } from "../client/game/lib/Visual";
+import { Visual } from "../client/game/lib/Visual";
 import { Game, GameObjects } from "phaser";
 import { Loader, Geom } from "phaser";
 

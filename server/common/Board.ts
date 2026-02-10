@@ -13,7 +13,9 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     playerNumber:number = 0;
     //0 by default until assigned
     isClientSide:boolean
-    ichor:[number, number] = [5, 5];
+
+    static maxIchorPerTurn:number = 5;
+    ichor:[number, number] = [Board.maxIchorPerTurn, Board.maxIchorPerTurn];
 
     constructor(isClientSide:boolean){
         this.reps  = []
@@ -73,8 +75,8 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         return this.playerNumber != 0
     }
 
-    doesHaveEnoughElixer(pieceType: PieceType){
-        return pieceType.spawnCost<=this.ichor[this.playerNumber]
+    doesHaveEnoughIchor(pieceType: PieceType){
+        return pieceType.spawnCost<=this.ichor[this.playerNumber-1]
     }
 
     // move to Game Rules
@@ -85,7 +87,8 @@ export class Board implements Visual<Tilemaps.Tilemap>{
 
         if(this.isSpaceEmpty(x,y)&&
             this.isOnHomeRow(y)&&
-            this.isNotSpectator())
+            this.isNotSpectator()&&
+            this.doesHaveEnoughIchor(pieceType))
             return true;
         else
             return false;
@@ -97,6 +100,8 @@ export class Board implements Visual<Tilemaps.Tilemap>{
             playerOwner = this.playerNumber
         let piece = new pieceType(addPlugin, this, x, y, this.isClientSide, playerOwner);
         this.lookup[y][x] = piece
+        this.ichor[this.playerNumber-1] -= pieceType.spawnCost;
+        console.log(this.ichor)
         return piece
     }
 
