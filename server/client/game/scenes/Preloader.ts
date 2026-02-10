@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import { DefaultPiece } from '../../../common/Piece';
+import { PieceType , pieceTypeRegistery } from '../../../common/Piece';
 import { Board } from '../../../common/Board';
 import { Piece } from '../../../common/Piece';
 import { IconButton } from '../lib/IconButton';
@@ -30,7 +30,9 @@ export class Preloader extends Scene
         this.load.setPath('phaserAssets');
 
         Board.loadReps(this.load)
-        Piece.loadReps(this.load)
+        pieceTypeRegistery.forEach((pieceType:PieceType)=>{
+            pieceType.loadReps(this.load)
+        })
         IconButton.loadReps(this.load)
     }
 

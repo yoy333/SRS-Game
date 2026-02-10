@@ -2,7 +2,7 @@ import { Scene } from 'phaser';
 import io, {type Socket} from 'socket.io-client'
 import {InputManager} from '../lib/InputManager'
 import { IconButton } from '../lib/IconButton';
-import { DefaultPiece, Piece } from '../../../common/Piece';
+import { DefaultPiece, Piece, PieceType } from '../../../common/Piece';
 import { Board } from '../../../common/Board';
 export class Game extends Scene{
 
@@ -56,7 +56,7 @@ export class Game extends Scene{
             }
         }
 
-        this.inputManager.onSpawn = (pieceType: typeof Piece, x:number, y:number, playerOwner?:number) => {
+        this.inputManager.onSpawn = (pieceType: PieceType, x:number, y:number, playerOwner?:number) => {
             if(this.board.canSpawnPiece(pieceType, x, y, playerOwner)){
                 this.board.spawnPiece(pieceType, this.add, x, y)
                 if(!this.socket)

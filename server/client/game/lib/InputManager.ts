@@ -1,8 +1,7 @@
-import { Input } from "phaser"
 //import {Input as InputProtocol} from '../../../common/SocketProtocols'
 import { GameObjects } from "phaser";
 import { Board } from "../../../common/Board";
-import {Piece, DefaultPiece } from "../../../common/Piece";
+import {Piece, PieceType } from "../../../common/Piece";
 
 
 export class InputManager{
@@ -46,7 +45,7 @@ export class InputManager{
         }
     }
 
-    selectionForSpawn?:typeof Piece;
+    selectionForSpawn?:PieceType;
     selectionForMove?:Piece;
     selectionForAttack?:Piece
 
@@ -56,7 +55,7 @@ export class InputManager{
         this.selectionForAttack = undefined
     }
 
-    selectForSpawn(pieceType: typeof Piece){
+    selectForSpawn(pieceType: PieceType){
         this.selectionForSpawn = pieceType;
         this.selectionForMove = undefined;
         this.selectionForAttack = undefined;
@@ -77,7 +76,7 @@ export class InputManager{
 
     onMove?:(startX:number, startY:number, endX:number, endY:number)=>void
 
-    onSpawn?:(pieceType: typeof Piece, x:number, y:number, playerOwner?:number)=>void
+    onSpawn?:(pieceType: PieceType, x:number, y:number, playerOwner?:number)=>void
 
     onAttack?: (attackerX:number, attackerY:number, defenderX:number, defenderY:number)=>void
 }

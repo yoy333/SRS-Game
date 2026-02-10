@@ -1,8 +1,7 @@
 import { GameObjects, Tilemaps } from "phaser"
-import { Piece } from "./Piece"
+import { Piece, PieceType } from "./Piece"
 import { Visual } from "../client/game/lib/Visual"
 import { Loader, Geom } from "phaser"
-
 
 export type coordContent = Piece | null
 export class Board implements Visual<Tilemaps.Tilemap>{
@@ -12,9 +11,9 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     numReps = 1
     lookup: coordContent[][]
     playerNumber:number = 0;
-    isClientSide:boolean
     //0 by default until assigned
-
+    isClientSide:boolean
+    ichor:[number, number] = [5, 5];
 
     constructor(isClientSide:boolean){
         this.reps  = []
@@ -74,8 +73,12 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         return this.playerNumber != 0
     }
 
+    doesHaveEnoughElixer(pieceType: PieceType){
+        return pieceType.spawnCost<=this.ichor[this.playerNumber]
+    }
+
     // move to Game Rules
-    canSpawnPiece(pieceType: typeof Piece, x:number, y:number, playerOwner?:number){
+    canSpawnPiece(pieceType: PieceType, x:number, y:number, playerOwner?:number){
         // console.log(`inputs ${x}, ${y}`)
         if(playerOwner == undefined)
             playerOwner = this.playerNumber
@@ -88,7 +91,7 @@ export class Board implements Visual<Tilemaps.Tilemap>{
             return false;
     }
 
-    spawnPiece(pieceType: typeof Piece, addPlugin:GameObjects.GameObjectFactory, x:number, y:number, playerOwner?:number):Piece{
+    spawnPiece(pieceType: PieceType, addPlugin:GameObjects.GameObjectFactory, x:number, y:number, playerOwner?:number):Piece{
         // console.log(`spawning from: ${x}, ${y}`)
         if(playerOwner == undefined)
             playerOwner = this.playerNumber
