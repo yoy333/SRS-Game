@@ -85,6 +85,15 @@ export class Game extends Scene{
             }
         }
 
+        this.inputManager.onEndTurn = () => {
+            // fix later
+            if(this.board.currentTurn!=this.board.playerNumber)
+                return;
+            this.board.endTurn()
+            this.ichorDisplay.updateIchor(this.board.myIchor)
+            this.socket?.emit('endTurn')
+        }
+
         this.socket.on('otherSpawn', (message: Array<any>)=>{
             let [pieceTypeKey, x, y] = message;
             let pieceType = Piece.classFromKey(pieceTypeKey)
@@ -99,6 +108,11 @@ export class Game extends Scene{
         this.socket.on('otherAttack', (message:any[])=>{
             let [attackerX, attackerY, defenderX, defenderY] = message;
             this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
+        })
+
+        this.socket.on('otherEndTurn', ()=>{
+            console.log("other player requested a turn end")
+            this.board.endTurn()
         })
 
         // this.socket.on('gameState', (message:string)=>{

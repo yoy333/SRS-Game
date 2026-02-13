@@ -17,6 +17,10 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     static maxIchorPerTurn:number = 5;
     ichor:[number, number] = [Board.maxIchorPerTurn, Board.maxIchorPerTurn];
 
+    get myIchor():number{
+        return this.ichor[this.playerNumber-1]
+    }
+
     constructor(isClientSide:boolean){
         this.reps  = []
         this.lookup = Array.from({ length: Board.rows }, () => new Array(Board.columns).fill(null));
@@ -79,6 +83,10 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         return pieceType.spawnCost<=this.ichor[this.playerNumber-1]
     }
 
+    isMyTurn():boolean{
+        return this.playerNumber==this.currentTurn
+    }
+
     // move to Game Rules
     canSpawnPiece(pieceType: PieceType, x:number, y:number, playerOwner?:number){
         // console.log(`inputs ${x}, ${y}`)
@@ -88,7 +96,8 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         if(this.isSpaceEmpty(x,y)&&
             this.isOnHomeRow(y)&&
             this.isNotSpectator()&&
-            this.doesHaveEnoughIchor(pieceType))
+            this.doesHaveEnoughIchor(pieceType)&&
+            this.isMyTurn())
             return true;
         else
             return false;
@@ -101,7 +110,6 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         let piece = new pieceType(addPlugin, this, x, y, this.isClientSide, playerOwner);
         this.lookup[y][x] = piece
         this.ichor[this.playerNumber-1] -= pieceType.spawnCost;
-        console.log(this.ichor)
         return piece
     }
 
@@ -135,7 +143,8 @@ export class Board implements Visual<Tilemaps.Tilemap>{
 
         return (this.doesOwnPiece(playerNumber) &&
                 this.isSpaceEmpty(endX, endY)&&
-                piece.withinMovementPattern(endX, endY))
+                piece.withinMovementPattern(endX, endY)&&
+                this.isMyTurn())
     }
 
     movePiece(startX:number, startY:number, endX:number, endY:number){
@@ -155,7 +164,7 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     }
 
     currentTurn = 1;
-    
+
     endTurn(){
         this.ichor[this.currentTurn-1] = Board.maxIchorPerTurn;
 
@@ -183,7 +192,8 @@ export class Board implements Visual<Tilemaps.Tilemap>{
 
         return (this.areEnemyPieces(attackingPiece, defendingPiece) &&
                 this.isSpaceFull(defenderX, defenderY)&&
-                attackingPiece.withinAttackingPattern(defenderX, defenderY))
+                attackingPiece.withinAttackingPattern(defenderX, defenderY)&&
+                this.isMyTurn())
     }
 
     attackPiece(attackerX:number, attackerY:number, defenderX:number, defenderY:number){
