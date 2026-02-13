@@ -36,7 +36,7 @@ export class Game extends Scene{
 
         this.board.createReps(this.make, 0, 0)
 
-        new IconButton(this.add, this.inputManager, 768,96, DefaultPiece.key)
+        this.inputManager.createReps(this.add)
 
         this.ichorDisplay.createReps(this.add, 50, 650)
         this.ichorDisplay.updateIchor(Board.maxIchorPerTurn)

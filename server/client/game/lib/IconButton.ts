@@ -1,4 +1,3 @@
-import { Board } from '../../../common/Board'
 import { InputManager } from './InputManager'
 import {Visual} from './Visual'
 import{GameObjects, Loader} from 'phaser'
@@ -54,11 +53,4 @@ export class IconButton implements Visual<spriteOrImage>{
             inputManager.selectForSpawn(Piece.classFromKey(this.pieceKey));
         })
     }
-
-    setCallback(onClick:()=>void){
-        this.reps[0].setInteractive();
-        this.reps[0].on('pointerdown', onClick)
-    }
-
-
 }

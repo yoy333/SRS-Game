@@ -154,6 +154,20 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         this.lookup[startY][startX] = null;
     }
 
+    currentTurn = 1;
+    
+    endTurn(){
+        this.ichor[this.currentTurn-1] = Board.maxIchorPerTurn;
+
+        if(this.currentTurn == 1){
+            this.currentTurn = 2
+        }else if(this.currentTurn == 2){
+            this.currentTurn = 1
+        }else{
+            throw new Error("how did we get here")
+        }
+    }
+
     areEnemyPieces(x:Piece, y:Piece):boolean{
         let xPlayerNumber = x?.playerOwner;
         let yPlayerNumber = y?.playerOwner;

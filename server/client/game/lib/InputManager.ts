@@ -1,10 +1,10 @@
-//import {Input as InputProtocol} from '../../../common/SocketProtocols'
 import { GameObjects } from "phaser";
 import { Board } from "../../../common/Board";
-import {Piece, PieceType } from "../../../common/Piece";
+import {Piece, PieceType, DefaultPiece } from "../../../common/Piece";
+import { Visual } from "./Visual";
+import { IconButton } from "./IconButton";
 
-
-export class InputManager{
+export class InputManager implements Visual<undefined>{
 
     constructor(){
 
@@ -70,6 +70,16 @@ export class InputManager{
         this.selectionForAttack = piece;
         this.selectionForSpawn = undefined;
         this.selectionForMove = undefined
+    }
+
+    reps:undefined[] = []
+    numReps = 0
+    iconButtons:IconButton[] = []
+    createReps(addPlugin:GameObjects.GameObjectFactory):undefined[]{
+        this.iconButtons[0] =
+            new IconButton(addPlugin, this, 768,96, DefaultPiece.key)
+
+        return []
     }
 
     prop: number = 0
