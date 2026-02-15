@@ -1,8 +1,7 @@
 import { GameObjects, Tilemaps } from "phaser"
-import { Piece } from "./Piece"
+import { Piece, PieceType } from "./Piece"
 import { Visual } from "../client/game/lib/Visual"
 import { Loader, Geom } from "phaser"
-
 
 export type coordContent = Piece | null
 export class Board implements Visual<Tilemaps.Tilemap>{
@@ -12,9 +11,15 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     numReps = 1
     lookup: coordContent[][]
     playerNumber:number = 0;
-    isClientSide:boolean
     //0 by default until assigned
+    isClientSide:boolean
 
+    static maxIchorPerTurn:number = 5;
+    ichor:[number, number] = [Board.maxIchorPerTurn, Board.maxIchorPerTurn];
+
+    get myIchor():number{
+        return this.ichor[this.playerNumber-1]
+    }
 
     constructor(isClientSide:boolean){
         this.reps  = []
@@ -74,26 +79,37 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         return this.playerNumber != 0
     }
 
+    doesHaveEnoughIchor(pieceType: PieceType){
+        return pieceType.spawnCost<=this.ichor[this.playerNumber-1]
+    }
+
+    isMyTurn():boolean{
+        return this.playerNumber==this.currentTurn
+    }
+
     // move to Game Rules
-    canSpawnPiece(pieceType: typeof Piece, x:number, y:number, playerOwner?:number){
+    canSpawnPiece(pieceType: PieceType, x:number, y:number, playerOwner?:number){
         // console.log(`inputs ${x}, ${y}`)
         if(playerOwner == undefined)
             playerOwner = this.playerNumber
 
         if(this.isSpaceEmpty(x,y)&&
             this.isOnHomeRow(y)&&
-            this.isNotSpectator())
+            this.isNotSpectator()&&
+            this.doesHaveEnoughIchor(pieceType)&&
+            this.isMyTurn())
             return true;
         else
             return false;
     }
 
-    spawnPiece(pieceType: typeof Piece, addPlugin:GameObjects.GameObjectFactory, x:number, y:number, playerOwner?:number):Piece{
+    spawnPiece(pieceType: PieceType, addPlugin:GameObjects.GameObjectFactory, x:number, y:number, playerOwner?:number):Piece{
         // console.log(`spawning from: ${x}, ${y}`)
         if(playerOwner == undefined)
             playerOwner = this.playerNumber
         let piece = new pieceType(addPlugin, this, x, y, this.isClientSide, playerOwner);
         this.lookup[y][x] = piece
+        this.ichor[this.playerNumber-1] -= pieceType.spawnCost;
         return piece
     }
 
@@ -127,7 +143,8 @@ export class Board implements Visual<Tilemaps.Tilemap>{
 
         return (this.doesOwnPiece(playerNumber) &&
                 this.isSpaceEmpty(endX, endY)&&
-                piece.withinMovementPattern(endX, endY))
+                piece.withinMovementPattern(endX, endY)&&
+                this.isMyTurn())
     }
 
     movePiece(startX:number, startY:number, endX:number, endY:number){
@@ -146,6 +163,20 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         this.lookup[startY][startX] = null;
     }
 
+    currentTurn = 1;
+
+    endTurn(){
+        this.ichor[this.currentTurn-1] = Board.maxIchorPerTurn;
+
+        if(this.currentTurn == 1){
+            this.currentTurn = 2
+        }else if(this.currentTurn == 2){
+            this.currentTurn = 1
+        }else{
+            throw new Error("how did we get here")
+        }
+    }
+
     areEnemyPieces(x:Piece, y:Piece):boolean{
         let xPlayerNumber = x?.playerOwner;
         let yPlayerNumber = y?.playerOwner;
@@ -161,7 +192,8 @@ export class Board implements Visual<Tilemaps.Tilemap>{
 
         return (this.areEnemyPieces(attackingPiece, defendingPiece) &&
                 this.isSpaceFull(defenderX, defenderY)&&
-                attackingPiece.withinAttackingPattern(defenderX, defenderY))
+                attackingPiece.withinAttackingPattern(defenderX, defenderY)&&
+                this.isMyTurn())
     }
 
     attackPiece(attackerX:number, attackerY:number, defenderX:number, defenderY:number){

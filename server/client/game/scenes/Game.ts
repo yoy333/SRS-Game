@@ -2,8 +2,9 @@ import { Scene } from 'phaser';
 import io, {type Socket} from 'socket.io-client'
 import {InputManager} from '../lib/InputManager'
 import { IconButton } from '../lib/IconButton';
-import { DefaultPiece, Piece } from '../../../common/Piece';
+import { DefaultPiece, Piece, PieceType } from '../../../common/Piece';
 import { Board } from '../../../common/Board';
+import { IchorDisplay } from '../lib/IchorDisplay';
 export class Game extends Scene{
 
     socket?: typeof Socket;
@@ -14,6 +15,7 @@ export class Game extends Scene{
         super('Game');
         this.inputManager = new InputManager()
         this.board = new Board(true)
+        this.ichorDisplay = new IchorDisplay()
     }
 
     preload(){
@@ -21,6 +23,7 @@ export class Game extends Scene{
     }
 
     board: Board
+    ichorDisplay: IchorDisplay
 
     create ()
     {
@@ -33,7 +36,10 @@ export class Game extends Scene{
 
         this.board.createReps(this.make, 0, 0)
 
-        new IconButton(this.add, this.inputManager, 768,96, DefaultPiece.key)
+        this.inputManager.createReps(this.add)
+
+        this.ichorDisplay.createReps(this.add, 50, 650)
+        this.ichorDisplay.updateIchor(Board.maxIchorPerTurn)
 
         this.input.on('pointerdown', ()=>{
             let tileClicked = this.board?.reps[0].getTileAtWorldXY(this.input.x, this.input.y)
@@ -56,9 +62,10 @@ export class Game extends Scene{
             }
         }
 
-        this.inputManager.onSpawn = (pieceType: typeof Piece, x:number, y:number, playerOwner?:number) => {
+        this.inputManager.onSpawn = (pieceType: PieceType, x:number, y:number, playerOwner?:number) => {
             if(this.board.canSpawnPiece(pieceType, x, y, playerOwner)){
                 this.board.spawnPiece(pieceType, this.add, x, y)
+                this.ichorDisplay.updateIchor(this.board.ichor[this.board.playerNumber-1])
                 if(!this.socket)
                     throw new Error("no socket :(")
                 this.socket.emit('spawn', [DefaultPiece.key, x, y])
@@ -78,6 +85,15 @@ export class Game extends Scene{
             }
         }
 
+        this.inputManager.onEndTurn = () => {
+            // fix later
+            if(this.board.currentTurn!=this.board.playerNumber)
+                return;
+            this.board.endTurn()
+            this.ichorDisplay.updateIchor(this.board.myIchor)
+            this.socket?.emit('endTurn')
+        }
+
         this.socket.on('otherSpawn', (message: Array<any>)=>{
             let [pieceTypeKey, x, y] = message;
             let pieceType = Piece.classFromKey(pieceTypeKey)
@@ -92,6 +108,11 @@ export class Game extends Scene{
         this.socket.on('otherAttack', (message:any[])=>{
             let [attackerX, attackerY, defenderX, defenderY] = message;
             this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
+        })
+
+        this.socket.on('otherEndTurn', ()=>{
+            console.log("other player requested a turn end")
+            this.board.endTurn()
         })
 
         // this.socket.on('gameState', (message:string)=>{
