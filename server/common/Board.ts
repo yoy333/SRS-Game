@@ -93,6 +93,12 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         if(playerOwner == undefined)
             playerOwner = this.playerNumber
 
+        console.log([this.isSpaceEmpty(x,y),
+            this.isOnHomeRow(y),
+            this.isNotSpectator(),
+            this.doesHaveEnoughIchor(pieceType),
+            this.isMyTurn()])
+
         if(this.isSpaceEmpty(x,y)&&
             this.isOnHomeRow(y)&&
             this.isNotSpectator()&&
@@ -109,7 +115,7 @@ export class Board implements Visual<Tilemaps.Tilemap>{
             playerOwner = this.playerNumber
         let piece = new pieceType(addPlugin, this, x, y, this.isClientSide, playerOwner);
         this.lookup[y][x] = piece
-        this.ichor[this.playerNumber-1] -= pieceType.spawnCost;
+        this.ichor[playerOwner-1] -= pieceType.spawnCost;
         return piece
     }
 
