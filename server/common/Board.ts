@@ -3,13 +3,12 @@ import { Piece, PieceType } from "./Piece"
 import { Visual } from "../client/game/lib/Visual"
 import { Loader, Geom } from "phaser"
 
-export type coordContent = Piece | null
 export class Board implements Visual<Tilemaps.Tilemap>{
     static rows = 10
     static columns = 10
     reps: Array<Tilemaps.Tilemap>
     numReps = 1
-    lookup: coordContent[][]
+    lookup: (Piece | null)[]
     playerNumber:number = 0;
     //0 by default until assigned
     isClientSide:boolean
@@ -23,7 +22,8 @@ export class Board implements Visual<Tilemaps.Tilemap>{
 
     constructor(isClientSide:boolean){
         this.reps  = []
-        this.lookup = Array.from({ length: Board.rows }, () => new Array(Board.columns).fill(null));
+        this.lookup = [];
+        this.lookup.fill(null)
         this.isClientSide = isClientSide
     }
 
@@ -144,12 +144,12 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     }
 
     isSpaceEmpty(x:number, y:number):boolean{
-        return this.lookup[y][x] == null;
+        return this.getPiece(x, y) == null;
     }
 
     // move to Game Rules
     canMovePiece(startX:number, startY: number, endX:number, endY:number, playerNumber?:number){
-        let piece = this.lookup[startY][startX]
+        let piece = this.getPiece(startX, startY)
         if(!playerNumber)
             playerNumber = this.playerNumber
         if(!piece)
@@ -164,9 +164,10 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     movePiece(startX:number, startY:number, endX:number, endY:number){
         // console.log(`moving from ${startX}, ${startY} to ${endX}, ${endY}`)
 
-        let piece = this.lookup[startY][startX]
+        let piece = this.getPiece(startX, startY)
 
-        this.lookup[endY][endX] = piece;
+
+        this.setPiece(endX, endY, piece)
 
         if(!piece){
             console.warn(`no piece selected at (${startX}, ${startY})`)
@@ -174,7 +175,7 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         }
         piece.setCoord(endX, endY)
 
-        this.lookup[startY][startX] = null;
+        this.setPiece(startX, startY, null);
     }
 
     currentTurn = 1;
@@ -225,12 +226,19 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         defendingPiece?.die()        
     }
 
-    getPiece(x:number, y:number):coordContent{
-        return this.lookup[y][x]
+    getIndexFromXY(x:number, y:number):number{
+        return x + Board.columns*y;
     }
 
-    setPiece(x:number, y:number, p:Piece){
-        this.lookup[y][x] = p
+    getPiece(x:number, y:number):Piece | null{
+        let i = this.getIndexFromXY(x, y);
+        
+        return this.lookup[i]
+    }
+
+    setPiece(x:number, y:number, p:Piece|null){
+        let i = this.getIndexFromXY(x, y);
+        this.lookup[i] = p
     }
 
     get otherPlayerNumber(){

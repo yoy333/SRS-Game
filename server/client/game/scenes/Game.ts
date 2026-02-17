@@ -1,7 +1,6 @@
 import { Scene } from 'phaser';
 import io, {type Socket} from 'socket.io-client'
 import {InputManager} from '../lib/InputManager'
-import { IconButton } from '../lib/IconButton';
 import { DefaultPiece, Piece, PieceType } from '../../../common/Piece';
 import { Board } from '../../../common/Board';
 import { IchorDisplay } from '../lib/IchorDisplay';

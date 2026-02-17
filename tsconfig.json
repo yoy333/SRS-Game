@@ -13,7 +13,7 @@
     //"types": [],
     // For nodejs:
     "lib": ["esnext", "DOM"],
-    "types": ["phaser"],
+    "types": ["phaser", "vite/client"],
     // and npm install -D @types/node
 
     // Other Outputs
@@ -46,6 +46,12 @@
 
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-
-  }
+    "allowJs": true,
+  },
+  "exclude": [
+    "**/dist",
+    "**/vite.config.js",
+    "**/index.js",
+    "node_modules" // node_modules is excluded by default, but explicitly listing it is fine
+  ]
 }

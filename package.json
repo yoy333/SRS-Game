@@ -10,7 +10,8 @@
     "build": "npm run build-client && npm run build-server",
     "restart": "npm run build && npm run start",
     "dev": "cd server/client && vite dev",
-    "test": "npm run dev & npm run start"
+    "test": "npm run dev & npm run start",
+    "checkTypes": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",

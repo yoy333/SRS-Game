@@ -40,7 +40,7 @@ export class InputManager implements Visual<undefined>{
         }
 
         // if you click on a piece, select it for movement
-        let selectedPiece = board.lookup[y][x]
+        let selectedPiece = board.getPiece(x, y)
         if(selectedPiece != null){
             this.selectForMove(selectedPiece)
             return;

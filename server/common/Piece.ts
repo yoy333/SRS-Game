@@ -106,7 +106,7 @@ export abstract class Piece implements Visual<sprite>{
         this.reps.forEach((rep:GameObjects.Sprite)=>{
             rep.destroy(true)
         })
-        this.board.lookup[this.coordY][this.coordX] = null
+        this.board.setPiece(this.coordX, this.coordY, null)
     }
 
     static createFromKey(key:string, addPlugin: GameObjects.GameObjectFactory, board:Board, x: number, y: number, isClientSide:boolean, playerOwner:number):Piece{
