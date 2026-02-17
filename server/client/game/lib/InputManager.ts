@@ -4,6 +4,7 @@ import {Piece, PieceType, DefaultPiece } from "../../../common/Piece";
 import { Visual } from "./Visual";
 import { IconButton } from "./IconButton";
 import { Button } from "./Button";
+import {type Socket} from 'socket.io-client'
 
 export class InputManager implements Visual<undefined>{
 
@@ -11,7 +12,7 @@ export class InputManager implements Visual<undefined>{
 
     }
 
-    proccessClick(socket:SocketIOClient.Socket, addPlugin: GameObjects.GameObjectFactory, board:Board, perspectiveX:number, perspectiveY:number){
+    proccessClick(socket:Socket, addPlugin: GameObjects.GameObjectFactory, board:Board, perspectiveX:number, perspectiveY:number){
         let [x, y] = board.adjustIfFlip(perspectiveX, perspectiveY)
         if(this.selectionForSpawn){
             let pieceType = this.selectionForSpawn

@@ -47,7 +47,7 @@ export abstract class Piece implements Visual<sprite>{
         else
             [this.perspectiveX, this.perspectiveY] = [x, y]
 
-        console.log(`coords of new piece ${x}, ${y}`)
+        // console.log(`coords of new piece ${x}, ${y}`)
 
         this.isClientSide = isClientSide;
         this.playerOwner = playerOwner;

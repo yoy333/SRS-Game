@@ -5,9 +5,10 @@ import { IconButton } from '../lib/IconButton';
 import { DefaultPiece, Piece, PieceType } from '../../../common/Piece';
 import { Board } from '../../../common/Board';
 import { IchorDisplay } from '../lib/IchorDisplay';
+
 export class Game extends Scene{
 
-    socket?: typeof Socket;
+    socket?: Socket;
     inputManager: InputManager
 
     constructor ()
@@ -42,7 +43,7 @@ export class Game extends Scene{
         this.ichorDisplay.updateIchor(Board.maxIchorPerTurn)
 
         this.input.on('pointerdown', ()=>{
-            let tileClicked = this.board?.reps[0].getTileAtWorldXY(this.input.x, this.input.y)
+            let tileClicked = this.board?.reps[0]?.getTileAtWorldXY(this.input.x, this.input.y)
             if(tileClicked&&this.socket){
                 this.inputManager.proccessClick(this.socket, this.add, this.board, tileClicked.x, tileClicked.y)
             }else{
@@ -65,7 +66,7 @@ export class Game extends Scene{
         this.inputManager.onSpawn = (pieceType: PieceType, x:number, y:number, playerOwner?:number) => {
             if(this.board.canSpawnPiece(pieceType, x, y, playerOwner)){
                 this.board.spawnPiece(pieceType, this.add, x, y)
-                this.ichorDisplay.updateIchor(this.board.ichor[this.board.playerNumber-1])
+                this.ichorDisplay.updateIchor(this.board.myIchor)
                 if(!this.socket)
                     throw new Error("no socket :(")
                 this.socket.emit('spawn', [DefaultPiece.key, x, y])
@@ -86,12 +87,11 @@ export class Game extends Scene{
         }
 
         this.inputManager.onEndTurn = () => {
-            // fix later
-            if(this.board.currentTurn!=this.board.playerNumber)
-                return;
-            this.board.endTurn()
-            this.ichorDisplay.updateIchor(this.board.myIchor)
-            this.socket?.emit('endTurn')
+            if(this.board.canEndTurn()){
+                this.board.endTurn()
+                this.ichorDisplay.updateIchor(this.board.myIchor)
+                this.socket?.emit('endTurn')
+            }
         }
 
         this.socket.on('otherSpawn', (message: Array<any>)=>{

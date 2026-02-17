@@ -56,15 +56,17 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/DemoBoard.json')
     }
 
-    isOnHomeRow(y:number){
+    isOnHomeRow(y:number, playerNumber?:number){
+        if(!playerNumber)
+            playerNumber = this.playerNumber
 
         //console.log("checking "+y)
-        if(this.playerNumber == 2){
+        if(playerNumber == 2){
             if(y==0)
                 return true;
             else
                 return false;
-        }else if(this.playerNumber == 1){
+        }else if(playerNumber == 1){
             if(y==Board.rows-1)
                 return true;
             else
@@ -75,35 +77,38 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         }
     }
 
-    isNotSpectator():boolean{
-        return this.playerNumber != 0
+    isNotSpectator(playerNumber?:number):boolean{
+        if(!playerNumber)
+            playerNumber = this.playerNumber
+
+        return playerNumber != 0
     }
 
-    doesHaveEnoughIchor(pieceType: PieceType){
-        return pieceType.spawnCost<=this.ichor[this.playerNumber-1]
+    doesHaveEnoughIchor(pieceType: PieceType, playerNumber?:number){
+        if(!playerNumber)
+            playerNumber = this.playerNumber
+
+        return pieceType.spawnCost<=this.ichor[playerNumber-1]
     }
 
-    isMyTurn():boolean{
-        return this.playerNumber==this.currentTurn
+    isMyTurn(playerNumber?:number):boolean{
+        if(!playerNumber)
+            playerNumber = this.playerNumber
+
+        return playerNumber==this.currentTurn
     }
 
     // move to Game Rules
-    canSpawnPiece(pieceType: PieceType, x:number, y:number, playerOwner?:number){
+    canSpawnPiece(pieceType: PieceType, x:number, y:number, playerNumber?:number){
         // console.log(`inputs ${x}, ${y}`)
-        if(playerOwner == undefined)
-            playerOwner = this.playerNumber
-
-        console.log([this.isSpaceEmpty(x,y),
-            this.isOnHomeRow(y),
-            this.isNotSpectator(),
-            this.doesHaveEnoughIchor(pieceType),
-            this.isMyTurn()])
+        if(playerNumber == undefined)
+            playerNumber = this.playerNumber
 
         if(this.isSpaceEmpty(x,y)&&
-            this.isOnHomeRow(y)&&
-            this.isNotSpectator()&&
-            this.doesHaveEnoughIchor(pieceType)&&
-            this.isMyTurn())
+            this.isOnHomeRow(y, playerNumber)&&
+            this.isNotSpectator(playerNumber)&&
+            this.doesHaveEnoughIchor(pieceType, playerNumber)&&
+            this.isMyTurn(playerNumber))
             return true;
         else
             return false;
@@ -114,7 +119,7 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         if(playerOwner == undefined)
             playerOwner = this.playerNumber
         let piece = new pieceType(addPlugin, this, x, y, this.isClientSide, playerOwner);
-        this.lookup[y][x] = piece
+        this.setPiece(x, y, piece)
         this.ichor[playerOwner-1] -= pieceType.spawnCost;
         return piece
     }
@@ -127,8 +132,11 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     }
 
     // move to Game Rules
-    doesOwnPiece(piecePlayerNumber:number):boolean{
-        return this.playerNumber == piecePlayerNumber;
+    doesOwnPiece(piece:Piece, playerNumber?:number):boolean{
+        if(!playerNumber)
+            playerNumber = this.playerNumber
+
+        return playerNumber == piece.playerOwner;
     }
 
     isSpaceFull(x:number, y:number):boolean{
@@ -147,14 +155,14 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         if(!piece)
             return false;
 
-        return (this.doesOwnPiece(playerNumber) &&
+        return (this.doesOwnPiece(piece, playerNumber) &&
                 this.isSpaceEmpty(endX, endY)&&
                 piece.withinMovementPattern(endX, endY)&&
-                this.isMyTurn())
+                this.isMyTurn(playerNumber))
     }
 
     movePiece(startX:number, startY:number, endX:number, endY:number){
-        console.log(`moving from ${startX}, ${startY} to ${endX}, ${endY}`)
+        // console.log(`moving from ${startX}, ${startY} to ${endX}, ${endY}`)
 
         let piece = this.lookup[startY][startX]
 
@@ -170,6 +178,13 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     }
 
     currentTurn = 1;
+
+    canEndTurn(playerNumber?:number){
+        if(!playerNumber)
+            playerNumber = this.playerNumber
+
+        return this.isMyTurn(playerNumber)
+    }
 
     endTurn(){
         this.ichor[this.currentTurn-1] = Board.maxIchorPerTurn;
@@ -190,7 +205,10 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     }
 
     //move to Game Rules
-    canAttackPiece(attackerX:number, attackerY:number, defenderX:number, defenderY:number){
+    canAttackPiece(attackerX:number, attackerY:number, defenderX:number, defenderY:number, playerNumber?:number){
+        if(!playerNumber)
+            playerNumber = this.playerNumber
+
         let attackingPiece = this.getPiece(attackerX, attackerY)
         let defendingPiece = this.getPiece(defenderX, defenderY)
         if(!attackingPiece || !defendingPiece)
@@ -199,7 +217,7 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         return (this.areEnemyPieces(attackingPiece, defendingPiece) &&
                 this.isSpaceFull(defenderX, defenderY)&&
                 attackingPiece.withinAttackingPattern(defenderX, defenderY)&&
-                this.isMyTurn())
+                this.isMyTurn(playerNumber))
     }
 
     attackPiece(attackerX:number, attackerY:number, defenderX:number, defenderY:number){
@@ -209,6 +227,10 @@ export class Board implements Visual<Tilemaps.Tilemap>{
 
     getPiece(x:number, y:number):coordContent{
         return this.lookup[y][x]
+    }
+
+    setPiece(x:number, y:number, p:Piece){
+        this.lookup[y][x] = p
     }
 
     get otherPlayerNumber(){
