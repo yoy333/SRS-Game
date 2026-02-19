@@ -1,3 +1,5 @@
-Create a registry for pieces
-Serverside validation
+Turn History
 Colyseus
+Preset Turn Histories
+Assets
+Phaser plugins?

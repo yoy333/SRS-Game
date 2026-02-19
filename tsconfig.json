@@ -47,6 +47,10 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "allowJs": true,
+
+    //needed for colyseus
+    "useDefineForClassFields": false,
+    "experimentalDecorators": true,
   },
   "exclude": [
     "**/dist",
