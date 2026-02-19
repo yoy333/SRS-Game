@@ -4,6 +4,7 @@ import {InputManager} from '../lib/InputManager'
 import { DefaultPiece, Piece, PieceType } from '../../../common/Piece';
 import { Board } from '../../../common/Board';
 import { IchorDisplay } from '../lib/IchorDisplay';
+import {Client, Callbacks} from '@colyseus/sdk'
 
 export class Game extends Scene{
 
@@ -25,7 +26,7 @@ export class Game extends Scene{
     board: Board
     ichorDisplay: IchorDisplay
 
-    create ()
+    async create ()
     {
         this.socket = io("http://localhost:8080/");
 
@@ -109,15 +110,20 @@ export class Game extends Scene{
             this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
         })
 
-        this.socket.on('otherEndTurn', ()=>{
-            console.log("other player requested a turn end")
-            this.board.endTurn()
+        const client = new Client('http://localhost:2567');
+
+        const room = await client.joinOrCreate('my_room', {
+            /* custom join options */
+        });
+        const callbacks = Callbacks.get(room);
+
+        room.onMessage("playerAssignment", (playerNumber:number)=>{
+            console.log(`recieved player assignment, ${playerNumber}, from Colyseus`)
         })
 
-        // this.socket.on('gameState', (message:string)=>{
-        //     let lookup = JSON.parse(message)
-        //     console.log(lookup)
-        // })
+        callbacks.onAdd("players", (player, sessionId) => {
+            console.log('Player joined:', player);
+        });
     }
 
     update(){

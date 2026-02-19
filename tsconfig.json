@@ -56,6 +56,7 @@
     "**/dist",
     "**/vite.config.js",
     "**/index.js",
-    "node_modules" // node_modules is excluded by default, but explicitly listing it is fine
+    "node_modules",
+    "**/ecosystem.config.cjs" // node_modules is excluded by default, but explicitly listing it is fine
   ]
 }
