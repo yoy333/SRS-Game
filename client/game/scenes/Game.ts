@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import io, {type Socket} from 'socket.io-client'
+// import io, {type Socket} from 'socket.io-client'
 import {InputManager} from '../lib/InputManager'
 import { DefaultPiece, Piece, PieceType } from '@common/Piece.mjs';
 import { Board } from '@common/Board.mjs';
