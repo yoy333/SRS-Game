@@ -12,7 +12,7 @@ export class InputManager implements Visual<undefined>{
 
     }
 
-    proccessClick(socket:Socket, addPlugin: GameObjects.GameObjectFactory, board:Board, perspectiveX:number, perspectiveY:number){
+    proccessClick(addPlugin: GameObjects.GameObjectFactory, board:Board, perspectiveX:number, perspectiveY:number){
         let [x, y] = board.adjustIfFlip(perspectiveX, perspectiveY)
         if(this.selectionForSpawn){
             let pieceType = this.selectionForSpawn

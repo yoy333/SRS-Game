@@ -28,7 +28,7 @@ export class Game extends Scene{
 
     async create ()
     {
-        this.socket = io("http://localhost:8080/");
+        // this.socket = io("http://localhost:8080/");
 
         // this.socket.on('playerAssignment', (playerNumber:number)=>{
         //     this.board.playerNumber = playerNumber
@@ -45,7 +45,7 @@ export class Game extends Scene{
         this.input.on('pointerdown', ()=>{
             let tileClicked = this.board?.reps[0]?.getTileAtWorldXY(this.input.x, this.input.y)
             if(tileClicked&&this.socket){
-                this.inputManager.proccessClick(this.socket, this.add, this.board, tileClicked.x, tileClicked.y)
+                this.inputManager.proccessClick(this.add, this.board, tileClicked.x, tileClicked.y)
             }else{
                 //console.log("no tile clicked")
             }

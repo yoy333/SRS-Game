@@ -1,20 +1,92 @@
+// {
+//   "compilerOptions": {
+//     "outDir": "build",
+//     "target": "ESNext",
+//     "module": "NodeNext",
+//     "moduleResolution": "NodeNext",
+//     "strict": true,
+//     "allowJs": true,
+//     "strictNullChecks": false,
+//     "esModuleInterop": true,
+//     "experimentalDecorators": true,
+//     "skipLibCheck": true,
+//     "forceConsistentCasingInFileNames": true,
+//     "useDefineForClassFields": false
+//   },
+//   "include": [
+//     "src",
+//     "test"
+//   ]
+// }
 {
+  // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
-    "outDir": "build",
-    "target": "ESNext",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    // File Layout
+    "baseUrl": ".",
+    "paths": {
+      "@common/*": ["../common/*"]
+    },
+    // "rootDir": "./src",
+    // "outDir": "./dist",
+
+    // Environment Settings
+    // See also https://aka.ms/tsconfig/module
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "esnext",
+    //"types": [],
+    // For nodejs:
+    "lib": ["esnext", "DOM"],
+    "types": [],
+    // and npm install -D @types/node
+
+    // Other Outputs
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    // Stricter Typechecking Options
+    // fuh no
+    "noUncheckedIndexedAccess": false,
+    "exactOptionalPropertyTypes": false,
+
+    // Style Options
+    // "noImplicitReturns": true,
+    // "noImplicitOverride": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    // "noFallthroughCasesInSwitch": true,
+    // "noPropertyAccessFromIndexSignature": true,
+
+    // Recommended Options
     "strict": true,
-    "allowJs": true,
-    "strictNullChecks": false,
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
+    "jsx": "react-jsx",
+    // was true by default
+    "verbatimModuleSyntax": false,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "useDefineForClassFields": false
+    // "forceConsistentCasingInFileNames": true,
+
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+
+    //needed for colyseus
+    "useDefineForClassFields": false,
+    "experimentalDecorators": true,
   },
   "include": [
-    "src",
-    "test"
+    "./**/*",
+    "../common/**/*"
+  ],
+  "exclude": [
+    "**/dist",
+    "**/vite.config.js",
+    "**/index.js",
+    "node_modules",
+    "**/ecosystem.config.cjs" // node_modules is excluded by default, but explicitly listing it is fine
   ]
 }
+

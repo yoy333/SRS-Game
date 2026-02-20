@@ -1,5 +1,5 @@
-import { Board } from "./Board";
-import { Visual } from "../client/game/lib/Visual";
+import { Board } from "./Board.mjs";
+import { Visual } from "../client/game/lib/Visual.js";
 import { GameObjects } from "phaser";
 import { Loader } from "phaser";
 

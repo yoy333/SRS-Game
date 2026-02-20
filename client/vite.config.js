@@ -4,7 +4,7 @@ import { defineConfig } from 'vite';
 
 export default ({ mode }) => {
   return defineConfig({
-    envDir: '../',
+    envDir: './',
     server: {
       proxy:{
         '/phaserAssets': 'http://localhost:8080',
@@ -14,7 +14,7 @@ export default ({ mode }) => {
         clientPort: 5173,
       },
     },
-    publicDir:'assets',
+    publicDir:'game/assets',
     // build:{
     //   lib: {
     //     entry: 'game/main.ts',
