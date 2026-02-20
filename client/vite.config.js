@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-
+import tsconfigPaths from 'vite-tsconfig-paths'
 // https://vitejs.dev/config/
 
 export default ({ mode }) => {
@@ -15,6 +15,7 @@ export default ({ mode }) => {
       },
     },
     publicDir:'game/assets',
+    plugins: [tsconfigPaths()]
     // build:{
     //   lib: {
     //     entry: 'game/main.ts',

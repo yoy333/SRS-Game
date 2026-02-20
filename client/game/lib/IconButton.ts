@@ -1,7 +1,7 @@
 import { InputManager } from './InputManager'
 import {Visual} from './Visual'
 import{GameObjects, Loader} from 'phaser'
-import { Piece } from '../../../common/Piece'
+import { Piece } from '@common/Piece.mjs'
 type spriteOrImage = GameObjects.Sprite | GameObjects.Image
 export class IconButton implements Visual<spriteOrImage>{
     reps:Array<spriteOrImage>

@@ -1,6 +1,6 @@
 import { GameObjects } from "phaser";
-import { Board } from "../../../common/Board";
-import {Piece, PieceType, DefaultPiece } from "../../../common/Piece";
+import { Board } from "@common/Board.mjs";
+import {Piece, PieceType, DefaultPiece } from "@common/Piece.mjs";
 import { Visual } from "./Visual";
 import { IconButton } from "./IconButton";
 import { Button } from "./Button";

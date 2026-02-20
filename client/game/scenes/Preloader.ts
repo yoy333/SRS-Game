@@ -1,7 +1,7 @@
 import { Scene } from 'phaser';
-import { PieceType , pieceTypeRegistery } from '../../../common/Piece';
-import { Board } from '../../../common/Board';
-import { Piece } from '../../../common/Piece';
+import { PieceType , pieceTypeRegistery } from '@common/Piece.mjs';
+import { Board } from '@common/Board.mjs';
+import { Piece } from '@common/Piece.mjs';
 import { IconButton } from '../lib/IconButton';
 
 export class Preloader extends Scene

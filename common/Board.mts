@@ -1,5 +1,5 @@
 import { GameObjects, Tilemaps } from "phaser"
-import { Piece, PieceType } from "./Piece"
+import { Piece, PieceType } from "./Piece.mjs"
 import { Visual } from "../client/game/lib/Visual"
 import { Loader, Geom } from "phaser"
 

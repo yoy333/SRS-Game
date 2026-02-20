@@ -2,8 +2,8 @@ import {Scene, Geom} from 'phaser'
 
 import { Server as SocketIOServer, Socket, DefaultEventsMap } from 'socket.io';
 import {io} from '../main'
-import { Board } from '../../../common/Board';
-import { Piece } from '../../../common/Piece';
+import { Board } from '../../../../common/Board.mjs';
+import { Piece } from '../../../../common/Piece.mjs';
 
 export type defaultSocket = Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
 
