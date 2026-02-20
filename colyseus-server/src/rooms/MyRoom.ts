@@ -47,10 +47,8 @@ export class MyRoom extends Room {
 
         let playerNumber = this.getPlayerAssignment(client.sessionId)
 
-        console.log("outside")
         if(this.board.canAttackPiece(attackerX, attackerY, defenderX, defenderY, playerNumber)){
             this.board.movePiece(attackerX, attackerY, defenderX, defenderY)
-            console.log("inside")
             this.broadcast('otherAttack', message, {
               except:client
             })

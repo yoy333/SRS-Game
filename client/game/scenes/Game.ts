@@ -8,7 +8,7 @@ import {Client, Callbacks} from '@colyseus/sdk'
 
 export class Game extends Scene{
 
-    socket?: Socket;
+    // socket?: Socket;
     inputManager: InputManager
 
     constructor ()
@@ -44,7 +44,7 @@ export class Game extends Scene{
 
         this.input.on('pointerdown', ()=>{
             let tileClicked = this.board?.reps[0]?.getTileAtWorldXY(this.input.x, this.input.y)
-            if(tileClicked&&this.socket){
+            if(tileClicked){
                 this.inputManager.proccessClick(this.add, this.board, tileClicked.x, tileClicked.y)
             }else{
                 //console.log("no tile clicked")
@@ -93,8 +93,6 @@ export class Game extends Scene{
             let moveCoords = [startX, startY, endX, endY] as const
             if(this.board.canMovePiece(...moveCoords)){
                 this.board.movePiece(...moveCoords)
-                if(!this.socket)
-                    throw new Error("no socket :(")
                 room.send('move', moveCoords)
             }else{
                 console.log("illegal move")
@@ -105,8 +103,6 @@ export class Game extends Scene{
             if(this.board.canSpawnPiece(pieceType, x, y, playerOwner)){
                 this.board.spawnPiece(pieceType, this.add, x, y)
                 this.ichorDisplay.updateIchor(this.board.myIchor)
-                if(!this.socket)
-                    throw new Error("no socket :(")
                 // this.socket.emit('spawn', [DefaultPiece.key, x, y])
                 room.send('spawn', [DefaultPiece.key, x, y])
             }else{
@@ -117,8 +113,6 @@ export class Game extends Scene{
         this.inputManager.onAttack = (attackerX, attackerY, defenderX, defenderY) => {
             if(this.board.canAttackPiece(attackerX, attackerY, defenderX, defenderY)){
                 this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
-                if(!this.socket)
-                    throw new Error("no socket :(")
                 room.send('attack', [attackerX, attackerY, defenderX, defenderY])
             }else{
                 console.log("illegal attack")
