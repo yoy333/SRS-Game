@@ -1,7 +1,7 @@
 import { Board } from "./Board";
 import { Visual } from "../client/game/lib/Visual";
-import { Game, GameObjects } from "phaser";
-import { Loader, Geom } from "phaser";
+import { GameObjects } from "phaser";
+import { Loader } from "phaser";
 
 type sprite = GameObjects.Sprite
 type point = [number, number]
@@ -36,7 +36,11 @@ export abstract class Piece implements Visual<sprite>{
 
     static spawnCost = 1;
 
-    constructor(addPlugin: GameObjects.GameObjectFactory, board:Board, x:number, y:number, isClientSide:boolean, playerOwner:number){
+    constructor(addPlugin: GameObjects.GameObjectFactory|undefined, board:Board, x:number, y:number, isClientSide:boolean, playerOwner:number){
+        if(addPlugin == undefined && isClientSide){
+            throw new Error("add plugin must be provided for client side pieces")
+        }
+
         this.reps = []
         this.board = board;
 
@@ -111,7 +115,6 @@ export abstract class Piece implements Visual<sprite>{
 
     static createFromKey(key:string, addPlugin: GameObjects.GameObjectFactory, board:Board, x: number, y: number, isClientSide:boolean, playerOwner:number):Piece{
         let pieceType:PieceType = (this.classFromKey(key))
-        let p = new Geom.Point(x, y)
         return new pieceType(addPlugin, board, x, y, true, playerOwner)
     }
 
@@ -147,7 +150,7 @@ export class DefaultPiece extends Piece{
         if(!this.isClientSide)
             throw new Error("Cannot create reps server-side")
         let x = this.perspectiveX;
-        let y = this.perspectiveY;
+        let y = this.perspectiveY; 
         // console.log(`creating rep at ${x}, ${y}`)
         let tile = this.board.reps[0].getTileAt(x,y)
         if(!tile)

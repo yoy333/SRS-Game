@@ -1,16 +1,72 @@
 import { Room, Client, CloseCode, ClientArray } from "colyseus";
 import { MyRoomState } from "./schema/MyRoomState.js";
+import {Board} from '../../../server/common/Board.js'
+import {Piece} from '../../../server/common/Piece.js'
 
 export class MyRoom extends Room {
   maxClients = 4;
   state = new MyRoomState();
+  board = new Board(false)
 
   messages = {
-    yourMessageType: (client: Client, message: any) => {
-      /**
-       * Handle "yourMessageType" message.
-       */
-      console.log(client.sessionId, "sent a message:", message);
+    "spawn": (client: Client, message: any[]) => {
+      let [pieceTypeKey, x, y] = message;
+      // this.state.turnHistory.push(`spawn ${pieceTypeKey} at (${x}, ${y})`)
+      let pieceType = Piece.classFromKey(pieceTypeKey)
+      // server must check player ownership in case of hijacked calls
+      let playerNumber = this.getPlayerAssignment(client.sessionId)
+
+      if(this.board.canSpawnPiece(pieceType, x, y, playerNumber)){
+          this.board.spawnPiece(pieceType, undefined, x, y, playerNumber)
+          this.broadcast("otherSpawn", [pieceTypeKey, x, y], {
+            except:client,
+          })
+      }else{
+          console.log("hijacked spawn call")
+      }
+
+    },
+    "move": (client: Client, message:any[])=>{
+      let [startX, startY, endX, endY] = message;
+        let playerNumber = this.getPlayerAssignment(client.sessionId)
+        if(this.board.canMovePiece(startX, startY, endX, endY, playerNumber)){
+            this.board.movePiece(startX, startY, endX, endY)
+            this.broadcast('otherMove', message, {
+              except:client
+            })
+        }else{
+            console.log("hijacked move call")
+        }
+    },
+    "attack": (client: Client, message:any[])=>{
+      let [attackerX, attackerY, defenderX, defenderY] = message;
+        let attackingPiece = this.board.getPiece(attackerX, attackerY)
+        let defendingPiece = this.board.getPiece(defenderX, defenderY)
+        if(!attackingPiece || !defendingPiece)
+            return false;
+
+        let playerNumber = this.getPlayerAssignment(client.sessionId)
+
+        console.log("outside")
+        if(this.board.canAttackPiece(attackerX, attackerY, defenderX, defenderY, playerNumber)){
+            this.board.movePiece(attackerX, attackerY, defenderX, defenderY)
+            console.log("inside")
+            this.broadcast('otherAttack', message, {
+              except:client
+            })
+        }else{
+            console.log("hijacked attack call")
+        }
+    },
+    "endTurn": (client: Client, message: any[])=>{
+      let playerNumber = this.getPlayerAssignment(client.sessionId)
+
+      if(this.board.canEndTurn(playerNumber)){
+          this.broadcast("otherEndTurn",  undefined, {
+            except: client
+          })
+          this.board.endTurn()
+      }
     }
   }
 
@@ -53,5 +109,14 @@ export class MyRoom extends Room {
           client.send('playerAssignment', 0)
           return 0;
       }
+  }
+
+  getPlayerAssignment(id:string){
+      if(id == this.clients[0].sessionId)
+          return 1;
+      else if(id == this.clients[1]?.sessionId)
+          return 2;
+      else
+          return 0;
   }
 }

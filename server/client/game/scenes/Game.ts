@@ -30,10 +30,10 @@ export class Game extends Scene{
     {
         this.socket = io("http://localhost:8080/");
 
-        this.socket.on('playerAssignment', (playerNumber:number)=>{
-            this.board.playerNumber = playerNumber
-            console.log("I am Player "+playerNumber)
-        })
+        // this.socket.on('playerAssignment', (playerNumber:number)=>{
+        //     this.board.playerNumber = playerNumber
+        //     console.log("I am Player "+playerNumber)
+        // })
 
         this.board.createReps(this.make, 0, 0)
 
@@ -51,13 +51,51 @@ export class Game extends Scene{
             }
         })
 
+        const client = new Client('http://localhost:2567');
+
+        const room = await client.joinOrCreate('my_room', {
+            /* custom join options */
+        });
+        const callbacks = Callbacks.get(room);
+
+        room.onMessage("playerAssignment", (playerNumber:number)=>{
+            console.log(`recieved player assignment, ${playerNumber}, from Colyseus`)
+            this.board.playerNumber = playerNumber;
+        })
+
+        room.onMessage('otherSpawn', (message: any[])=>{
+            let [pieceTypeKey, x, y] = message;
+            let pieceType = Piece.classFromKey(pieceTypeKey)
+            this.board.spawnPiece(pieceType, this.add, x, y, this.board.otherPlayerNumber)
+        })
+
+        room.onMessage('otherMove', (message: any[])=>{
+            let [startX, startY, endX, endY] = message;
+            this.board.movePiece(startX, startY, endX, endY)
+        })
+
+        room.onMessage('otherAttack', (message:any[])=>{
+            console.log(message)
+            let [attackerX, attackerY, defenderX, defenderY] = message;
+            this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
+        })
+
+        room.onMessage('otherEndTurn', ()=>{
+            console.log("other player requested a turn end")
+            this.board.endTurn()
+        })
+
+        // callbacks.onAdd("turnHistory", (s, sessionId) => {
+        //     console.log(s);
+        // });
+
         this.inputManager.onMove = (startX:number, startY:number, endX:number, endY:number)=>{
             let moveCoords = [startX, startY, endX, endY] as const
             if(this.board.canMovePiece(...moveCoords)){
                 this.board.movePiece(...moveCoords)
                 if(!this.socket)
                     throw new Error("no socket :(")
-                this.socket.emit('move', moveCoords)
+                room.send('move', moveCoords)
             }else{
                 console.log("illegal move")
             }
@@ -69,7 +107,8 @@ export class Game extends Scene{
                 this.ichorDisplay.updateIchor(this.board.myIchor)
                 if(!this.socket)
                     throw new Error("no socket :(")
-                this.socket.emit('spawn', [DefaultPiece.key, x, y])
+                // this.socket.emit('spawn', [DefaultPiece.key, x, y])
+                room.send('spawn', [DefaultPiece.key, x, y])
             }else{
                 console.log("illegal spawn")
             }
@@ -80,7 +119,7 @@ export class Game extends Scene{
                 this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
                 if(!this.socket)
                     throw new Error("no socket :(")
-                this.socket.emit('attack', [attackerX, attackerY, defenderX, defenderY])
+                room.send('attack', [attackerX, attackerY, defenderX, defenderY])
             }else{
                 console.log("illegal attack")
             }
@@ -90,40 +129,31 @@ export class Game extends Scene{
             if(this.board.canEndTurn()){
                 this.board.endTurn()
                 this.ichorDisplay.updateIchor(this.board.myIchor)
-                this.socket?.emit('endTurn')
+                room.send('endTurn')
             }
         }
 
-        this.socket.on('otherSpawn', (message: Array<any>)=>{
-            let [pieceTypeKey, x, y] = message;
-            let pieceType = Piece.classFromKey(pieceTypeKey)
-            this.board.spawnPiece(pieceType, this.add, x, y, this.board.otherPlayerNumber)
-        })
+        // this.socket.on('otherSpawn', (message: Array<any>)=>{
+        //     console.log(message)
+        //     let [pieceTypeKey, x, y] = message;
+        //     let pieceType = Piece.classFromKey(pieceTypeKey)
+        //     this.board.spawnPiece(pieceType, this.add, x, y, this.board.otherPlayerNumber)
+        // })
 
-        this.socket.on('otherMove', (message:any[])=>{
-            let [startX, startY, endX, endY] = message;
-            this.board.movePiece(startX, startY, endX, endY)
-        })
+        // this.socket.on('otherMove', (message:any[])=>{
+            // let [startX, startY, endX, endY] = message;
+            // this.board.movePiece(startX, startY, endX, endY)
+        // })
 
-        this.socket.on('otherAttack', (message:any[])=>{
-            let [attackerX, attackerY, defenderX, defenderY] = message;
-            this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
-        })
+        // this.socket.on('otherAttack', (message:any[])=>{
+        //     let [attackerX, attackerY, defenderX, defenderY] = message;
+        //     this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
+        // })
 
-        const client = new Client('http://localhost:2567');
-
-        const room = await client.joinOrCreate('my_room', {
-            /* custom join options */
-        });
-        const callbacks = Callbacks.get(room);
-
-        room.onMessage("playerAssignment", (playerNumber:number)=>{
-            console.log(`recieved player assignment, ${playerNumber}, from Colyseus`)
-        })
-
-        callbacks.onAdd("players", (player, sessionId) => {
-            console.log('Player joined:', player);
-        });
+        // this.socket.on('otherEndTurn', ()=>{
+        //     console.log("other player requested a turn end")
+        //     this.board.endTurn()
+        // })
     }
 
     update(){

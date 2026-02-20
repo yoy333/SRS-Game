@@ -104,6 +104,14 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         if(playerNumber == undefined)
             playerNumber = this.playerNumber
 
+        // console.log([
+        //     this.isSpaceEmpty(x,y),
+        //     this.isOnHomeRow(y, playerNumber),
+        //     this.isNotSpectator(playerNumber),
+        //     this.doesHaveEnoughIchor(pieceType, playerNumber),
+        //     this.isMyTurn(playerNumber)
+        // ])
+
         if(this.isSpaceEmpty(x,y)&&
             this.isOnHomeRow(y, playerNumber)&&
             this.isNotSpectator(playerNumber)&&
@@ -114,7 +122,10 @@ export class Board implements Visual<Tilemaps.Tilemap>{
             return false;
     }
 
-    spawnPiece(pieceType: PieceType, addPlugin:GameObjects.GameObjectFactory, x:number, y:number, playerOwner?:number):Piece{
+    spawnPiece(pieceType: PieceType, addPlugin:GameObjects.GameObjectFactory|undefined, x:number, y:number, playerOwner?:number):Piece{
+        if(this.isClientSide&&addPlugin == undefined){
+            throw new Error("must specify add plugin for client side pieces")
+        }
         // console.log(`spawning from: ${x}, ${y}`)
         if(playerOwner == undefined)
             playerOwner = this.playerNumber
@@ -165,7 +176,6 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         // console.log(`moving from ${startX}, ${startY} to ${endX}, ${endY}`)
 
         let piece = this.getPiece(startX, startY)
-
 
         this.setPiece(endX, endY, piece)
 
@@ -238,7 +248,11 @@ export class Board implements Visual<Tilemaps.Tilemap>{
 
     setPiece(x:number, y:number, p:Piece|null){
         let i = this.getIndexFromXY(x, y);
+        
         this.lookup[i] = p
+
+        // console.log("immediate")
+        // console.log(this.lookup[i])
     }
 
     get otherPlayerNumber(){
