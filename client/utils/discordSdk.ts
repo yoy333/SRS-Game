@@ -3,7 +3,7 @@ import { DiscordSDK, DiscordSDKMock } from "@discord/embedded-app-sdk";
 const queryParams = new URLSearchParams(window.location.search);
 const isEmbedded = queryParams.get("frame_id") != null;
 
-let discordSdk;
+let discordSdk:DiscordSDK|DiscordSDKMock;
 
 const initiateDiscordSDK = async () => {
   if (isEmbedded) {

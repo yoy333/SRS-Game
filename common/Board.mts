@@ -40,20 +40,23 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         let map = makePlugin.tilemap({ key: 'tilemap' })
 
         // add the tileset image we are using
-        const tiles = map.addTilesetImage('V1_Tiles')
+        // const tiles = map.addTilesetImage('V1_Tiles')
+        const tiles = map.addTilesetImage('exp_tileset_01')
 
         if(!tiles)
             throw new Error("tileset failed")
         let ground = map.createLayer(0, tiles)
-        //ground?.setScale(2)
+        ground!.setScale(1/8)
         
         this.reps = [map]
         return this.reps
     }
 
     static loadReps(loadPlugin:Loader.LoaderPlugin){
-        loadPlugin.image('V1_Tiles', 'tilemap/V1_Tiles.png')
-        loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/DemoBoard.json')
+        // loadPlugin.image('V1_Tiles', 'tilemap/V1_Tiles.png')
+        // loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/DemoBoard.json')
+        loadPlugin.image('exp_tileset_01','tilemap/exp_tileset_01.jpg')
+        loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/exp_tilemap_01.json')
     }
 
     isOnHomeRow(y:number, playerNumber?:number){

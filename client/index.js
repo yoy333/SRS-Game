@@ -24,6 +24,13 @@ const __dirname = path.dirname(__filename);
 
 //express.static.mime.define({'text/javascript': ['ts']});
 
+//logs all files requested
+
+// app.use((req, res, next) => {
+//   console.log("file requested: "+req.path)
+//   next()
+// })
+
 app.use(express.static(__dirname + '/dist/'));
 
 // Allow express to parse JSON bodies
@@ -33,6 +40,8 @@ app.use(express.static(__dirname + '/dist/'));
 app.post("/api/token", async (req, res) => {
   
   // Exchange the code for an access_token
+  console.log("token req")
+
   const response = await fetch(`https://discord.com/api/oauth2/token`, {
     method: "POST",
     headers: {

@@ -13,6 +13,7 @@ export default ({ mode }) => {
       hmr: {
         clientPort: 5173,
       },
+      allowedHosts:true
     },
     publicDir:'game/assets',
     plugins: [tsconfigPaths()]
