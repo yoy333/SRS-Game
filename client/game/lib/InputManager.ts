@@ -1,9 +1,10 @@
 import { GameObjects } from "phaser";
-import { Board } from "../../../common/Board";
-import {Piece, PieceType, DefaultPiece } from "../../../common/Piece";
+import { Board } from "@common/Board.mjs";
+import {Piece, PieceType, DefaultPiece } from "@common/Piece.mjs";
 import { Visual } from "./Visual";
 import { IconButton } from "./IconButton";
 import { Button } from "./Button";
+import {type Socket} from 'socket.io-client'
 
 export class InputManager implements Visual<undefined>{
 
@@ -11,7 +12,7 @@ export class InputManager implements Visual<undefined>{
 
     }
 
-    proccessClick(socket:SocketIOClient.Socket, addPlugin: GameObjects.GameObjectFactory, board:Board, perspectiveX:number, perspectiveY:number){
+    proccessClick(addPlugin: GameObjects.GameObjectFactory, board:Board, perspectiveX:number, perspectiveY:number){
         let [x, y] = board.adjustIfFlip(perspectiveX, perspectiveY)
         if(this.selectionForSpawn){
             let pieceType = this.selectionForSpawn
@@ -23,7 +24,7 @@ export class InputManager implements Visual<undefined>{
             let moveCoords = [this.selectionForMove.coordX, this.selectionForMove.coordY, x, y] as const
             //if double click
             if(moveCoords[0]==moveCoords[2] && moveCoords[1]==moveCoords[3]){
-                console.log("selection for attack")
+                // console.log("selection for attack")
                 this.selectForAttack(this.selectionForMove)
                 return;
             }
@@ -39,7 +40,7 @@ export class InputManager implements Visual<undefined>{
         }
 
         // if you click on a piece, select it for movement
-        let selectedPiece = board.lookup[y][x]
+        let selectedPiece = board.getPiece(x, y)
         if(selectedPiece != null){
             this.selectForMove(selectedPiece)
             return;

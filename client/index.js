@@ -6,12 +6,13 @@ const app = express();
 import http from 'http'
 const server = new http.Server(app);
 
-import { Server as SocketIOServer } from 'socket.io';
-const io = new SocketIOServer(server, {
-  cors: {
-    origin: '*'
-  }
-});
+// import { Server as SocketIOServer } from 'socket.io';
+// legacy server
+// const io = new SocketIOServer(server, {
+//   cors: {
+//     origin: '*'
+//   }
+// });
 
 import jsdom from 'jsdom'
 const { JSDOM } = jsdom;
@@ -23,7 +24,14 @@ const __dirname = path.dirname(__filename);
 
 //express.static.mime.define({'text/javascript': ['ts']});
 
-app.use(express.static(__dirname + '/client/dist/'));
+//logs all files requested
+
+// app.use((req, res, next) => {
+//   console.log("file requested: "+req.path)
+//   next()
+// })
+
+app.use(express.static(__dirname + '/dist/'));
 
 // Allow express to parse JSON bodies
 //app.use(express.json());
@@ -32,6 +40,8 @@ app.use(express.static(__dirname + '/client/dist/'));
 app.post("/api/token", async (req, res) => {
   
   // Exchange the code for an access_token
+  console.log("token req")
+
   const response = await fetch(`https://discord.com/api/oauth2/token`, {
     method: "POST",
     headers: {
@@ -54,8 +64,8 @@ app.post("/api/token", async (req, res) => {
 
 
 // Serve game-specific assets from `/game/*`
-const distDir = path.join(__dirname, 'client/dist');
-const gameAssetsDir = path.join(__dirname, 'client/game/assets');
+const distDir = path.join(__dirname, 'dist');
+const gameAssetsDir = path.join(__dirname, 'game/assets');
 
 app.use('/phaserAssets', express.static(gameAssetsDir));
 
@@ -77,6 +87,10 @@ app.get('/', function (req, res) {
 //   res.sendFile(path.join(distDir, 'index.html'));
 // });
 
+
+server.listen(PORT, function () {
+  console.log(`Listening on ${PORT}`);
+});
 
 function setupAuthoritativePhaser() {
   const { VirtualConsole } = jsdom;
@@ -105,4 +119,4 @@ function setupAuthoritativePhaser() {
     console.log(error.message);
   });
 }
-setupAuthoritativePhaser();
+// setupAuthoritativePhaser();

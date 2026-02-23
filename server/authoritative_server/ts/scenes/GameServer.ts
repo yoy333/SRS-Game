@@ -2,8 +2,8 @@ import {Scene, Geom} from 'phaser'
 
 import { Server as SocketIOServer, Socket, DefaultEventsMap } from 'socket.io';
 import {io} from '../main'
-import { Board } from '../../../common/Board';
-import { Piece } from '../../../common/Piece';
+import { Board } from '../../../../common/Board.mjs';
+import { Piece } from '../../../../common/Piece.mjs';
 
 export type defaultSocket = Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
 
@@ -27,7 +27,8 @@ export class GameServer extends Scene{
     create() {
         this.io.on('connection',  (socket:defaultSocket)=>{
             console.log(`user ${socket.id} connected`);
-            this.tryAddPlayer(socket)
+            const playerNumber = this.tryAddPlayer(socket)
+
             socket.on('disconnect',  () => {
                 console.log(`user ${socket.id} disconnected`)
                 this.removePlayer(socket)
@@ -37,41 +38,52 @@ export class GameServer extends Scene{
                 let [pieceTypeKey, x, y] = message;
                 let pieceType = Piece.classFromKey(pieceTypeKey)
                 // server must check player ownership in case of hijacked calls
-                let playerNumber = this.getPlayerAssignment(socket.id)
+                //let playerNumber = this.getPlayerAssignment(socket.id)
 
-                this.board.spawnPiece(pieceType, this.add, x, y, playerNumber)
-                socket.broadcast.emit('otherSpawn', message)
+                if(this.board.canSpawnPiece(pieceType, x, y, playerNumber)){
+                    this.board.spawnPiece(pieceType, this.add, x, y, playerNumber)
+                    socket.broadcast.emit('otherSpawn', message)
+                }else{
+                    console.log("hijacked spawn call")
+                }
             })
 
             socket.on('move', (message:any[])=>{
                 let [startX, startY, endX, endY] = message;
-                let playerNumber = this.getPlayerAssignment(socket.id)
 
                 if(this.board.canMovePiece(startX, startY, endX, endY, playerNumber)){
                     this.board.movePiece(startX, startY, endX, endY)
+                    socket.broadcast.emit('otherMove', message)
+                }else{
+                    console.log("hijacked move call")
                 }
-                   
-                socket.broadcast.emit('otherMove', message)
             })
 
             socket.on('attack', (message:any[])=>{
                 let [attackerX, attackerY, defenderX, defenderY] = message;
-                let playerNumber = this.getPlayerAssignment(socket.id)
 
-                if(this.board.canAttackPiece(attackerX, attackerY, defenderX, defenderY)){
+                let attackingPiece = this.board.getPiece(attackerX, attackerY)
+                let defendingPiece = this.board.getPiece(defenderX, defenderY)
+                if(!attackingPiece || !defendingPiece)
+                    return false;
+
+                if(this.board.canAttackPiece(attackerX, attackerY, defenderX, defenderY, playerNumber)){
                     this.board.movePiece(attackerX, attackerY, defenderX, defenderY)
+                    socket.broadcast.emit('otherAttack', message)
+                }else{
+                    console.log("hijacked attack call")
                 }
-                   
-                socket.broadcast.emit('otherAttack', message)
             })
 
             socket.on('endTurn', ()=>{
-                if(this.board.currentTurn==1)
-                    this.sockets[1]?.emit("otherEndTurn")
-                else if(this.board.currentTurn==2)
-                    this.sockets[0]?.emit("otherEndTurn")
-                this.board.endTurn()
-                console.log("ending turn from server")
+                if(this.board.canEndTurn(playerNumber)){
+                    if(this.board.currentTurn==1)
+                        this.sockets[1]?.emit("otherEndTurn")
+                    else if(this.board.currentTurn==2)
+                        this.sockets[0]?.emit("otherEndTurn")
+                    this.board.endTurn()
+                    console.log("ending turn from server")
+                }
             })
         });
     }
@@ -79,18 +91,21 @@ export class GameServer extends Scene{
     sockets:Array<defaultSocket|null>
     connectedPlayers:number
 
-    tryAddPlayer(socket:defaultSocket){
+    tryAddPlayer(socket:defaultSocket):number{
         if(!this.sockets[0]?.id){
             this.sockets[0] = socket;
             socket.emit('playerAssignment', 1)
+            return 1;
             // this.sendGameState(socket)
         }else if(!this.sockets[1]?.id){
             this.sockets[1] = socket;
             socket.emit('playerAssignment', 2)
+            return 2;
             // this.sendGameState(socket)
         }else{
             this.sockets.push(socket)
             socket.emit('playerAssignment', 0)
+            return 0;
         }
     }
 

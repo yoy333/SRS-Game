@@ -1,15 +1,14 @@
 import { GameObjects, Tilemaps } from "phaser"
-import { Piece, PieceType } from "./Piece"
+import { Piece, PieceType } from "./Piece.mjs"
 import { Visual } from "../client/game/lib/Visual"
 import { Loader, Geom } from "phaser"
 
-export type coordContent = Piece | null
 export class Board implements Visual<Tilemaps.Tilemap>{
     static rows = 10
     static columns = 10
     reps: Array<Tilemaps.Tilemap>
     numReps = 1
-    lookup: coordContent[][]
+    lookup: (Piece | null)[]
     playerNumber:number = 0;
     //0 by default until assigned
     isClientSide:boolean
@@ -23,7 +22,8 @@ export class Board implements Visual<Tilemaps.Tilemap>{
 
     constructor(isClientSide:boolean){
         this.reps  = []
-        this.lookup = Array.from({ length: Board.rows }, () => new Array(Board.columns).fill(null));
+        this.lookup = [];
+        this.lookup.fill(null)
         this.isClientSide = isClientSide
     }
 
@@ -40,31 +40,36 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         let map = makePlugin.tilemap({ key: 'tilemap' })
 
         // add the tileset image we are using
-        const tiles = map.addTilesetImage('V1_Tiles')
+        // const tiles = map.addTilesetImage('V1_Tiles')
+        const tiles = map.addTilesetImage('exp_tileset_01')
 
         if(!tiles)
             throw new Error("tileset failed")
         let ground = map.createLayer(0, tiles)
-        //ground?.setScale(2)
+        ground!.setScale(1/8)
         
         this.reps = [map]
         return this.reps
     }
 
     static loadReps(loadPlugin:Loader.LoaderPlugin){
-        loadPlugin.image('V1_Tiles', 'tilemap/V1_Tiles.png')
-        loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/DemoBoard.json')
+        // loadPlugin.image('V1_Tiles', 'tilemap/V1_Tiles.png')
+        // loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/DemoBoard.json')
+        loadPlugin.image('exp_tileset_01','tilemap/exp_tileset_01.jpg')
+        loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/exp_tilemap_01.json')
     }
 
-    isOnHomeRow(y:number){
+    isOnHomeRow(y:number, playerNumber?:number){
+        if(!playerNumber)
+            playerNumber = this.playerNumber
 
         //console.log("checking "+y)
-        if(this.playerNumber == 2){
+        if(playerNumber == 2){
             if(y==0)
                 return true;
             else
                 return false;
-        }else if(this.playerNumber == 1){
+        }else if(playerNumber == 1){
             if(y==Board.rows-1)
                 return true;
             else
@@ -75,46 +80,60 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         }
     }
 
-    isNotSpectator():boolean{
-        return this.playerNumber != 0
+    isNotSpectator(playerNumber?:number):boolean{
+        if(!playerNumber)
+            playerNumber = this.playerNumber
+
+        return playerNumber != 0
     }
 
-    doesHaveEnoughIchor(pieceType: PieceType){
-        return pieceType.spawnCost<=this.ichor[this.playerNumber-1]
+    doesHaveEnoughIchor(pieceType: PieceType, playerNumber?:number){
+        if(!playerNumber)
+            playerNumber = this.playerNumber
+
+        return pieceType.spawnCost<=this.ichor[playerNumber-1]
     }
 
-    isMyTurn():boolean{
-        return this.playerNumber==this.currentTurn
+    isMyTurn(playerNumber?:number):boolean{
+        if(!playerNumber)
+            playerNumber = this.playerNumber
+
+        return playerNumber==this.currentTurn
     }
 
     // move to Game Rules
-    canSpawnPiece(pieceType: PieceType, x:number, y:number, playerOwner?:number){
+    canSpawnPiece(pieceType: PieceType, x:number, y:number, playerNumber?:number){
         // console.log(`inputs ${x}, ${y}`)
-        if(playerOwner == undefined)
-            playerOwner = this.playerNumber
+        if(playerNumber == undefined)
+            playerNumber = this.playerNumber
 
-        console.log([this.isSpaceEmpty(x,y),
-            this.isOnHomeRow(y),
-            this.isNotSpectator(),
-            this.doesHaveEnoughIchor(pieceType),
-            this.isMyTurn()])
+        // console.log([
+        //     this.isSpaceEmpty(x,y),
+        //     this.isOnHomeRow(y, playerNumber),
+        //     this.isNotSpectator(playerNumber),
+        //     this.doesHaveEnoughIchor(pieceType, playerNumber),
+        //     this.isMyTurn(playerNumber)
+        // ])
 
         if(this.isSpaceEmpty(x,y)&&
-            this.isOnHomeRow(y)&&
-            this.isNotSpectator()&&
-            this.doesHaveEnoughIchor(pieceType)&&
-            this.isMyTurn())
+            this.isOnHomeRow(y, playerNumber)&&
+            this.isNotSpectator(playerNumber)&&
+            this.doesHaveEnoughIchor(pieceType, playerNumber)&&
+            this.isMyTurn(playerNumber))
             return true;
         else
             return false;
     }
 
-    spawnPiece(pieceType: PieceType, addPlugin:GameObjects.GameObjectFactory, x:number, y:number, playerOwner?:number):Piece{
+    spawnPiece(pieceType: PieceType, addPlugin:GameObjects.GameObjectFactory|undefined, x:number, y:number, playerOwner?:number):Piece{
+        if(this.isClientSide&&addPlugin == undefined){
+            throw new Error("must specify add plugin for client side pieces")
+        }
         // console.log(`spawning from: ${x}, ${y}`)
         if(playerOwner == undefined)
             playerOwner = this.playerNumber
         let piece = new pieceType(addPlugin, this, x, y, this.isClientSide, playerOwner);
-        this.lookup[y][x] = piece
+        this.setPiece(x, y, piece)
         this.ichor[playerOwner-1] -= pieceType.spawnCost;
         return piece
     }
@@ -127,8 +146,11 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     }
 
     // move to Game Rules
-    doesOwnPiece(piecePlayerNumber:number):boolean{
-        return this.playerNumber == piecePlayerNumber;
+    doesOwnPiece(piece:Piece, playerNumber?:number):boolean{
+        if(!playerNumber)
+            playerNumber = this.playerNumber
+
+        return playerNumber == piece.playerOwner;
     }
 
     isSpaceFull(x:number, y:number):boolean{
@@ -136,29 +158,29 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     }
 
     isSpaceEmpty(x:number, y:number):boolean{
-        return this.lookup[y][x] == null;
+        return this.getPiece(x, y) == null;
     }
 
     // move to Game Rules
     canMovePiece(startX:number, startY: number, endX:number, endY:number, playerNumber?:number){
-        let piece = this.lookup[startY][startX]
+        let piece = this.getPiece(startX, startY)
         if(!playerNumber)
             playerNumber = this.playerNumber
         if(!piece)
             return false;
 
-        return (this.doesOwnPiece(playerNumber) &&
+        return (this.doesOwnPiece(piece, playerNumber) &&
                 this.isSpaceEmpty(endX, endY)&&
                 piece.withinMovementPattern(endX, endY)&&
-                this.isMyTurn())
+                this.isMyTurn(playerNumber))
     }
 
     movePiece(startX:number, startY:number, endX:number, endY:number){
-        console.log(`moving from ${startX}, ${startY} to ${endX}, ${endY}`)
+        // console.log(`moving from ${startX}, ${startY} to ${endX}, ${endY}`)
 
-        let piece = this.lookup[startY][startX]
+        let piece = this.getPiece(startX, startY)
 
-        this.lookup[endY][endX] = piece;
+        this.setPiece(endX, endY, piece)
 
         if(!piece){
             console.warn(`no piece selected at (${startX}, ${startY})`)
@@ -166,10 +188,17 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         }
         piece.setCoord(endX, endY)
 
-        this.lookup[startY][startX] = null;
+        this.setPiece(startX, startY, null);
     }
 
     currentTurn = 1;
+
+    canEndTurn(playerNumber?:number){
+        if(!playerNumber)
+            playerNumber = this.playerNumber
+
+        return this.isMyTurn(playerNumber)
+    }
 
     endTurn(){
         this.ichor[this.currentTurn-1] = Board.maxIchorPerTurn;
@@ -190,7 +219,10 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     }
 
     //move to Game Rules
-    canAttackPiece(attackerX:number, attackerY:number, defenderX:number, defenderY:number){
+    canAttackPiece(attackerX:number, attackerY:number, defenderX:number, defenderY:number, playerNumber?:number){
+        if(!playerNumber)
+            playerNumber = this.playerNumber
+
         let attackingPiece = this.getPiece(attackerX, attackerY)
         let defendingPiece = this.getPiece(defenderX, defenderY)
         if(!attackingPiece || !defendingPiece)
@@ -199,7 +231,7 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         return (this.areEnemyPieces(attackingPiece, defendingPiece) &&
                 this.isSpaceFull(defenderX, defenderY)&&
                 attackingPiece.withinAttackingPattern(defenderX, defenderY)&&
-                this.isMyTurn())
+                this.isMyTurn(playerNumber))
     }
 
     attackPiece(attackerX:number, attackerY:number, defenderX:number, defenderY:number){
@@ -207,8 +239,23 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         defendingPiece?.die()        
     }
 
-    getPiece(x:number, y:number):coordContent{
-        return this.lookup[y][x]
+    getIndexFromXY(x:number, y:number):number{
+        return x + Board.columns*y;
+    }
+
+    getPiece(x:number, y:number):Piece | null{
+        let i = this.getIndexFromXY(x, y);
+        
+        return this.lookup[i]
+    }
+
+    setPiece(x:number, y:number, p:Piece|null){
+        let i = this.getIndexFromXY(x, y);
+        
+        this.lookup[i] = p
+
+        // console.log("immediate")
+        // console.log(this.lookup[i])
     }
 
     get otherPlayerNumber(){

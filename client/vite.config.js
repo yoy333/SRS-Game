@@ -1,10 +1,10 @@
 import { defineConfig } from 'vite';
-
+import tsconfigPaths from 'vite-tsconfig-paths'
 // https://vitejs.dev/config/
 
 export default ({ mode }) => {
   return defineConfig({
-    envDir: '../',
+    envDir: './',
     server: {
       proxy:{
         '/phaserAssets': 'http://localhost:8080',
@@ -13,8 +13,10 @@ export default ({ mode }) => {
       hmr: {
         clientPort: 5173,
       },
+      allowedHosts:true
     },
-    publicDir:'assets',
+    publicDir:'game/assets',
+    plugins: [tsconfigPaths()]
     // build:{
     //   lib: {
     //     entry: 'game/main.ts',

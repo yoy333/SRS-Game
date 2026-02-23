@@ -3,7 +3,7 @@ import { DiscordSDK, DiscordSDKMock } from "@discord/embedded-app-sdk";
 const queryParams = new URLSearchParams(window.location.search);
 const isEmbedded = queryParams.get("frame_id") != null;
 
-let discordSdk;
+let discordSdk:DiscordSDK|DiscordSDKMock;
 
 const initiateDiscordSDK = async () => {
   if (isEmbedded) {
@@ -22,7 +22,8 @@ const initiateDiscordSDK = async () => {
     discordSdk = new DiscordSDKMock(
       import.meta.env.VITE_CLIENT_ID,
       mockGuildId,
-      mockChannelId
+      mockChannelId,
+      null
     );
     const discriminator = String(mockUserId.charCodeAt(0) % 5);
 
@@ -51,7 +52,7 @@ const initiateDiscordSDK = async () => {
   }
 };
 
-function getOverrideOrRandomSessionValue(queryParam) {
+function getOverrideOrRandomSessionValue(queryParam:string) {
   const overrideValue = queryParams.get(queryParam);
   if (overrideValue != null) {
     return overrideValue;
