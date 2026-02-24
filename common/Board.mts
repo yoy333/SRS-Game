@@ -44,7 +44,7 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         const tiles = map.addTilesetImage('exp_tileset_01')
 
         if(!tiles)
-            throw new Error("tileset failed")
+            throw new Error("tileset failed to load")
 
         let ground = map.createLayer(0, tiles)
         ground!.setScale(1/8)
@@ -56,7 +56,7 @@ export class Board implements Visual<Tilemaps.Tilemap>{
     static loadReps(loadPlugin:Loader.LoaderPlugin){
         // loadPlugin.image('V1_Tiles', 'tilemap/V1_Tiles.png')
         // loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/DemoBoard.json')
-        loadPlugin.image('exp_tileset_01','tilemap/exp_tileset_02.png')
+        loadPlugin.image('exp_tileset_01', 'tilemap/exp_tileset_02.png')
         loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/exp_tilemap_01.json')
     }
 
