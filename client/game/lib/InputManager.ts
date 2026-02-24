@@ -1,6 +1,6 @@
 import { GameObjects } from "phaser";
 import { Board } from "@common/Board.mjs";
-import {Piece, PieceType, DefaultPiece } from "@common/Piece.mjs";
+import {Piece, PieceType, DefaultPiece, Zeus, Artemis } from "@common/Piece.mjs";
 import { Visual } from "./Visual";
 import { IconButton } from "./IconButton";
 import { Button } from "./Button";
@@ -83,8 +83,17 @@ export class InputManager implements Visual<undefined>{
         Probably should have them extend from the same thing
         Definently should standarize the implementation of both
         */
+
+        /* fix */
+
         this.iconButtons[0] =
             new IconButton(addPlugin, this, 768, 96, DefaultPiece.key)
+
+        this.iconButtons[1] =
+            new IconButton(addPlugin, this, 768, 296, Zeus.key)
+
+        this.iconButtons[2] =
+            new IconButton(addPlugin, this, 768, 496, Artemis.key)
 
         this.endTurnButton = new Button(addPlugin, 500, 660, 'End Turn')
         this.endTurnButton.onClick = () => {

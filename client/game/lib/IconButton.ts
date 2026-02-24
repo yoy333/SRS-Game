@@ -17,9 +17,12 @@ export class IconButton implements Visual<spriteOrImage>{
     }
 
 
-    createReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number){
+    createReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number):spriteOrImage[]{
         let background = addPlugin.sprite(x, y, 'cards', 0).setScale(2/3)
-        let icon = addPlugin.sprite(x, y, this.pieceKey, 0)//.setZ(1)
+        //let icon = addPlugin.sprite(x, y, this.pieceKey, 0)//.setZ(1)
+
+        let icon = Piece.classFromKey(this.pieceKey).createRep(addPlugin, x, y)[0]
+
         //let dragable = addPlugin.image(x, y, this.pieceKey).setVisible(false).setZ(-1)
         // icon.setInteractive({dragable:true})
         // icon.on('drag', (pointer:any, x:number, y:number)=>{
