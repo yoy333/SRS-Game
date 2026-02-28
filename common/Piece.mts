@@ -11,13 +11,14 @@ const emptyPattern:pattern = new Set()
 
 type PT = new (...args: any[]) => Piece
 type pieceStatics = {
+    /* fix */
     createRep:(addPlugin:GameObjects.GameObjectFactory, x:number, y:number)=>Array<sprite|image>
     loadReps:(loadPlugin:Loader.LoaderPlugin)=>void
     spawnCost:number
 }
 export type PieceType = PT & pieceStatics
 
-export const pieceTypeRegistery: PieceType[] = []
+export const pieceTypeRegistery: Map<string, PieceType> = new Map()
 
 export abstract class Piece implements Visual<sprite|image>{
     reps:Array<sprite|image>
@@ -120,15 +121,11 @@ export abstract class Piece implements Visual<sprite|image>{
         return new pieceType(addPlugin, board, x, y, true, playerOwner)
     }
 
-    /* fix */
-
     static classFromKey(key:string):PieceType{
-        switch(key){
-            case DefaultPiece.key: return DefaultPiece;
-            case Zeus.key: return Zeus;
-            case Artemis.key: return Artemis;
-            default: return DefaultPiece
-        }
+        let pt = pieceTypeRegistery.get(key)
+        if(!pt)
+            throw new Error("tried to get nonexistent piece type")
+        return pt
     }
 }
 
@@ -187,7 +184,7 @@ export class DefaultPiece extends Piece{
     relativeAttackingPattern: pattern = square_1;
 }
 
-pieceTypeRegistery.push(DefaultPiece)
+pieceTypeRegistery.set(DefaultPiece.key, DefaultPiece)
 
 export class Zeus extends Piece{
     static key = 'zeus'
@@ -233,7 +230,7 @@ export class Zeus extends Piece{
     relativeAttackingPattern: pattern = square_1;
 }
 
-pieceTypeRegistery.push(Zeus)
+pieceTypeRegistery.set(Zeus.key, Zeus)
 
 export class Artemis extends Piece{
     static key = 'artemis'
@@ -280,4 +277,4 @@ export class Artemis extends Piece{
     relativeAttackingPattern: pattern = square_1;
 }
 
-pieceTypeRegistery.push(Artemis)
+pieceTypeRegistery.set(Artemis.key, Artemis)

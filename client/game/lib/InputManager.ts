@@ -1,6 +1,6 @@
 import { GameObjects } from "phaser";
 import { Board } from "@common/Board.mjs";
-import {Piece, PieceType, DefaultPiece, Zeus, Artemis } from "@common/Piece.mjs";
+import {Piece, PieceType, DefaultPiece, Zeus, Artemis, pieceTypeRegistery } from "@common/Piece.mjs";
 import { Visual } from "./Visual";
 import { IconButton } from "./IconButton";
 import { Button } from "./Button";
@@ -86,14 +86,35 @@ export class InputManager implements Visual<undefined>{
 
         /* fix */
 
-        this.iconButtons[0] =
-            new IconButton(addPlugin, this, 768, 96, DefaultPiece.key)
+        const rows = 3
+        const startX = 768
+        const startY = 96
+        const cellWidth = 150
+        const cellHeight = 200
+        let i = 0;
+        pieceTypeRegistery.forEach((e:PieceType, key: string)=>{
+            let xGrid = Math.floor(i/rows)
+            let yGrid = i%rows
+            i++
+            let xPos = startX+xGrid*cellWidth;
+            let yPos = startY+yGrid*cellHeight;
 
-        this.iconButtons[1] =
-            new IconButton(addPlugin, this, 768, 296, Zeus.key)
+            this.iconButtons.push(
+                new IconButton(addPlugin, this, xPos, yPos, key)
+            )
+        })
 
-        this.iconButtons[2] =
-            new IconButton(addPlugin, this, 768, 496, Artemis.key)
+        // this.iconButtons[0] =
+        //     new IconButton(addPlugin, this, 768, 96, DefaultPiece.key)
+
+        // this.iconButtons[1] =
+        //     new IconButton(addPlugin, this, 768, 296, Zeus.key)
+
+        // this.iconButtons[2] =
+        //     new IconButton(addPlugin, this, 768, 496, Artemis.key)
+
+        // this.iconButtons[3] =
+        //     new IconButton(addPlugin, this, 918, 96, Artemis.key)
 
         this.endTurnButton = new Button(addPlugin, 500, 660, 'End Turn')
         this.endTurnButton.onClick = () => {
