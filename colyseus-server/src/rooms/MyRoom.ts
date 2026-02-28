@@ -13,6 +13,7 @@ export class MyRoom extends Room {
       let [pieceTypeKey, x, y] = message;
       // this.state.turnHistory.push(`spawn ${pieceTypeKey} at (${x}, ${y})`)
       let pieceType = Piece.classFromKey(pieceTypeKey)
+      console.log(pieceType)
       // server must check player ownership in case of hijacked calls
       let playerNumber = this.getPlayerAssignment(client.sessionId)
 

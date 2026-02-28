@@ -12,6 +12,7 @@ const emptyPattern:pattern = new Set()
 type PT = new (...args: any[]) => Piece
 type pieceStatics = {
     /* fix */
+    key:string
     createRep:(addPlugin:GameObjects.GameObjectFactory, x:number, y:number)=>Array<sprite|image>
     loadReps:(loadPlugin:Loader.LoaderPlugin)=>void
     spawnCost:number
@@ -131,12 +132,14 @@ export abstract class Piece implements Visual<sprite|image>{
 
 const square_1:pattern = new Set([
     [-1, -1], [0, -1], [1, -1],
-    [-1, 0],  [0, 0],  [1, 0],
+    [-1, 0],           [1, 0],
     [-1, 1],  [0, 1],  [1, 1]
 ])
 const forward_1:pattern = new Set([
     [-1, -1], [0, -1], [1, -1]
 ])
+
+
 export class DefaultPiece extends Piece{
     static key = 'default'
     key = 'default'
@@ -232,6 +235,13 @@ export class Zeus extends Piece{
 
 pieceTypeRegistery.set(Zeus.key, Zeus)
 
+const artemis_attack:pattern = new Set([
+    [-2, -2],                  [2, -2],
+             [-1, -1],[1, -1],
+             [-1,  1],[1,  1],
+    [-2, 2],                   [2, 2],
+])
+
 export class Artemis extends Piece{
     static key = 'artemis'
     key = 'artemis'
@@ -273,8 +283,8 @@ export class Artemis extends Piece{
         loadPlugin.image(Artemis.key, 'artemis_v01.png')    
     }
 
-    relativeMovementPattern: pattern = forward_1
-    relativeAttackingPattern: pattern = square_1;
+    relativeMovementPattern: pattern = square_1
+    relativeAttackingPattern: pattern = artemis_attack;
 }
 
 pieceTypeRegistery.set(Artemis.key, Artemis)

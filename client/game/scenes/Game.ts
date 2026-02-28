@@ -104,7 +104,7 @@ export class Game extends Scene{
                 this.board.spawnPiece(pieceType, this.add, x, y)
                 this.ichorDisplay.updateIchor(this.board.myIchor)
                 // this.socket.emit('spawn', [DefaultPiece.key, x, y])
-                room.send('spawn', [DefaultPiece.key, x, y])
+                room.send('spawn', [pieceType.key, x, y])
             }else{
                 console.log("illegal spawn")
             }
