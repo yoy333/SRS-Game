@@ -110,6 +110,43 @@ export abstract class Piece implements Visual<sprite|image>{
         return false;
     }
 
+    /* fix: move certain conditions to the board */
+    canMovePiece(startX:number, startY: number, endX:number, endY:number, playerNumber:number){
+        return (
+                this.withinMovementPattern(endX, endY)
+                )
+    }
+
+    movePiece(startX:number, startY:number, endX:number, endY:number){
+        // console.log(`moving from ${startX}, ${startY} to ${endX}, ${endY}`)
+
+        this.board.setPiece(endX, endY, this)
+
+        this.setCoord(endX, endY)
+
+        this.board.setPiece(startX, startY, null);
+    }
+
+    canAttackPiece(attackerX:number, attackerY:number, defenderX:number, defenderY:number, playerNumber:number){
+        return (
+            this.board.isSpaceFull(defenderX, defenderY)&&
+            this.withinAttackingPattern(defenderX, defenderY)
+        )
+    }
+
+    attackPiece(defendingPiece:Piece){
+        defendingPiece.tryToKill(this)
+    }
+
+    canBeAttacked(attackerX:number, attackerY:number, defenderX:number, defenderY:number, playerNumber:number){
+        return true;
+    }
+
+    tryToKill(attackingPiece:Piece, override?:string[]):boolean{
+        this.die()
+        return true
+    }
+
     die(){
         this.reps.forEach((rep:sprite|image)=>{
             rep.destroy(true)
@@ -185,6 +222,12 @@ export class DefaultPiece extends Piece{
 
     relativeMovementPattern: pattern = forward_1
     relativeAttackingPattern: pattern = square_1;
+
+    attackPiece(defendingPiece: Piece): void {
+        if(defendingPiece.tryToKill(this)){
+            this.board.movePiece(this.coordX, this.coordY, defendingPiece.coordX, defendingPiece.coordY)
+        }
+    }
 }
 
 pieceTypeRegistery.set(DefaultPiece.key, DefaultPiece)
@@ -231,6 +274,23 @@ export class Zeus extends Piece{
 
     relativeMovementPattern: pattern = forward_1
     relativeAttackingPattern: pattern = square_1;
+
+    tryToKill(attackingPiece:Piece, override?: string[]): boolean {
+        let attackerY = attackingPiece.coordY
+        let defenderY = this.coordY
+        if(this.playerOwner==2){
+            attackerY = Board.flipPoint(0, attackerY)[1]
+            defenderY = Board.flipPoint(0, defenderY)[1]
+        }
+        if(override?.includes('power')){
+            this.die(); 
+            return true;
+        }else if(attackerY>=defenderY){
+            this.die()
+            return true;
+        }
+        return false;
+    }
 }
 
 pieceTypeRegistery.set(Zeus.key, Zeus)

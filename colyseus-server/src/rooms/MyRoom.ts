@@ -13,7 +13,6 @@ export class MyRoom extends Room {
       let [pieceTypeKey, x, y] = message;
       // this.state.turnHistory.push(`spawn ${pieceTypeKey} at (${x}, ${y})`)
       let pieceType = Piece.classFromKey(pieceTypeKey)
-      console.log(pieceType)
       // server must check player ownership in case of hijacked calls
       let playerNumber = this.getPlayerAssignment(client.sessionId)
 
@@ -30,6 +29,7 @@ export class MyRoom extends Room {
     "move": (client: Client, message:any[])=>{
       let [startX, startY, endX, endY] = message;
         let playerNumber = this.getPlayerAssignment(client.sessionId)
+        console.log(`move attempt from player ${playerNumber}`)
         if(this.board.canMovePiece(startX, startY, endX, endY, playerNumber)){
             this.board.movePiece(startX, startY, endX, endY)
             this.broadcast('otherMove', message, {

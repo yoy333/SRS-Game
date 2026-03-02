@@ -23,19 +23,7 @@ export class IconButton implements Visual<spriteOrImage>{
 
         let icon = Piece.classFromKey(this.pieceKey).createRep(addPlugin, x, y)[0]
 
-        //let dragable = addPlugin.image(x, y, this.pieceKey).setVisible(false).setZ(-1)
-        // icon.setInteractive({dragable:true})
-        // icon.on('drag', (pointer:any, x:number, y:number)=>{
-        //     console.log("start drag")
-        //     //dragable.setVisible(true)
-        //     dragable.setPosition(x, y)
-        // })
-        // icon.on('dragend', ()=>{
-        //     console.log("end drag")
-        //     //dragable.setVisible(false)
-        //     dragable.setPosition(x,y)
-        // })
-        return [icon, background]//, dragable]
+        return [icon, background]
     }
 
     static loadReps(loadPlugin:Loader.LoaderPlugin){

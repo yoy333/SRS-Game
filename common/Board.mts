@@ -162,34 +162,25 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         return this.getPiece(x, y) == null;
     }
 
-    // move to Game Rules
-    canMovePiece(startX:number, startY: number, endX:number, endY:number, playerNumber?:number){
-        let piece = this.getPiece(startX, startY)
+    canMovePiece(startX:number, startY: number, endX:number, endY:number, playerNumber?:number):boolean{
         if(!playerNumber)
-            playerNumber = this.playerNumber
+            playerNumber = this.playerNumber;
+
+        let piece = this.getPiece(startX, startY)
         if(!piece)
             return false;
-
+        
         return (this.doesOwnPiece(piece, playerNumber) &&
                 this.isSpaceEmpty(endX, endY)&&
-                piece.withinMovementPattern(endX, endY)&&
-                this.isMyTurn(playerNumber))
+                this.isMyTurn(playerNumber)&&
+                piece.canMovePiece(startX, startY, endX, endY, playerNumber))
     }
 
-    movePiece(startX:number, startY:number, endX:number, endY:number){
-        // console.log(`moving from ${startX}, ${startY} to ${endX}, ${endY}`)
-
+    movePiece(startX:number, startY: number, endX:number, endY:number, playerNumber?:number){
         let piece = this.getPiece(startX, startY)
-
-        this.setPiece(endX, endY, piece)
-
-        if(!piece){
-            console.warn(`no piece selected at (${startX}, ${startY})`)
+        if(!piece)
             return;
-        }
-        piece.setCoord(endX, endY)
-
-        this.setPiece(startX, startY, null);
+        piece.movePiece(startX, startY, endX, endY)
     }
 
     currentTurn = 1;
@@ -230,14 +221,19 @@ export class Board implements Visual<Tilemaps.Tilemap>{
             return false;
 
         return (this.areEnemyPieces(attackingPiece, defendingPiece) &&
-                this.isSpaceFull(defenderX, defenderY)&&
-                attackingPiece.withinAttackingPattern(defenderX, defenderY)&&
-                this.isMyTurn(playerNumber))
+                this.isMyTurn(playerNumber)&&
+                attackingPiece.canAttackPiece(attackerX, attackerY, defenderX, defenderY, playerNumber)&&
+                defendingPiece.canBeAttacked(attackerX, attackerY, defenderX, defenderY, playerNumber))
     }
 
     attackPiece(attackerX:number, attackerY:number, defenderX:number, defenderY:number){
+        let attackingPiece = this.getPiece(attackerX, attackerY)
         let defendingPiece = this.getPiece(defenderX, defenderY)
-        defendingPiece?.die()        
+        if(!attackingPiece)
+            throw new Error("no piece to attack with")
+        if(!defendingPiece)
+            throw new Error("no piece to defend")
+        attackingPiece.attackPiece(defendingPiece)        
     }
 
     getIndexFromXY(x:number, y:number):number{

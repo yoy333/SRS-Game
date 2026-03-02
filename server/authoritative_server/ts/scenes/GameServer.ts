@@ -82,7 +82,6 @@ export class GameServer extends Scene{
                     else if(this.board.currentTurn==2)
                         this.sockets[0]?.emit("otherEndTurn")
                     this.board.endTurn()
-                    console.log("ending turn from server")
                 }
             })
         });

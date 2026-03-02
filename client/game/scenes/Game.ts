@@ -75,22 +75,19 @@ export class Game extends Scene{
         })
 
         room.onMessage('otherAttack', (message:any[])=>{
-            console.log(message)
             let [attackerX, attackerY, defenderX, defenderY] = message;
             this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
         })
 
         room.onMessage('otherEndTurn', ()=>{
-            console.log("other player requested a turn end")
             this.board.endTurn()
         })
 
-        // callbacks.onAdd("turnHistory", (s, sessionId) => {
-        //     console.log(s);
-        // });
-
         this.inputManager.onMove = (startX:number, startY:number, endX:number, endY:number)=>{
             let moveCoords = [startX, startY, endX, endY] as const
+            let piece = this.board.getPiece(startX, startY)
+            if(!piece)
+                return;
             if(this.board.canMovePiece(...moveCoords)){
                 this.board.movePiece(...moveCoords)
                 room.send('move', moveCoords)
