@@ -34,6 +34,11 @@ export class Preloader extends Scene
             pieceType.loadReps(this.load)
         })
         IconButton.loadReps(this.load)
+
+        this.load.spritesheet('background_tiles', 'background_tiles_02.png', {
+            frameWidth:1024,
+            frameHeight:1024,
+        })
     }
 
     create ()
