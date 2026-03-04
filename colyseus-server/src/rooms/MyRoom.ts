@@ -29,7 +29,6 @@ export class MyRoom extends Room {
     "move": (client: Client, message:any[])=>{
       let [startX, startY, endX, endY] = message;
         let playerNumber = this.getPlayerAssignment(client.sessionId)
-        console.log(`move attempt from player ${playerNumber}`)
         if(this.board.canMovePiece(startX, startY, endX, endY, playerNumber)){
             this.board.movePiece(startX, startY, endX, endY)
             this.broadcast('otherMove', message, {

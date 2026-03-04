@@ -84,8 +84,8 @@ export abstract class Piece implements Visual<sprite|image>{
         this.reps[0].setPosition(worldX, worldY)
     }
 
-    withinMovementPattern(x:number, y:number):boolean{
-        for(let point of this.relativeMovementPattern){
+    withinPattern(pattern:pattern, x:number, y:number){
+        for(let point of pattern){
             let [checkX, checkY] = point;
             if(this.playerOwner == 2)
                 checkY *= -1
@@ -97,23 +97,36 @@ export abstract class Piece implements Visual<sprite|image>{
         return false;
     }
 
-    withinAttackingPattern(x:number, y:number):boolean{
-        for(let point of this.relativeAttackingPattern){
-            let [checkX, checkY] = point;
-            if(this.playerOwner == 2)
-                checkY *= -1
-            const absX = this.coordX+checkX
-            const absY = this.coordY+checkY
-            if(absX == x && absY == y)
-                return true;
-        }
-        return false;
-    }
+    // withinMovementPattern(x:number, y:number):boolean{
+    //     for(let point of this.relativeMovementPattern){
+    //         let [checkX, checkY] = point;
+    //         if(this.playerOwner == 2)
+    //             checkY *= -1
+    //         const absX = this.coordX+checkX
+    //         const absY = this.coordY+checkY
+    //         if(absX == x && absY == y)
+    //             return true;
+    //     }
+    //     return false;
+    // }
+
+    // withinAttackingPattern(x:number, y:number):boolean{
+    //     for(let point of this.relativeAttackingPattern){
+    //         let [checkX, checkY] = point;
+    //         if(this.playerOwner == 2)
+    //             checkY *= -1
+    //         const absX = this.coordX+checkX
+    //         const absY = this.coordY+checkY
+    //         if(absX == x && absY == y)
+    //             return true;
+    //     }
+    //     return false;
+    // }
 
     /* fix: move certain conditions to the board */
     canMovePiece(startX:number, startY: number, endX:number, endY:number, playerNumber:number){
         return (
-                this.withinMovementPattern(endX, endY)
+                this.withinPattern(this.relativeMovementPattern,endX, endY)
                 )
     }
 
@@ -130,7 +143,7 @@ export abstract class Piece implements Visual<sprite|image>{
     canAttackPiece(attackerX:number, attackerY:number, defenderX:number, defenderY:number, playerNumber:number){
         return (
             this.board.isSpaceFull(defenderX, defenderY)&&
-            this.withinAttackingPattern(defenderX, defenderY)
+            this.withinPattern(this.relativeAttackingPattern, defenderX, defenderY)
         )
     }
 
