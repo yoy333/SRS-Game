@@ -1,6 +1,6 @@
 import { GameObjects, Tilemaps } from "phaser"
 import { Piece, PieceType } from "./Piece.mjs"
-import { Visual } from "../client/game/lib/Visual"
+import { Visual } from "../client/game/lib/Visual.js"
 import { Loader, Geom } from "phaser"
 
 export class Board implements Visual<Tilemaps.Tilemap>{
@@ -40,24 +40,24 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         let map = makePlugin.tilemap({ key: 'tilemap' })
 
         // add the tileset image we are using
-        // const tiles = map.addTilesetImage('V1_Tiles')
-        const tiles = map.addTilesetImage('exp_tileset_01')
+        const tiles = map.addTilesetImage('V1_Tiles')
+        // const tiles = map.addTilesetImage('exp_tileset_01')
 
         if(!tiles)
             throw new Error("tileset failed to load")
 
         let ground = map.createLayer(0, tiles)
-        ground!.setScale(1/8)
+        // ground!.setScale(1/8)
         
         this.reps = [map]
         return this.reps
     }
 
     static loadReps(loadPlugin:Loader.LoaderPlugin){
-        // loadPlugin.image('V1_Tiles', 'tilemap/V1_Tiles.png')
-        // loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/DemoBoard.json')
-        loadPlugin.image('exp_tileset_01', 'tilemap/exp_tileset_02.png')
-        loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/exp_tilemap_01.json')
+        loadPlugin.image('V1_Tiles', 'tilemap/V1_Tiles.png')
+        loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/DemoBoard.json')
+        // loadPlugin.image('exp_tileset_01', 'tilemap/exp_tileset_02.png')
+        // loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/exp_tilemap_01.json')
     }
 
     isOnHomeRow(y:number, playerNumber?:number){
