@@ -1,4 +1,6 @@
-refactor visual
+refactor visual to force static create rep
+add type of all keys
+refactor player number to be 0 or 1
 Turn History
 Preset Turn Histories
 Assets

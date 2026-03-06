@@ -10,6 +10,8 @@ type pattern = Set<point>
 const emptyPattern:pattern = new Set()
 
 type PT = new (...args: any[]) => Piece
+
+export type PieceKey = string
 type pieceStatics = {
     /* fix */
     key:string
