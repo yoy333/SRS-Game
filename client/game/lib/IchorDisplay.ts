@@ -16,7 +16,8 @@ export class IchorDisplay implements Visual<GameObjects.Text>{
         this.reps[0] = 
             plugin.text(0, 650, 'Ichor: X', { 
                 fontFamily: StyleGuide.textFontFamily,
-                fontSize: "50px"
+                fontSize: "50px",
+                color: StyleGuide.textFontColor
             })
         return this.reps
     }

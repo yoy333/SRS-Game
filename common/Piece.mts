@@ -14,6 +14,7 @@ type pieceStatics = {
     /* fix */
     key:string
     createRep:(addPlugin:GameObjects.GameObjectFactory, x:number, y:number)=>Array<sprite|image>
+    createCard:(addPlugin:GameObjects.GameObjectFactory, x:number, y:number)=>Array<sprite|image>
     loadReps:(loadPlugin:Loader.LoaderPlugin)=>void
     spawnCost:number
 }
@@ -31,7 +32,7 @@ export abstract class Piece implements Visual<sprite|image>{
     perspectiveX:number
     perspectiveY:number
 
-    key = ''
+    static key:string
     isClientSide:boolean
     playerOwner:number
 
@@ -96,32 +97,6 @@ export abstract class Piece implements Visual<sprite|image>{
         }
         return false;
     }
-
-    // withinMovementPattern(x:number, y:number):boolean{
-    //     for(let point of this.relativeMovementPattern){
-    //         let [checkX, checkY] = point;
-    //         if(this.playerOwner == 2)
-    //             checkY *= -1
-    //         const absX = this.coordX+checkX
-    //         const absY = this.coordY+checkY
-    //         if(absX == x && absY == y)
-    //             return true;
-    //     }
-    //     return false;
-    // }
-
-    // withinAttackingPattern(x:number, y:number):boolean{
-    //     for(let point of this.relativeAttackingPattern){
-    //         let [checkX, checkY] = point;
-    //         if(this.playerOwner == 2)
-    //             checkY *= -1
-    //         const absX = this.coordX+checkX
-    //         const absY = this.coordY+checkY
-    //         if(absX == x && absY == y)
-    //             return true;
-    //     }
-    //     return false;
-    // }
 
     /* fix: move certain conditions to the board */
     canMovePiece(startX:number, startY: number, endX:number, endY:number, playerNumber:number){
@@ -202,6 +177,7 @@ export class DefaultPiece extends Piece{
             this.reps = this.createReps(addPlugin)
     }
 
+    /* fix */
     createReps(addPlugin: GameObjects.GameObjectFactory): Array<sprite> {
         if(!this.isClientSide)
             throw new Error("Cannot create reps server-side")
@@ -231,6 +207,14 @@ export class DefaultPiece extends Piece{
             frameHeight:64,
             margin:32
         })    
+    }
+
+    static loadCard(loadPlugin:Loader.LoaderPlugin){
+        
+    }
+
+    static createCard(addPlugin:GameObjects.GameObjectFactory, x:number, y:number){
+        return [];
     }
 
     relativeMovementPattern: pattern = forward_1
@@ -283,6 +267,14 @@ export class Zeus extends Piece{
 
     static loadReps(loadPlugin:Loader.LoaderPlugin){
         loadPlugin.image(Zeus.key, 'zeus_v01.png')    
+    }
+
+    static loadCard(loadPlugin:Loader.LoaderPlugin){
+
+    }
+
+    static createCard(addPlugin:GameObjects.GameObjectFactory, x:number, y:number){
+        return []
     }
 
     relativeMovementPattern: pattern = forward_1
@@ -347,14 +339,22 @@ export class Artemis extends Piece{
 
     static createRep(addPlugin:GameObjects.GameObjectFactory, x:number, y:number){
         let icon = addPlugin.image(x,y,this.key, 0)
-        icon.setScale(1/30, 1/40)
-        icon.setOrigin(0.5, 0.55)
+        icon.setScale(1/32, 1/32)
+        icon.setOrigin(0.5, 0.4)
         return [icon]
     }
 
     static loadReps(loadPlugin:Loader.LoaderPlugin){
-        loadPlugin.image(Artemis.key, 'artemis_v01.png')    
+        loadPlugin.image(Artemis.key, 'artemis_v02.png')    
     }
+
+    static loadCard(loadPlugin:Loader.LoaderPlugin){
+        
+    }
+
+    static createCard(addPlugin:GameObjects.GameObjectFactory, x:number, y:number){
+        return []
+    }    
 
     relativeMovementPattern: pattern = square_1
     relativeAttackingPattern: pattern = artemis_attack;

@@ -1,3 +1,4 @@
 export const StyleGuide = {
-    textFontFamily: 'Trebuchet MS'
+    textFontFamily: 'Trebuchet MS',
+    textFontColor: "black"
 }
