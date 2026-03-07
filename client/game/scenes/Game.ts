@@ -36,7 +36,7 @@ export class Game extends Scene{
         //     console.log("I am Player "+playerNumber)
         // })
 
-        this.board.createReps(this.make, 0, 0)
+        this.board.createReps(this.make, 300, 0)
 
         this.inputManager.createReps(this.add)
 

@@ -46,7 +46,7 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         if(!tiles)
             throw new Error("tileset failed to load")
 
-        let ground = map.createLayer(0, tiles)
+        let ground = map.createLayer(0, tiles, x, y)
         // ground!.setScale(1/8)
         
         this.reps = [map]

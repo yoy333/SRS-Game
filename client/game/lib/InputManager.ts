@@ -88,7 +88,7 @@ export class InputManager implements Visual<undefined>{
         /* fix */
 
         const rows = 3
-        const startX = 768
+        const startX = 1168
         const startY = 96
         const cellWidth = 150
         const cellHeight = 200
