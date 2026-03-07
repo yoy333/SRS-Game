@@ -97,6 +97,7 @@ export class Game extends Scene{
                 return;
             if(this.board.canMovePiece(...moveCoords)){
                 this.board.movePiece(...moveCoords)
+                this.ichorDisplay.updateIchor(this.board.myIchor)
                 room.send('move', moveCoords)
             }else{
                 console.log("illegal move")

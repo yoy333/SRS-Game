@@ -19,6 +19,7 @@ type pieceStatics = {
     createCard:(addPlugin:GameObjects.GameObjectFactory, x:number, y:number)=>Array<sprite|image>
     loadReps:(loadPlugin:Loader.LoaderPlugin)=>void
     spawnCost:number
+    moveCost:number
 }
 export type PieceType = PT & pieceStatics
 
@@ -172,6 +173,7 @@ export class DefaultPiece extends Piece{
     key = 'default'
 
     static spawnCost = 2;
+    static moveCost = 1;
 
     constructor(addPlugin: GameObjects.GameObjectFactory, board:Board, x:number, y:number, isClientSide:boolean, playerOwner:number){
         super(addPlugin,board, x, y, isClientSide, playerOwner)
@@ -236,6 +238,7 @@ export class Zeus extends Piece{
     key = 'zeus'
 
     static spawnCost = 2;
+    static moveCost = 0;
 
     constructor(addPlugin: GameObjects.GameObjectFactory, board:Board, x:number, y:number, isClientSide:boolean, playerOwner:number){
         super(addPlugin,board, x, y, isClientSide, playerOwner)
@@ -314,6 +317,7 @@ export class Artemis extends Piece{
     key = 'artemis'
 
     static spawnCost = 2;
+    static moveCost = 0;
 
     constructor(addPlugin: GameObjects.GameObjectFactory, board:Board, x:number, y:number, isClientSide:boolean, playerOwner:number){
         super(addPlugin,board, x, y, isClientSide, playerOwner)

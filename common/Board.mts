@@ -88,11 +88,11 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         return playerNumber != 0
     }
 
-    doesHaveEnoughIchor(pieceType: PieceType, playerNumber?:number){
+    doesHaveEnoughIchor(cost:number, playerNumber?:number){
         if(!playerNumber)
             playerNumber = this.playerNumber
 
-        return pieceType.spawnCost<=this.ichor[playerNumber-1]
+        return cost<=this.ichor[playerNumber-1]
     }
 
     isMyTurn(playerNumber?:number):boolean{
@@ -119,7 +119,7 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         if(this.isSpaceEmpty(x,y)&&
             this.isOnHomeRow(y, playerNumber)&&
             this.isNotSpectator(playerNumber)&&
-            this.doesHaveEnoughIchor(pieceType, playerNumber)&&
+            this.doesHaveEnoughIchor(pieceType.spawnCost, playerNumber)&&
             this.isMyTurn(playerNumber))
             return true;
         else
@@ -169,17 +169,28 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         let piece = this.getPiece(startX, startY)
         if(!piece)
             return false;
+
+        let cost = (piece.constructor as PieceType).moveCost
         
         return (this.doesOwnPiece(piece, playerNumber) &&
                 this.isSpaceEmpty(endX, endY)&&
                 this.isMyTurn(playerNumber)&&
+                this.doesHaveEnoughIchor(cost, playerNumber)&&
                 piece.canMovePiece(startX, startY, endX, endY, playerNumber))
     }
 
     movePiece(startX:number, startY: number, endX:number, endY:number, playerNumber?:number){
+        if(!playerNumber)
+            playerNumber = this.playerNumber
+
         let piece = this.getPiece(startX, startY)
         if(!piece)
             return;
+
+        const cost = (piece.constructor as PieceType).moveCost
+
+        this.ichor[playerNumber-1] -= cost
+
         piece.movePiece(startX, startY, endX, endY)
     }
 

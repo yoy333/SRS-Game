@@ -38,7 +38,7 @@ export class MyRoom extends Room {
       let [startX, startY, endX, endY] = message;
         let playerNumber = this.getPlayerAssignment(client.sessionId)
         if(this.board.canMovePiece(startX, startY, endX, endY, playerNumber)){
-            this.board.movePiece(startX, startY, endX, endY)
+            this.board.movePiece(startX, startY, endX, endY, playerNumber)
             this.broadcast('otherMove', message, {
               except:client
             })
