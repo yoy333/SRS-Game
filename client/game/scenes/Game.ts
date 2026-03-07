@@ -25,6 +25,7 @@ export class Game extends Scene{
 
     board: Board
     ichorDisplay: IchorDisplay
+    hand: PieceKey[] = []
 
     async create ()
     {
@@ -65,7 +66,8 @@ export class Game extends Scene{
 
         room.onMessage("startingHand", (hand:PieceKey[])=>{
             console.log(hand)
-            
+            this.hand = hand;
+            this.inputManager.updateHand(this.add, this.hand)
         })
 
         room.onMessage('otherSpawn', (message: any[])=>{

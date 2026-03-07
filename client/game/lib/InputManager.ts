@@ -1,6 +1,6 @@
 import { GameObjects } from "phaser";
 import { Board } from "@common/Board.mjs";
-import {Piece, PieceType, DefaultPiece, Zeus, Artemis, pieceTypeRegistery } from "@common/Piece.mjs";
+import {Piece, PieceType, DefaultPiece, Zeus, Artemis, pieceTypeRegistery, PieceKey } from "@common/Piece.mjs";
 import { Visual } from "./Visual";
 import { IconButton } from "./IconButton";
 import { Button } from "./Button";
@@ -78,6 +78,7 @@ export class InputManager implements Visual<undefined>{
     numReps = 0
     iconButtons:IconButton[] = []
     endTurnButton?:Button
+
     createReps(addPlugin:GameObjects.GameObjectFactory):undefined[]{
         /*
         Probably should have them extend from the same thing
@@ -123,6 +124,15 @@ export class InputManager implements Visual<undefined>{
         }
 
         return [];
+    }
+
+    updateHand(addPlugin:GameObjects.GameObjectFactory, hand:PieceKey[]){
+        if(this.iconButtons.length!=hand.length)
+            throw new Error("Hand not equal to length of icon buttons")
+        this.iconButtons.forEach((button:IconButton, index:number)=>{
+            button.updateIcon(addPlugin, hand[index])
+            button.createInteraction(this)
+        })
     }
 
     prop: number = 0

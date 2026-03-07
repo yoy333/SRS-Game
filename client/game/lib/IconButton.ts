@@ -1,7 +1,7 @@
 import { InputManager } from './InputManager'
 import {Visual} from './Visual'
 import{GameObjects, Loader} from 'phaser'
-import { Piece } from '@common/Piece.mjs'
+import { Piece, PieceKey } from '@common/Piece.mjs'
 type spriteOrImage = GameObjects.Sprite | GameObjects.Image
 export class IconButton implements Visual<spriteOrImage>{
     reps:Array<spriteOrImage>
@@ -43,5 +43,17 @@ export class IconButton implements Visual<spriteOrImage>{
         this.reps[0].on('pointerdown', ()=>{
             inputManager.selectForSpawn(Piece.classFromKey(this.pieceKey));
         })
+    }
+
+    updateIcon(addPlugin:GameObjects.GameObjectFactory, key:PieceKey){
+        this.pieceKey = key
+
+        let oldRep = this.reps[0]
+        let x = oldRep.x
+        let y = oldRep.y
+        // create icon where the old one was
+        let icon = Piece.classFromKey(this.pieceKey).createRep(addPlugin, x, y)[0]
+        oldRep.destroy(true)
+        this.reps[0] = icon
     }
 }
