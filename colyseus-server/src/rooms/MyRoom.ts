@@ -24,11 +24,21 @@ export class MyRoom extends Room {
       // server must check player ownership in case of hijacked calls
       let playerNumber = this.getPlayerAssignment(client.sessionId)
 
-      if(this.board.canSpawnPiece(pieceType, x, y, playerNumber)){
+      let hand = this.hands[playerNumber-1].hand
+
+      if(this.board.canSpawnPiece(pieceType, x, y, hand, playerNumber)){
           this.board.spawnPiece(pieceType, undefined, x, y, playerNumber)
           this.broadcast("otherSpawn", [pieceTypeKey, x, y], {
             except:client,
           })
+
+          let oldCard = pieceType.key
+          this.deck.returnCard(oldCard)
+          let newCard = this.deck.drawCard()
+          this.hands[playerNumber-1].replace(oldCard, newCard)
+
+          this.clients[playerNumber-1].send('drawCard', newCard)
+          console.log(this.deck.drawCards)
       }else{
           console.log("hijacked spawn call")
       }
@@ -104,7 +114,6 @@ export class MyRoom extends Room {
       new Hand(this.deck)
     ]
     for(let p=0; p<=1; p++){
-      console.log(this.hands[p].hand)
       this.clients[p].send('startingHand',this.hands[p].hand)
     }
   }

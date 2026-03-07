@@ -1,5 +1,5 @@
 import { GameObjects, Tilemaps } from "phaser"
-import { Piece, PieceType } from "./Piece.mjs"
+import { Piece, PieceKey, PieceType } from "./Piece.mjs"
 import { Visual } from "../client/game/lib/Visual.js"
 import { Loader, Geom } from "phaser"
 
@@ -102,8 +102,12 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         return playerNumber==this.currentTurn
     }
 
+    isInHand(pieceType: PieceType, hand:PieceKey[]):boolean{
+        return hand.includes(pieceType.key)
+    }
+
     // move to Game Rules
-    canSpawnPiece(pieceType: PieceType, x:number, y:number, playerNumber?:number){
+    canSpawnPiece(pieceType: PieceType, x:number, y:number, hand:PieceKey[], playerNumber?:number){
         // console.log(`inputs ${x}, ${y}`)
         if(playerNumber == undefined)
             playerNumber = this.playerNumber
@@ -120,7 +124,8 @@ export class Board implements Visual<Tilemaps.Tilemap>{
             this.isOnHomeRow(y, playerNumber)&&
             this.isNotSpectator(playerNumber)&&
             this.doesHaveEnoughIchor(pieceType.spawnCost, playerNumber)&&
-            this.isMyTurn(playerNumber))
+            this.isMyTurn(playerNumber)&&
+            this.isInHand(pieceType, hand))
             return true;
         else
             return false;

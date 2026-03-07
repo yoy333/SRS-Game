@@ -70,6 +70,15 @@ export class Game extends Scene{
             this.inputManager.updateHand(this.add, this.hand)
         })
 
+        room.onMessage("drawCard", (card:PieceKey)=>{
+            let index = this.hand.indexOf("")
+            if(index==-1)
+                throw new Error("not sure where to replace card")
+
+            this.hand[index] = card
+            this.inputManager.updateHand(this.add, this.hand)
+        })
+
         room.onMessage('otherSpawn', (message: any[])=>{
             let [pieceTypeKey, x, y] = message;
             let pieceType = Piece.classFromKey(pieceTypeKey)
@@ -105,11 +114,18 @@ export class Game extends Scene{
         }
 
         this.inputManager.onSpawn = (pieceType: PieceType, x:number, y:number, playerOwner?:number) => {
-            if(this.board.canSpawnPiece(pieceType, x, y, playerOwner)){
+            if(this.board.canSpawnPiece(pieceType, x, y, this.hand, playerOwner)){
                 this.board.spawnPiece(pieceType, this.add, x, y)
                 this.ichorDisplay.updateIchor(this.board.myIchor)
                 // this.socket.emit('spawn', [DefaultPiece.key, x, y])
                 room.send('spawn', [pieceType.key, x, y])
+
+                // freeze interaction until we can draw a new card
+                let index = this.hand.indexOf(pieceType.key)
+
+                this.hand[index] = ""
+
+                this.inputManager.iconButtons[index].stopInteraction()
             }else{
                 console.log("illegal spawn")
             }

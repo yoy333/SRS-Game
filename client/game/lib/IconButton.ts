@@ -45,6 +45,10 @@ export class IconButton implements Visual<spriteOrImage>{
         })
     }
 
+    stopInteraction(){
+        this.reps[0].removeInteractive()
+    }
+
     updateIcon(addPlugin:GameObjects.GameObjectFactory, key:PieceKey){
         this.pieceKey = key
 

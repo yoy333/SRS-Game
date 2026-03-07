@@ -9,4 +9,9 @@ export class Hand{
             this.hand.push(deck.drawCard())
         }
     }
+
+    replace(oldCard:PieceKey, newCard:PieceKey){
+        let index = this.hand.indexOf(oldCard)
+        this.hand[index] = newCard;
+    }
 }
