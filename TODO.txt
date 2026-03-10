@@ -1,5 +1,9 @@
+refactor visual to force static create rep
+add type of all keys
+refactor player number to be 0 or 1
+refactor canX to be outside of Board
+make hand standardized
 Turn History
-Colyseus
 Preset Turn Histories
 Assets
 Phaser plugins?

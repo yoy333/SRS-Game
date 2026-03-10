@@ -1,7 +1,7 @@
 import { InputManager } from './InputManager'
 import {Visual} from './Visual'
 import{GameObjects, Loader} from 'phaser'
-import { Piece } from '@common/Piece.mjs'
+import { Piece, PieceKey } from '@common/Piece.mjs'
 type spriteOrImage = GameObjects.Sprite | GameObjects.Image
 export class IconButton implements Visual<spriteOrImage>{
     reps:Array<spriteOrImage>
@@ -17,22 +17,13 @@ export class IconButton implements Visual<spriteOrImage>{
     }
 
 
-    createReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number){
+    createReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number):spriteOrImage[]{
         let background = addPlugin.sprite(x, y, 'cards', 0).setScale(2/3)
-        let icon = addPlugin.sprite(x, y, this.pieceKey, 0)//.setZ(1)
-        //let dragable = addPlugin.image(x, y, this.pieceKey).setVisible(false).setZ(-1)
-        // icon.setInteractive({dragable:true})
-        // icon.on('drag', (pointer:any, x:number, y:number)=>{
-        //     console.log("start drag")
-        //     //dragable.setVisible(true)
-        //     dragable.setPosition(x, y)
-        // })
-        // icon.on('dragend', ()=>{
-        //     console.log("end drag")
-        //     //dragable.setVisible(false)
-        //     dragable.setPosition(x,y)
-        // })
-        return [icon, background]//, dragable]
+        //let icon = addPlugin.sprite(x, y, this.pieceKey, 0)//.setZ(1)
+
+        let icon = Piece.classFromKey(this.pieceKey).createRep(addPlugin, x, y)[0]
+
+        return [icon, background]
     }
 
     static loadReps(loadPlugin:Loader.LoaderPlugin){
@@ -52,5 +43,21 @@ export class IconButton implements Visual<spriteOrImage>{
         this.reps[0].on('pointerdown', ()=>{
             inputManager.selectForSpawn(Piece.classFromKey(this.pieceKey));
         })
+    }
+
+    stopInteraction(){
+        this.reps[0].removeInteractive()
+    }
+
+    updateIcon(addPlugin:GameObjects.GameObjectFactory, key:PieceKey){
+        this.pieceKey = key
+
+        let oldRep = this.reps[0]
+        let x = oldRep.x
+        let y = oldRep.y
+        // create icon where the old one was
+        let icon = Piece.classFromKey(this.pieceKey).createRep(addPlugin, x, y)[0]
+        oldRep.destroy(true)
+        this.reps[0] = icon
     }
 }

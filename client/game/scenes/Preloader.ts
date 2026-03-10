@@ -14,7 +14,7 @@ export class Preloader extends Scene
     init ()
     {
         //  This is the progress bar itself. It will increase in size from the left based on the % of progress.
-        const bar = this.add.rectangle(512-230, 384, 4, 28, 0xffffff);
+        const bar = this.add.rectangle(512-230, 384, 4, 28, 0x000000);
 
         //  Use the 'progress' event emitted by the LoaderPlugin to update the loading bar
         this.load.on('progress', (progress: number) => {
@@ -34,6 +34,11 @@ export class Preloader extends Scene
             pieceType.loadReps(this.load)
         })
         IconButton.loadReps(this.load)
+
+        this.load.spritesheet('background_tiles', 'background_tiles_02.png', {
+            frameWidth:1024,
+            frameHeight:1024,
+        })
     }
 
     create ()

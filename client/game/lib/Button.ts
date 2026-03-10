@@ -17,7 +17,8 @@ export class Button implements Visual<GameObjects.Text>{
 
         this.reps[0] = addPlugin.text(x, y, text, {
             fontFamily:StyleGuide.textFontFamily,
-            fontSize:"30px"
+            fontSize:"30px",
+            color:StyleGuide.textFontColor
         })
         
         return this.reps;

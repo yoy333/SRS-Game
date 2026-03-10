@@ -61,6 +61,7 @@ var config : Phaser.Types.Core.GameConfig = {
   width: Math.round(1920*RATIO),
   height: Math.round(1080*RATIO),
   autoCenter: Phaser.Scale.CENTER_BOTH,
+  backgroundColor:"#fff7f1",
   scene: [
         Boot,
         Preloader,

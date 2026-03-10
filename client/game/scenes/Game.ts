@@ -1,7 +1,7 @@
 import { Scene } from 'phaser';
 // import io, {type Socket} from 'socket.io-client'
 import {InputManager} from '../lib/InputManager'
-import { DefaultPiece, Piece, PieceType } from '@common/Piece.mjs';
+import { DefaultPiece, Piece, PieceKey, PieceType } from '@common/Piece.mjs';
 import { Board } from '@common/Board.mjs';
 import { IchorDisplay } from '../lib/IchorDisplay';
 import {Client, Callbacks} from '@colyseus/sdk'
@@ -25,6 +25,7 @@ export class Game extends Scene{
 
     board: Board
     ichorDisplay: IchorDisplay
+    hand: PieceKey[] = []
 
     async create ()
     {
@@ -35,7 +36,7 @@ export class Game extends Scene{
         //     console.log("I am Player "+playerNumber)
         // })
 
-        this.board.createReps(this.make, 0, 0)
+        this.board.createReps(this.make, 300, 0)
 
         this.inputManager.createReps(this.add)
 
@@ -63,6 +64,21 @@ export class Game extends Scene{
             this.board.playerNumber = playerNumber;
         })
 
+        room.onMessage("startingHand", (hand:PieceKey[])=>{
+            console.log(hand)
+            this.hand = hand;
+            this.inputManager.updateHand(this.add, this.hand)
+        })
+
+        room.onMessage("drawCard", (card:PieceKey)=>{
+            let index = this.hand.indexOf("")
+            if(index==-1)
+                throw new Error("not sure where to replace card")
+
+            this.hand[index] = card
+            this.inputManager.updateHand(this.add, this.hand)
+        })
+
         room.onMessage('otherSpawn', (message: any[])=>{
             let [pieceTypeKey, x, y] = message;
             let pieceType = Piece.classFromKey(pieceTypeKey)
@@ -75,24 +91,22 @@ export class Game extends Scene{
         })
 
         room.onMessage('otherAttack', (message:any[])=>{
-            console.log(message)
             let [attackerX, attackerY, defenderX, defenderY] = message;
             this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
         })
 
         room.onMessage('otherEndTurn', ()=>{
-            console.log("other player requested a turn end")
             this.board.endTurn()
         })
 
-        // callbacks.onAdd("turnHistory", (s, sessionId) => {
-        //     console.log(s);
-        // });
-
         this.inputManager.onMove = (startX:number, startY:number, endX:number, endY:number)=>{
             let moveCoords = [startX, startY, endX, endY] as const
+            let piece = this.board.getPiece(startX, startY)
+            if(!piece)
+                return;
             if(this.board.canMovePiece(...moveCoords)){
                 this.board.movePiece(...moveCoords)
+                this.ichorDisplay.updateIchor(this.board.myIchor)
                 room.send('move', moveCoords)
             }else{
                 console.log("illegal move")
@@ -100,11 +114,18 @@ export class Game extends Scene{
         }
 
         this.inputManager.onSpawn = (pieceType: PieceType, x:number, y:number, playerOwner?:number) => {
-            if(this.board.canSpawnPiece(pieceType, x, y, playerOwner)){
+            if(this.board.canSpawnPiece(pieceType, x, y, this.hand, playerOwner)){
                 this.board.spawnPiece(pieceType, this.add, x, y)
                 this.ichorDisplay.updateIchor(this.board.myIchor)
                 // this.socket.emit('spawn', [DefaultPiece.key, x, y])
-                room.send('spawn', [DefaultPiece.key, x, y])
+                room.send('spawn', [pieceType.key, x, y])
+
+                // freeze interaction until we can draw a new card
+                let index = this.hand.indexOf(pieceType.key)
+
+                this.hand[index] = ""
+
+                this.inputManager.iconButtons[index].stopInteraction()
             }else{
                 console.log("illegal spawn")
             }
