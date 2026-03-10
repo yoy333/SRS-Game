@@ -118,8 +118,9 @@ export class InputManager implements Visual<undefined>{
         // this.iconButtons[3] =
         //     new IconButton(addPlugin, this, 918, 96, Artemis.key)
 
-        this.endTurnButton = new EndTurnButton(addPlugin, 850, 675)
+        this.endTurnButton = new EndTurnButton(addPlugin, 850, 680)
         this.endTurnButton.onClick = () => {
+            console.log(this.endTurnButton)
             if(this.onEndTurn)
                 this.onEndTurn()
         }
