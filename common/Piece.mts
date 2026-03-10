@@ -66,6 +66,14 @@ export abstract class Piece implements Visual<sprite|image>{
         this.playerOwner = playerOwner;
     }    
 
+    getWorldXYFromPerspective(x:number, y:number):[number, number]{
+        // console.log(`creating rep at ${x}, ${y}`)
+        let tile = this.board.reps[0].getTileAt(x,y)
+        if(!tile)
+            throw new Error(`no tile at (${x}, ${y})`)
+        return [tile.getCenterX(), tile.getCenterY()]
+    }
+
     createReps(addPlugin: GameObjects.GameObjectFactory): Array<sprite|image>{
         return []
     }
@@ -186,14 +194,7 @@ export class DefaultPiece extends Piece{
     createReps(addPlugin: GameObjects.GameObjectFactory): Array<sprite> {
         if(!this.isClientSide)
             throw new Error("Cannot create reps server-side")
-        let x = this.perspectiveX;
-        let y = this.perspectiveY; 
-        // console.log(`creating rep at ${x}, ${y}`)
-        let tile = this.board.reps[0].getTileAt(x,y)
-        if(!tile)
-            throw new Error(`no tile at (${x}, ${y})`)
-        let worldX = tile.getCenterX()
-        let worldY = tile.getCenterY()
+        let [worldX, worldY] = this.getWorldXYFromPerspective(this.perspectiveX, this.perspectiveY)
         if(this.key==""){
             console.warn('no key specified')
         }
@@ -250,14 +251,7 @@ export class Zeus extends Piece{
     createReps(addPlugin: GameObjects.GameObjectFactory): Array<sprite|image> {
         if(!this.isClientSide)
             throw new Error("Cannot create reps server-side")
-        let x = this.perspectiveX;
-        let y = this.perspectiveY; 
-        // console.log(`creating rep at ${x}, ${y}`)
-        let tile = this.board.reps[0].getTileAt(x,y)
-        if(!tile)
-            throw new Error(`no tile at (${x}, ${y})`)
-        let worldX = tile.getCenterX()
-        let worldY = tile.getCenterY()
+        let [worldX, worldY] = this.getWorldXYFromPerspective(this.perspectiveX, this.perspectiveY)
         if(this.key==""){
             console.warn('no key specified')
         }
@@ -330,14 +324,8 @@ export class Artemis extends Piece{
     createReps(addPlugin: GameObjects.GameObjectFactory): Array<sprite|image> {
         if(!this.isClientSide)
             throw new Error("Cannot create reps server-side")
-        let x = this.perspectiveX;
-        let y = this.perspectiveY; 
-        // console.log(`creating rep at ${x}, ${y}`)
-        let tile = this.board.reps[0].getTileAt(x,y)
-        if(!tile)
-            throw new Error(`no tile at (${x}, ${y})`)
-        let worldX = tile.getCenterX()
-        let worldY = tile.getCenterY()
+        let [worldX, worldY] = this.getWorldXYFromPerspective(this.perspectiveX, this.perspectiveY)
+
         if(this.key==""){
             console.warn('no key specified')
         }
@@ -383,27 +371,21 @@ export class Apollo extends Piece{
             this.reps = this.createReps(addPlugin)
     }
 
-    createReps(addPlugin: GameObjects.GameObjectFactory): Array<sprite> {
+    createReps(addPlugin: GameObjects.GameObjectFactory): Array<image> {
         if(!this.isClientSide)
             throw new Error("Cannot create reps server-side")
-        let x = this.perspectiveX;
-        let y = this.perspectiveY; 
-        // console.log(`creating rep at ${x}, ${y}`)
-        let tile = this.board.reps[0].getTileAt(x,y)
-        if(!tile)
-            throw new Error(`no tile at (${x}, ${y})`)
-        let worldX = tile.getCenterX()
-        let worldY = tile.getCenterY()
+        let [worldX, worldY] = this.getWorldXYFromPerspective(this.perspectiveX, this.perspectiveY)
+
         if(this.key==""){
             console.warn('no key specified')
         }
-        let primaryRep = addPlugin.sprite(worldX,worldY,this.key, 0)
+        let [primaryRep] = Apollo.createRep(addPlugin, worldX, worldY)
         return [primaryRep]
     }
 
     static createRep(addPlugin:GameObjects.GameObjectFactory, x:number, y:number){
         let icon = addPlugin.image(x, y, Apollo.key)
-        icon.setScale(1/20)
+        icon.setScale(1/25)
         return [icon]
     }
 
@@ -431,3 +413,60 @@ export class Apollo extends Piece{
 }
 
 pieceTypeRegistery.set(Apollo.key, Apollo)
+
+
+export class Aries extends Piece{
+    static key = 'aries'
+    key = 'aries'
+
+    static spawnCost = 2;
+    static moveCost = 1;
+
+    constructor(addPlugin: GameObjects.GameObjectFactory, board:Board, x:number, y:number, isClientSide:boolean, playerOwner:number){
+        super(addPlugin,board, x, y, isClientSide, playerOwner)
+        if(this.isClientSide)
+            this.reps = this.createReps(addPlugin)
+    }
+
+    createReps(addPlugin: GameObjects.GameObjectFactory): Array<image> {
+        if(!this.isClientSide)
+            throw new Error("Cannot create reps server-side")
+        let [worldX, worldY] = this.getWorldXYFromPerspective(this.perspectiveX, this.perspectiveY)
+
+        if(this.key==""){
+            console.warn('no key specified')
+        }
+        let [primaryRep] = Aries.createRep(addPlugin, worldX, worldY)
+        return [primaryRep]
+    }
+
+    static createRep(addPlugin:GameObjects.GameObjectFactory, x:number, y:number){
+        let icon = addPlugin.image(x, y, Aries.key)
+        icon.setScale(1/25)
+        return [icon]
+    }
+
+    static loadReps(loadPlugin:Loader.LoaderPlugin){
+        loadPlugin.image(Aries.key, 'aries_v01.png')    
+    }
+
+    static loadCard(loadPlugin:Loader.LoaderPlugin){
+        loadPlugin.image('aries_card', 'aries_card_v01.png')
+    }
+
+    static createCard(addPlugin:GameObjects.GameObjectFactory, x:number, y:number){
+        let rep = addPlugin.image(x, y, 'aries_card')
+        return [rep];
+    }
+
+    relativeMovementPattern: pattern = forward_1
+    relativeAttackingPattern: pattern = square_1;
+
+    attackPiece(defendingPiece: Piece): void {
+        if(defendingPiece.tryToKill(this)){
+            this.board.movePiece(this.coordX, this.coordY, defendingPiece.coordX, defendingPiece.coordY)
+        }
+    }
+}
+
+pieceTypeRegistery.set(Aries.key, Aries)
