@@ -1,5 +1,5 @@
 import { PieceKey } from "@common/Piece.mjs";
-import { Deck } from "./Deck.js"; 
+import { Deck } from "../colyseus-server/src/lib/Deck.js"; 
 export class Hand{
     static handSize = 3;
     hand:PieceKey[] = []

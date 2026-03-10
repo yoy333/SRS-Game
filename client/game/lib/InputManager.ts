@@ -6,6 +6,7 @@ import { IconButton } from "./IconButton";
 import { TextButton } from "./TextButton";
 import { EndTurnButton, ImageButton } from "./ImageButton";
 import {type Socket} from 'socket.io-client'
+import {Hand} from '@common/Hand.mjs'
 
 export class InputManager implements Visual<undefined>{
 
@@ -93,18 +94,17 @@ export class InputManager implements Visual<undefined>{
         const startY = 96
         const cellWidth = 150
         const cellHeight = 200
-        let i = 0;
-        pieceTypeRegistery.forEach((e:PieceType, key: string)=>{
+
+        for(let i = 0; i<Hand.handSize; i++){
             let xGrid = Math.floor(i/rows)
             let yGrid = i%rows
-            i++
             let xPos = startX+xGrid*cellWidth;
             let yPos = startY+yGrid*cellHeight;
 
             this.iconButtons.push(
-                new IconButton(addPlugin, this, xPos, yPos, key)
+                new IconButton(addPlugin, this, xPos, yPos, DefaultPiece.key)
             )
-        })
+        }
 
         // this.iconButtons[0] =
         //     new IconButton(addPlugin, this, 768, 96, DefaultPiece.key)

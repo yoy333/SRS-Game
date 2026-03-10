@@ -1,7 +1,7 @@
 import { InputManager } from './InputManager'
 import {Visual} from './Visual'
 import{GameObjects, Loader} from 'phaser'
-import { Piece, PieceKey } from '@common/Piece.mjs'
+import { Piece, PieceKey, PieceType } from '@common/Piece.mjs'
 type spriteOrImage = GameObjects.Sprite | GameObjects.Image
 export class IconButton implements Visual<spriteOrImage>{
     reps:Array<spriteOrImage>
@@ -16,21 +16,25 @@ export class IconButton implements Visual<spriteOrImage>{
         this.createInteraction(inputManager)
     }
 
+    static scale = 3/4
 
     createReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number):spriteOrImage[]{
-        const scale = 3/4
-        let background = addPlugin.sprite(x, y, 'cards', 0).setScale(scale)
+        let background = addPlugin.sprite(x, y, 'cards', 0).setScale(IconButton.scale)
         //let icon = addPlugin.sprite(x, y, this.pieceKey, 0)//.setZ(1)
         let pieceClass = Piece.classFromKey(this.pieceKey)
 
-        let icon = pieceClass.createCard(addPlugin, x, y)[0]
-        if(icon)
-            icon.setScale(scale)
-        if(!icon)
-            icon = pieceClass.createRep(addPlugin, x, y)[0]
-
+        let icon = this.tryUseCard(addPlugin, pieceClass, x, y)
 
         return [icon, background]
+    }
+
+    tryUseCard(addPlugin: GameObjects.GameObjectFactory, pieceClass:PieceType, x:number, y:number):spriteOrImage{
+        let icon = pieceClass.createCard(addPlugin, x, y)[0]
+        if(icon)
+            icon.setScale(IconButton.scale)
+        if(!icon)
+            icon = pieceClass.createRep(addPlugin, x, y)[0]
+        return icon
     }
 
     static loadReps(loadPlugin:Loader.LoaderPlugin){
@@ -63,7 +67,8 @@ export class IconButton implements Visual<spriteOrImage>{
         let x = oldRep.x
         let y = oldRep.y
         // create icon where the old one was
-        let icon = Piece.classFromKey(this.pieceKey).createRep(addPlugin, x, y)[0]
+        let pieceClass = Piece.classFromKey(this.pieceKey)
+        let icon = this.tryUseCard(addPlugin, pieceClass, x, y)
         oldRep.destroy(true)
         this.reps[0] = icon
     }

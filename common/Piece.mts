@@ -369,3 +369,65 @@ export class Artemis extends Piece{
 }
 
 pieceTypeRegistery.set(Artemis.key, Artemis)
+
+export class Apollo extends Piece{
+    static key = 'apollo'
+    key = 'apollo'
+
+    static spawnCost = 2;
+    static moveCost = 1;
+
+    constructor(addPlugin: GameObjects.GameObjectFactory, board:Board, x:number, y:number, isClientSide:boolean, playerOwner:number){
+        super(addPlugin,board, x, y, isClientSide, playerOwner)
+        if(this.isClientSide)
+            this.reps = this.createReps(addPlugin)
+    }
+
+    createReps(addPlugin: GameObjects.GameObjectFactory): Array<sprite> {
+        if(!this.isClientSide)
+            throw new Error("Cannot create reps server-side")
+        let x = this.perspectiveX;
+        let y = this.perspectiveY; 
+        // console.log(`creating rep at ${x}, ${y}`)
+        let tile = this.board.reps[0].getTileAt(x,y)
+        if(!tile)
+            throw new Error(`no tile at (${x}, ${y})`)
+        let worldX = tile.getCenterX()
+        let worldY = tile.getCenterY()
+        if(this.key==""){
+            console.warn('no key specified')
+        }
+        let primaryRep = addPlugin.sprite(worldX,worldY,this.key, 0)
+        return [primaryRep]
+    }
+
+    static createRep(addPlugin:GameObjects.GameObjectFactory, x:number, y:number){
+        let icon = addPlugin.image(x, y, Apollo.key)
+        icon.setScale(1/20)
+        return [icon]
+    }
+
+    static loadReps(loadPlugin:Loader.LoaderPlugin){
+        loadPlugin.image(Apollo.key, 'apollo_v01.png')    
+    }
+
+    static loadCard(loadPlugin:Loader.LoaderPlugin){
+        loadPlugin.image('apollo_card', 'apollo_card_v01.png')
+    }
+
+    static createCard(addPlugin:GameObjects.GameObjectFactory, x:number, y:number){
+        let rep = addPlugin.image(x, y, 'apollo_card')
+        return [rep];
+    }
+
+    relativeMovementPattern: pattern = forward_1
+    relativeAttackingPattern: pattern = square_1;
+
+    attackPiece(defendingPiece: Piece): void {
+        if(defendingPiece.tryToKill(this)){
+            this.board.movePiece(this.coordX, this.coordY, defendingPiece.coordX, defendingPiece.coordY)
+        }
+    }
+}
+
+pieceTypeRegistery.set(Apollo.key, Apollo)

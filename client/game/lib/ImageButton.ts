@@ -11,8 +11,8 @@ export class ImageButton extends Button implements Visual<GameObjects.Image>{
     constructor(addPlugin:GameObjects.GameObjectFactory, x:number, y:number, key:string){
         super()
         this.key = key;
-        this.createReps(addPlugin, x, y)
-        super.createInteraction()
+        this.reps = this.createReps(addPlugin, x, y)
+        this.createInteraction()
     }
 
     createReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Image[] {

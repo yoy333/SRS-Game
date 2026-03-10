@@ -3,7 +3,7 @@ import { MyRoomState } from "./schema/MyRoomState.js";
 import {Board} from '@common/Board.mjs'
 import {Piece} from '@common/Piece.mjs'
 import { Deck } from "src/lib/Deck.js";
-import { Hand } from "src/lib/Hand.js";
+import { Hand } from "@common/Hand.mjs";
 
 export class MyRoom extends Room {
   maxClients = 4;
