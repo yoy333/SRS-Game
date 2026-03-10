@@ -3,7 +3,8 @@ import { Board } from "@common/Board.mjs";
 import {Piece, PieceType, DefaultPiece, Zeus, Artemis, pieceTypeRegistery, PieceKey } from "@common/Piece.mjs";
 import { Visual } from "./Visual";
 import { IconButton } from "./IconButton";
-import { Button } from "./Button";
+import { TextButton } from "./TextButton";
+import { EndTurnButton, ImageButton } from "./ImageButton";
 import {type Socket} from 'socket.io-client'
 
 export class InputManager implements Visual<undefined>{
@@ -77,7 +78,7 @@ export class InputManager implements Visual<undefined>{
     reps:undefined[] = []
     numReps = 0
     iconButtons:IconButton[] = []
-    endTurnButton?:Button
+    endTurnButton?:ImageButton
 
     createReps(addPlugin:GameObjects.GameObjectFactory):undefined[]{
         /*
@@ -117,7 +118,7 @@ export class InputManager implements Visual<undefined>{
         // this.iconButtons[3] =
         //     new IconButton(addPlugin, this, 918, 96, Artemis.key)
 
-        this.endTurnButton = new Button(addPlugin, 500, 660, 'End Turn')
+        this.endTurnButton = new EndTurnButton(addPlugin, 850, 675)
         this.endTurnButton.onClick = () => {
             if(this.onEndTurn)
                 this.onEndTurn()
