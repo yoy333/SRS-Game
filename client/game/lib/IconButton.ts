@@ -18,10 +18,17 @@ export class IconButton implements Visual<spriteOrImage>{
 
 
     createReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number):spriteOrImage[]{
-        let background = addPlugin.sprite(x, y, 'cards', 0).setScale(2/3)
+        const scale = 3/4
+        let background = addPlugin.sprite(x, y, 'cards', 0).setScale(scale)
         //let icon = addPlugin.sprite(x, y, this.pieceKey, 0)//.setZ(1)
+        let pieceClass = Piece.classFromKey(this.pieceKey)
 
-        let icon = Piece.classFromKey(this.pieceKey).createRep(addPlugin, x, y)[0]
+        let icon = pieceClass.createCard(addPlugin, x, y)[0]
+        if(icon)
+            icon.setScale(scale)
+        if(!icon)
+            icon = pieceClass.createRep(addPlugin, x, y)[0]
+
 
         return [icon, background]
     }

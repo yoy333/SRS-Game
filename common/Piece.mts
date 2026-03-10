@@ -18,6 +18,7 @@ type pieceStatics = {
     createRep:(addPlugin:GameObjects.GameObjectFactory, x:number, y:number)=>Array<sprite|image>
     createCard:(addPlugin:GameObjects.GameObjectFactory, x:number, y:number)=>Array<sprite|image>
     loadReps:(loadPlugin:Loader.LoaderPlugin)=>void
+    loadCard:(loadPlugin:Loader.LoaderPlugin)=>void
     spawnCost:number
     moveCost:number
 }
@@ -275,11 +276,12 @@ export class Zeus extends Piece{
     }
 
     static loadCard(loadPlugin:Loader.LoaderPlugin){
-
+        loadPlugin.image('zeus_card', 'zeus_card_v01.png')
     }
 
     static createCard(addPlugin:GameObjects.GameObjectFactory, x:number, y:number){
-        return []
+        let rep = addPlugin.image(x, y, 'zeus_card')
+        return [rep]
     }
 
     relativeMovementPattern: pattern = forward_1

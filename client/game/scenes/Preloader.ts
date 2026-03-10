@@ -33,6 +33,7 @@ export class Preloader extends Scene
         Board.loadReps(this.load)
         pieceTypeRegistery.forEach((pieceType:PieceType)=>{
             pieceType.loadReps(this.load)
+            pieceType.loadCard(this.load)
         })
         IconButton.loadReps(this.load)
 
