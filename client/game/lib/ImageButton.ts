@@ -35,6 +35,6 @@ export class EndTurnButton extends ImageButton{
     }
 
     static loadReps(loadPlugin: Loader.LoaderPlugin){
-        loadPlugin.image('endTurnButton', 'EndTurnButton_v01.png')
+        loadPlugin.image('endTurnButton', 'EndTurnButton_v02.png')
     }
 }

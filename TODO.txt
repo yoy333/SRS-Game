@@ -5,6 +5,7 @@ refactor player number to be 0 or 1
 refactor canX to be outside of Board
 refactor buttons
 make hand standardized
+split inputManager
 
 - Extra
 Turn History

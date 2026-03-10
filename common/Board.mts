@@ -99,6 +99,9 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         if(!playerNumber)
             playerNumber = this.playerNumber
 
+        // console.log("player number: "+playerNumber)
+        // console.log("current turn: "+this.currentTurn)
+
         return playerNumber==this.currentTurn
     }
 
@@ -116,10 +119,12 @@ export class Board implements Visual<Tilemaps.Tilemap>{
         //     this.isSpaceEmpty(x,y),
         //     this.isOnHomeRow(y, playerNumber),
         //     this.isNotSpectator(playerNumber),
-        //     this.doesHaveEnoughIchor(pieceType, playerNumber),
-        //     this.isMyTurn(playerNumber)
+        //     this.doesHaveEnoughIchor(pieceType.spawnCost, playerNumber),
+        //     this.isMyTurn(playerNumber),
+
         // ])
 
+    
         if(this.isSpaceEmpty(x,y)&&
             this.isOnHomeRow(y, playerNumber)&&
             this.isNotSpectator(playerNumber)&&

@@ -38,7 +38,7 @@ export class MyRoom extends Room {
           this.hands[playerNumber-1].replace(oldCard, newCard)
 
           this.clients[playerNumber-1].send('drawCard', newCard)
-          console.log(this.deck.drawCards)
+          // console.log(this.deck.drawCards)
       }else{
           console.log("hijacked spawn call")
       }
@@ -82,6 +82,8 @@ export class MyRoom extends Room {
             except: client
           })
           this.board.endTurn()
+      }else{
+        console.log("illegal end turn")
       }
     }
   }
