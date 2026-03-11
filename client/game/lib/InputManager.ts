@@ -120,7 +120,6 @@ export class InputManager implements Visual<undefined>{
 
         this.endTurnButton = new EndTurnButton(addPlugin, 850, 680)
         this.endTurnButton.onClick = () => {
-            console.log(this.endTurnButton)
             if(this.onEndTurn)
                 this.onEndTurn()
         }

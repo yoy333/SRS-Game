@@ -4,6 +4,7 @@ import { Board } from '@common/Board.mjs';
 import { Piece } from '@common/Piece.mjs';
 import { IconButton } from '../lib/IconButton';
 import { EndTurnButton } from 'game/lib/ImageButton';
+import { IchorDisplay } from 'game/lib/IchorDisplay';
 
 export class Preloader extends Scene
 {
@@ -41,6 +42,8 @@ export class Preloader extends Scene
             frameWidth:1024,
             frameHeight:1024,
         })
+
+        IchorDisplay.loadReps(this.load)
 
         EndTurnButton.loadReps(this.load)
     }

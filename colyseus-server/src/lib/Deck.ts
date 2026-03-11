@@ -1,4 +1,4 @@
-import { Artemis, DefaultPiece, Piece, PieceKey, PieceType, pieceTypeRegistery, Zeus } from "@common/Piece.mjs"
+import { PieceKey, PieceType, pieceTypeRegistery } from "@common/Piece.mjs"
 
 export class Deck{
     static numCards = 15
@@ -6,11 +6,13 @@ export class Deck{
     discardedCards:PieceKey[] = []
 
     constructor(){
+        console.log(pieceTypeRegistery)
         for(let i=0; i<5; i++){
             pieceTypeRegistery.forEach((piece: PieceType)=>{
                 this.drawCards.push(piece.key)
             })
         }
+        console.log(this.drawCards.length)
     }
 
     shuffle(){
