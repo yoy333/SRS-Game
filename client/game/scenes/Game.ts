@@ -40,7 +40,7 @@ export class Game extends Scene{
 
         this.inputManager.createReps(this.add)
 
-        this.ichorDisplay.createReps(this.add, 50, 650)
+        this.ichorDisplay.createReps(this.add, 350, 675)
         this.ichorDisplay.updateIchor(Board.maxIchorPerTurn)
 
         this.input.on('pointerdown', ()=>{
@@ -65,7 +65,6 @@ export class Game extends Scene{
         })
 
         room.onMessage("startingHand", (hand:PieceKey[])=>{
-            console.log(hand)
             this.hand = hand;
             this.inputManager.updateHand(this.add, this.hand)
         })

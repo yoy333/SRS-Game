@@ -3,6 +3,8 @@ import { PieceType , pieceTypeRegistery } from '@common/Piece.mjs';
 import { Board } from '@common/Board.mjs';
 import { Piece } from '@common/Piece.mjs';
 import { IconButton } from '../lib/IconButton';
+import { EndTurnButton } from 'game/lib/ImageButton';
+import { IchorDisplay } from 'game/lib/IchorDisplay';
 
 export class Preloader extends Scene
 {
@@ -32,6 +34,7 @@ export class Preloader extends Scene
         Board.loadReps(this.load)
         pieceTypeRegistery.forEach((pieceType:PieceType)=>{
             pieceType.loadReps(this.load)
+            pieceType.loadCard(this.load)
         })
         IconButton.loadReps(this.load)
 
@@ -39,6 +42,10 @@ export class Preloader extends Scene
             frameWidth:1024,
             frameHeight:1024,
         })
+
+        IchorDisplay.loadReps(this.load)
+
+        EndTurnButton.loadReps(this.load)
     }
 
     create ()

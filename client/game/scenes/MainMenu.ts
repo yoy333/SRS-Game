@@ -1,3 +1,4 @@
+import { Border } from 'game/lib/Border';
 import { Scene, GameObjects } from 'phaser';
 
 export class MainMenu extends Scene
@@ -10,9 +11,7 @@ export class MainMenu extends Scene
 
     create ()
     {
-        let tile = this.add.sprite(0, 0, 'background_tiles', 2)
-        tile.scale = 1/12
-        tile.setOrigin(0,0)
+        //let border = new Border(this.add, [0, 1920], [0,108000])
 
         let title = this.add.text(512, 460, 'Main Menu', {
             fontFamily: 'Arial Black', fontSize: 38, color: '#ffffff',

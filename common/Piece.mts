@@ -6,7 +6,7 @@ import { Loader } from "phaser";
 type sprite = GameObjects.Sprite
 type image = GameObjects.Image
 type point = [number, number]
-type pattern = Set<point>
+export type pattern = Set<point>
 const emptyPattern:pattern = new Set()
 
 type PT = new (...args: any[]) => Piece
@@ -18,6 +18,7 @@ type pieceStatics = {
     createRep:(addPlugin:GameObjects.GameObjectFactory, x:number, y:number)=>Array<sprite|image>
     createCard:(addPlugin:GameObjects.GameObjectFactory, x:number, y:number)=>Array<sprite|image>
     loadReps:(loadPlugin:Loader.LoaderPlugin)=>void
+    loadCard:(loadPlugin:Loader.LoaderPlugin)=>void
     spawnCost:number
     moveCost:number
 }
@@ -64,6 +65,14 @@ export abstract class Piece implements Visual<sprite|image>{
         this.isClientSide = isClientSide;
         this.playerOwner = playerOwner;
     }    
+
+    getWorldXYFromPerspective(x:number, y:number):[number, number]{
+        // console.log(`creating rep at ${x}, ${y}`)
+        let tile = this.board.reps[0].getTileAt(x,y)
+        if(!tile)
+            throw new Error(`no tile at (${x}, ${y})`)
+        return [tile.getCenterX(), tile.getCenterY()]
+    }
 
     createReps(addPlugin: GameObjects.GameObjectFactory): Array<sprite|image>{
         return []
@@ -153,17 +162,17 @@ export abstract class Piece implements Visual<sprite|image>{
     static classFromKey(key:string):PieceType{
         let pt = pieceTypeRegistery.get(key)
         if(!pt)
-            throw new Error("tried to get nonexistent piece type")
+            throw new Error("tried to get nonexistent piece type: "+key)
         return pt
     }
 }
 
-const square_1:pattern = new Set([
+export const square_1:pattern = new Set([
     [-1, -1], [0, -1], [1, -1],
     [-1, 0],           [1, 0],
     [-1, 1],  [0, 1],  [1, 1]
 ])
-const forward_1:pattern = new Set([
+export const forward_1:pattern = new Set([
     [-1, -1], [0, -1], [1, -1]
 ])
 
@@ -185,14 +194,7 @@ export class DefaultPiece extends Piece{
     createReps(addPlugin: GameObjects.GameObjectFactory): Array<sprite> {
         if(!this.isClientSide)
             throw new Error("Cannot create reps server-side")
-        let x = this.perspectiveX;
-        let y = this.perspectiveY; 
-        // console.log(`creating rep at ${x}, ${y}`)
-        let tile = this.board.reps[0].getTileAt(x,y)
-        if(!tile)
-            throw new Error(`no tile at (${x}, ${y})`)
-        let worldX = tile.getCenterX()
-        let worldY = tile.getCenterY()
+        let [worldX, worldY] = this.getWorldXYFromPerspective(this.perspectiveX, this.perspectiveY)
         if(this.key==""){
             console.warn('no key specified')
         }
@@ -249,14 +251,7 @@ export class Zeus extends Piece{
     createReps(addPlugin: GameObjects.GameObjectFactory): Array<sprite|image> {
         if(!this.isClientSide)
             throw new Error("Cannot create reps server-side")
-        let x = this.perspectiveX;
-        let y = this.perspectiveY; 
-        // console.log(`creating rep at ${x}, ${y}`)
-        let tile = this.board.reps[0].getTileAt(x,y)
-        if(!tile)
-            throw new Error(`no tile at (${x}, ${y})`)
-        let worldX = tile.getCenterX()
-        let worldY = tile.getCenterY()
+        let [worldX, worldY] = this.getWorldXYFromPerspective(this.perspectiveX, this.perspectiveY)
         if(this.key==""){
             console.warn('no key specified')
         }
@@ -275,11 +270,12 @@ export class Zeus extends Piece{
     }
 
     static loadCard(loadPlugin:Loader.LoaderPlugin){
-
+        loadPlugin.image('zeus_card', 'zeus_card_v01.png')
     }
 
     static createCard(addPlugin:GameObjects.GameObjectFactory, x:number, y:number){
-        return []
+        let rep = addPlugin.image(x, y, 'zeus_card')
+        return [rep]
     }
 
     relativeMovementPattern: pattern = forward_1
@@ -328,14 +324,8 @@ export class Artemis extends Piece{
     createReps(addPlugin: GameObjects.GameObjectFactory): Array<sprite|image> {
         if(!this.isClientSide)
             throw new Error("Cannot create reps server-side")
-        let x = this.perspectiveX;
-        let y = this.perspectiveY; 
-        // console.log(`creating rep at ${x}, ${y}`)
-        let tile = this.board.reps[0].getTileAt(x,y)
-        if(!tile)
-            throw new Error(`no tile at (${x}, ${y})`)
-        let worldX = tile.getCenterX()
-        let worldY = tile.getCenterY()
+        let [worldX, worldY] = this.getWorldXYFromPerspective(this.perspectiveX, this.perspectiveY)
+
         if(this.key==""){
             console.warn('no key specified')
         }
@@ -365,5 +355,115 @@ export class Artemis extends Piece{
     relativeMovementPattern: pattern = square_1
     relativeAttackingPattern: pattern = artemis_attack;
 }
-
 pieceTypeRegistery.set(Artemis.key, Artemis)
+
+export class Aries extends Piece{
+    static key = 'aries'
+    key = 'aries'
+
+    static spawnCost = 2;
+    static moveCost = 1;
+
+    constructor(addPlugin: GameObjects.GameObjectFactory, board:Board, x:number, y:number, isClientSide:boolean, playerOwner:number){
+        super(addPlugin,board, x, y, isClientSide, playerOwner)
+        if(this.isClientSide)
+            this.reps = this.createReps(addPlugin)
+    }
+
+    createReps(addPlugin: GameObjects.GameObjectFactory): Array<image> {
+        if(!this.isClientSide)
+            throw new Error("Cannot create reps server-side")
+        let [worldX, worldY] = this.getWorldXYFromPerspective(this.perspectiveX, this.perspectiveY)
+
+        if(this.key==""){
+            console.warn('no key specified')
+        }
+        let [primaryRep] = Aries.createRep(addPlugin, worldX, worldY)
+        return [primaryRep]
+    }
+
+    static createRep(addPlugin:GameObjects.GameObjectFactory, x:number, y:number){
+        let icon = addPlugin.image(x, y, Aries.key)
+        icon.setScale(1/25)
+        return [icon]
+    }
+
+    static loadReps(loadPlugin:Loader.LoaderPlugin){
+        loadPlugin.image(Aries.key, 'aries_v01.png')    
+    }
+
+    static loadCard(loadPlugin:Loader.LoaderPlugin){
+        loadPlugin.image('aries_card', 'aries_card_v01.png')
+    }
+
+    static createCard(addPlugin:GameObjects.GameObjectFactory, x:number, y:number){
+        let rep = addPlugin.image(x, y, 'aries_card')
+        return [rep];
+    }
+
+    relativeMovementPattern: pattern = forward_1
+    relativeAttackingPattern: pattern = square_1;
+
+    attackPiece(defendingPiece: Piece): void {
+        if(defendingPiece.tryToKill(this)){
+            this.board.movePiece(this.coordX, this.coordY, defendingPiece.coordX, defendingPiece.coordY)
+        }
+    }
+}
+pieceTypeRegistery.set(Aries.key, Aries)
+
+export class Apollo extends Piece{
+    static key = 'apollo'
+    key = 'apollo'
+
+    static spawnCost = 2;
+    static moveCost = 1;
+
+    constructor(addPlugin: GameObjects.GameObjectFactory, board:Board, x:number, y:number, isClientSide:boolean, playerOwner:number){
+        super(addPlugin,board, x, y, isClientSide, playerOwner)
+        if(this.isClientSide)
+            this.reps = this.createReps(addPlugin)
+    }
+
+    createReps(addPlugin: GameObjects.GameObjectFactory): Array<image> {
+        if(!this.isClientSide)
+            throw new Error("Cannot create reps server-side")
+        let [worldX, worldY] = this.getWorldXYFromPerspective(this.perspectiveX, this.perspectiveY)
+
+        if(this.key==""){
+            console.warn('no key specified')
+        }
+        let [primaryRep] = Apollo.createRep(addPlugin, worldX, worldY)
+        return [primaryRep]
+    }
+
+    static createRep(addPlugin:GameObjects.GameObjectFactory, x:number, y:number){
+        let icon = addPlugin.image(x, y, Apollo.key)
+        icon.setScale(1/25)
+        return [icon]
+    }
+
+    static loadReps(loadPlugin:Loader.LoaderPlugin){
+        loadPlugin.image(Apollo.key, 'apollo_v01.png')    
+    }
+
+    static loadCard(loadPlugin:Loader.LoaderPlugin){
+        loadPlugin.image('apollo_card', 'apollo_card_v01.png')
+    }
+
+    static createCard(addPlugin:GameObjects.GameObjectFactory, x:number, y:number){
+        let rep = addPlugin.image(x, y, 'apollo_card')
+        return [rep];
+    }
+
+    relativeMovementPattern: pattern = forward_1
+    relativeAttackingPattern: pattern = square_1;
+
+    attackPiece(defendingPiece: Piece): void {
+        if(defendingPiece.tryToKill(this)){
+            this.board.movePiece(this.coordX, this.coordY, defendingPiece.coordX, defendingPiece.coordY)
+        }
+    }
+}
+
+pieceTypeRegistery.set(Apollo.key, Apollo)
