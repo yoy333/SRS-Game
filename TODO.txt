@@ -4,11 +4,11 @@ force static rep to just return the rep, and not initialize it to player
 add type of all PieceTypeKeys
 refactor player number to be 0 or 1
 refactor canX to be outside of Board
+refactor board to be seperate from rendering
 figure out how to split the Piece class
 refactor buttons
 make hand standardized
 split inputManager
-create loading bus
 
 - Bug
 Don't replace highest card always, just replace the one last selected
