@@ -1,21 +1,22 @@
-import { PieceKey, PieceType, pieceTypeRegistery } from "@common/Piece.mjs"
+import { PieceKey, PieceType } from "@common/Piece.mjs"
+import { pieceTypeRegistery } from "@common/pieceRegistery.mjs"
 
-export class Deck{
+export class Deck {
     static numCards = 15
-    drawCards:PieceKey[] = []
-    discardedCards:PieceKey[] = []
+    drawCards: PieceKey[] = []
+    discardedCards: PieceKey[] = []
 
-    constructor(){
+    constructor() {
         console.log(pieceTypeRegistery)
-        for(let i=0; i<5; i++){
-            pieceTypeRegistery.forEach((piece: PieceType)=>{
+        for (let i = 0; i < 5; i++) {
+            pieceTypeRegistery.forEach((piece: PieceType) => {
                 this.drawCards.push(piece.key)
             })
         }
         console.log(this.drawCards.length)
     }
 
-    shuffle(){
+    shuffle() {
         let currentIndex = this.drawCards.length, randomIndex;
 
         // While there remain elements to shuffle.
@@ -30,21 +31,21 @@ export class Deck{
         }
     }
 
-    drawCard():PieceKey{
+    drawCard(): PieceKey {
         let piece = this.drawCards.pop()
         // if no more cards left in draw pile, put cards from discard back in hand then draw again.
-        if(!piece){
+        if (!piece) {
             this.recycle()
             return this.drawCard()
         }
         return piece
     }
 
-    returnCard(card:PieceKey){
+    returnCard(card: PieceKey) {
         this.discardedCards.push(card)
     }
 
-    recycle(){
+    recycle() {
         this.drawCards = this.discardedCards
         this.discardedCards = []
         this.shuffle()

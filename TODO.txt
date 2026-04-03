@@ -1,11 +1,12 @@
 - Refactoring
 refactor visual to force static create rep
 force static rep to just return the rep, and not initialize it to player
-add type of all PieceTypeKeys
-refactor player number to be 0 or 1
+
+Maybe
 refactor canX to be outside of Board
 refactor board to be seperate from rendering
-figure out how to split the Piece class
+
+Later
 refactor buttons
 make hand standardized
 split inputManager

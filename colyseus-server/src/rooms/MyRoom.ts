@@ -4,6 +4,7 @@ import { Board } from '@common/Board.mjs'
 import { Piece } from '@common/Piece.mjs'
 import { Deck } from "src/lib/Deck.js";
 import { Hand } from "@common/Hand.mjs";
+import { pieceUtils } from "@common/pieceRegistery.mjs";
 
 export class MyRoom extends Room {
   maxClients = 4;
@@ -20,7 +21,7 @@ export class MyRoom extends Room {
     "spawn": (client: Client, message: any[]) => {
       let [pieceTypeKey, x, y] = message;
       // this.state.turnHistory.push(`spawn ${pieceTypeKey} at (${x}, ${y})`)
-      let pieceType = Piece.classFromKey(pieceTypeKey)
+      let pieceType = pieceUtils.classFromKey(pieceTypeKey)
       // server must check player ownership in case of hijacked calls
       let playerNumber = this.getPlayerAssignment(client.sessionId)
 

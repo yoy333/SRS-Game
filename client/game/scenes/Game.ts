@@ -1,7 +1,7 @@
 import { Scene } from 'phaser';
 // import io, {type Socket} from 'socket.io-client'
 import { InputManager } from '../lib/InputManager'
-import { DefaultPiece, Piece, PieceKey, PieceType } from '@common/Piece.mjs';
+import { Piece, PieceKey, PieceType } from '@common/Piece.mjs';
 import { Board } from '@common/Board.mjs';
 import { IchorDisplay } from '../lib/IchorDisplay';
 import { Client, Callbacks } from '@colyseus/sdk'
