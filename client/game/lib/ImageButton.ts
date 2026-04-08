@@ -1,40 +1,34 @@
 import { GameObjects, Loader } from "phaser";
-import { Visual, visualPlugin } from "./Visual";
 import { Button } from "./Button";
+import { Rep, VisualMixin, visualPlugin } from "./Visual";
 
-export class ImageButton extends Button implements Visual<GameObjects.Image>{
-    numReps: number = 1;
-    reps: GameObjects.Image[] = [];
-    key: string;
+class EndTurnButtonRep implements Rep<GameObjects.Image> {
+    static key = 'endTurnButton'
+    constructor() {
 
-
-    constructor(addPlugin:GameObjects.GameObjectFactory, x:number, y:number, key:string){
-        super()
-        this.key = key;
-        this.reps = this.createReps(addPlugin, x, y)
-        this.createInteraction()
     }
 
-    createReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Image[] {
-        let rep = addPlugin.image(x, y, this.key)
-        return [rep]
+    createRep(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Image {
+        let rep = addPlugin.image(x, y, EndTurnButtonRep.key)
+        rep.setScale(1 / 12, 1 / 12)
+        return rep
+    }
+
+    loadRep(loadPlugin: Loader.LoaderPlugin): void {
+        loadPlugin.image(EndTurnButtonRep.key, 'EndTurnButton_v02.png')
     }
 }
 
-export class EndTurnButton extends ImageButton{
-    static key = 'endTurnButton'
+const endTurnMixin = VisualMixin(Button, [new EndTurnButtonRep()])
+export class EndTurnButton extends endTurnMixin {
+    button?: GameObjects.Image
 
-    constructor(addPlugin:GameObjects.GameObjectFactory, x:number, y:number){
-        super(addPlugin, x, y, EndTurnButton.key)
+    constructor() {
+        super()
     }
 
-    createReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Image[] {
-        let [rep] = super.createReps(addPlugin, x, y)
-        rep.setScale(1/12, 1/12)
-        return [rep]
-    }
-
-    static loadReps(loadPlugin: Loader.LoaderPlugin){
-        loadPlugin.image('endTurnButton', 'EndTurnButton_v02.png')
+    initReps(plugin: visualPlugin, x: number, y: number): void {
+        [this.button] = (this.constructor as typeof endTurnMixin).createReps(plugin, x, y)
+        this.createInteraction()
     }
 }

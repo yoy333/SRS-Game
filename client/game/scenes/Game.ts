@@ -1,53 +1,46 @@
 import { Scene } from 'phaser';
-// import io, {type Socket} from 'socket.io-client'
-import {InputManager} from '../lib/InputManager'
-import { DefaultPiece, Piece, PieceKey, PieceType } from '@common/Piece.mjs';
+import { InputManager } from '../lib/InputManager'
+import { PieceKey, PieceType } from '@common/Piece.mjs';
 import { Board } from '@common/Board.mjs';
 import { IchorDisplay } from '../lib/IchorDisplay';
-import {Client, Callbacks} from '@colyseus/sdk'
+import { Client, Callbacks } from '@colyseus/sdk'
+import { pieceUtils } from '@common/pieceRegistery.mjs';
 
-export class Game extends Scene{
+export class Game extends Scene {
 
     // socket?: Socket;
     inputManager: InputManager
 
-    constructor ()
-    {
+    constructor() {
         super('Game');
         this.inputManager = new InputManager()
         this.board = new Board(true)
         this.ichorDisplay = new IchorDisplay()
     }
 
-    preload(){
-        
+    preload() {
+
     }
 
     board: Board
     ichorDisplay: IchorDisplay
     hand: PieceKey[] = []
 
-    async create ()
-    {
-        // this.socket = io("http://localhost:8080/");
+    async create() {
+        this.board.initReps(this.make, 300, 0)
 
-        // this.socket.on('playerAssignment', (playerNumber:number)=>{
-        //     this.board.playerNumber = playerNumber
-        //     console.log("I am Player "+playerNumber)
-        // })
+        this.inputManager.initReps(this.add)
 
-        this.board.createReps(this.make, 300, 0)
-
-        this.inputManager.createReps(this.add)
-
-        this.ichorDisplay.createReps(this.add, 350, 675)
+        this.ichorDisplay.initReps(this.add, 350, 675)
         this.ichorDisplay.updateIchor(Board.maxIchorPerTurn)
 
-        this.input.on('pointerdown', ()=>{
-            let tileClicked = this.board?.reps[0]?.getTileAtWorldXY(this.input.x, this.input.y)
-            if(tileClicked){
+        this.input.on('pointerdown', () => {
+            // if(!this.board.tilemap)
+            //     console.warn("clicked but no tilemap")
+            let tileClicked = this.board?.tilemap?.getTileAtWorldXY(this.input.x, this.input.y)
+            if (tileClicked) {
                 this.inputManager.proccessClick(this.add, this.board, tileClicked.x, tileClicked.y)
-            }else{
+            } else {
                 //console.log("no tile clicked")
             }
         })
@@ -59,62 +52,63 @@ export class Game extends Scene{
         });
         const callbacks = Callbacks.get(room);
 
-        room.onMessage("playerAssignment", (playerNumber:number)=>{
+        room.onMessage("playerAssignment", (playerNumber: number) => {
             console.log(`recieved player assignment, ${playerNumber}, from Colyseus`)
             this.board.playerNumber = playerNumber;
         })
 
-        room.onMessage("startingHand", (hand:PieceKey[])=>{
+        room.onMessage("startingHand", (hand: PieceKey[]) => {
             this.hand = hand;
             this.inputManager.updateHand(this.add, this.hand)
         })
 
-        room.onMessage("drawCard", (card:PieceKey)=>{
+        room.onMessage("drawCard", (card: PieceKey) => {
             let index = this.hand.indexOf("")
-            if(index==-1)
+            if (index == -1)
                 throw new Error("not sure where to replace card")
 
             this.hand[index] = card
             this.inputManager.updateHand(this.add, this.hand)
         })
 
-        room.onMessage('otherSpawn', (message: any[])=>{
+        room.onMessage('otherSpawn', (message: any[]) => {
             let [pieceTypeKey, x, y] = message;
-            let pieceType = Piece.classFromKey(pieceTypeKey)
+            let pieceType = pieceUtils.classFromKey(pieceTypeKey)
             this.board.spawnPiece(pieceType, this.add, x, y, this.board.otherPlayerNumber)
         })
 
-        room.onMessage('otherMove', (message: any[])=>{
+        room.onMessage('otherMove', (message: any[]) => {
             let [startX, startY, endX, endY] = message;
-            this.board.movePiece(startX, startY, endX, endY)
+            this.board.movePiece(startX, startY, endX, endY, this.board.otherPlayerNumber)
         })
 
-        room.onMessage('otherAttack', (message:any[])=>{
+        room.onMessage('otherAttack', (message: any[]) => {
             let [attackerX, attackerY, defenderX, defenderY] = message;
             this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
         })
 
-        room.onMessage('otherEndTurn', ()=>{
+        room.onMessage('otherEndTurn', () => {
             this.board.endTurn()
         })
 
-        this.inputManager.onMove = (startX:number, startY:number, endX:number, endY:number)=>{
+        this.inputManager.onMove = (startX: number, startY: number, endX: number, endY: number) => {
             let moveCoords = [startX, startY, endX, endY] as const
             let piece = this.board.getPiece(startX, startY)
-            if(!piece)
+            if (!piece)
                 return;
-            if(this.board.canMovePiece(...moveCoords)){
+            if (this.board.canMovePiece(...moveCoords)) {
                 this.board.movePiece(...moveCoords)
                 this.ichorDisplay.updateIchor(this.board.myIchor)
                 room.send('move', moveCoords)
-            }else{
+            } else {
                 console.log("illegal move")
             }
         }
 
-        this.inputManager.onSpawn = (pieceType: PieceType, x:number, y:number, playerOwner?:number) => {
-            if(this.board.canSpawnPiece(pieceType, x, y, this.hand, playerOwner)){
+        this.inputManager.onSpawn = (pieceType: PieceType, x: number, y: number, playerOwner?: number) => {
+            if (this.board.canSpawnPiece(pieceType, x, y, this.hand, playerOwner)) {
                 this.board.spawnPiece(pieceType, this.add, x, y)
+                console.log(this.board.myIchor)
                 this.ichorDisplay.updateIchor(this.board.myIchor)
                 // this.socket.emit('spawn', [DefaultPiece.key, x, y])
                 room.send('spawn', [pieceType.key, x, y])
@@ -125,52 +119,30 @@ export class Game extends Scene{
                 this.hand[index] = ""
 
                 this.inputManager.iconButtons[index].stopInteraction()
-            }else{
+            } else {
                 console.log("illegal spawn")
             }
         }
 
         this.inputManager.onAttack = (attackerX, attackerY, defenderX, defenderY) => {
-            if(this.board.canAttackPiece(attackerX, attackerY, defenderX, defenderY)){
+            if (this.board.canAttackPiece(attackerX, attackerY, defenderX, defenderY)) {
                 this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
                 room.send('attack', [attackerX, attackerY, defenderX, defenderY])
-            }else{
+            } else {
                 console.log("illegal attack")
             }
         }
 
         this.inputManager.onEndTurn = () => {
-            if(this.board.canEndTurn()){
+            if (this.board.canEndTurn()) {
                 this.board.endTurn()
                 this.ichorDisplay.updateIchor(this.board.myIchor)
                 room.send('endTurn')
             }
         }
-
-        // this.socket.on('otherSpawn', (message: Array<any>)=>{
-        //     console.log(message)
-        //     let [pieceTypeKey, x, y] = message;
-        //     let pieceType = Piece.classFromKey(pieceTypeKey)
-        //     this.board.spawnPiece(pieceType, this.add, x, y, this.board.otherPlayerNumber)
-        // })
-
-        // this.socket.on('otherMove', (message:any[])=>{
-            // let [startX, startY, endX, endY] = message;
-            // this.board.movePiece(startX, startY, endX, endY)
-        // })
-
-        // this.socket.on('otherAttack', (message:any[])=>{
-        //     let [attackerX, attackerY, defenderX, defenderY] = message;
-        //     this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
-        // })
-
-        // this.socket.on('otherEndTurn', ()=>{
-        //     console.log("other player requested a turn end")
-        //     this.board.endTurn()
-        // })
     }
 
-    update(){
+    update() {
 
     }
 }

@@ -1,16 +1,12 @@
-import { Border } from 'game/lib/Border';
-import { Scene, GameObjects } from 'phaser';
+import { Scene } from 'phaser';
 
-export class MainMenu extends Scene
-{
+export class MainMenu extends Scene {
 
-    constructor ()
-    {
+    constructor() {
         super('MainMenu');
     }
 
-    create ()
-    {
+    create() {
         //let border = new Border(this.add, [0, 1920], [0,108000])
 
         let title = this.add.text(512, 460, 'Main Menu', {

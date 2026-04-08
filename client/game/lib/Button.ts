@@ -1,10 +1,14 @@
-export abstract class Button{
-    reps: any[] = []
+import { GameObjects } from "phaser"
 
-    onClick?:()=>void
-    createInteraction(){
-        this.reps[0].setInteractive().on('pointerdown', ()=>{
-            if(this.onClick)
+export abstract class Button {
+    abstract button?: GameObjects.Image | GameObjects.Sprite
+
+    onClick?: () => void
+    createInteraction() {
+        if (!this.button)
+            console.warn("no button but trying to create interactivity")
+        this.button?.setInteractive().on('pointerdown', () => {
+            if (this.onClick)
                 this.onClick()
         })
     }
