@@ -1,76 +1,100 @@
 import { InputManager } from './InputManager'
-import { Visual } from './Visual'
 import { GameObjects, Loader } from 'phaser'
-import { Piece, PieceKey, PieceType } from '@common/Piece.mjs'
+import { PieceKey, PieceType } from '@common/Piece.mjs'
 import { pieceUtils } from '@common/pieceRegistery.mjs'
+import { Rep, VisualMixin } from './Visual'
+import { DefaultPiece } from '@common/Pieces/DefaultPiece.mjs'
+
 type spriteOrImage = GameObjects.Sprite | GameObjects.Image
-export class IconButton implements Visual<spriteOrImage> {
-    reps: Array<spriteOrImage>
-    numReps: number = 3
-    //dragable: GameObjects.Image
-    pieceKey: string
 
-    constructor(addPlugin: GameObjects.GameObjectFactory, inputManager: InputManager, x: number, y: number, key: string) {
-        //this.dragable = this.reps[2]
-        this.pieceKey = key
-        this.reps = this.createReps(addPlugin, x, y)
-        this.createInteraction(inputManager)
+const IconButtonScale = 3 / 4
+
+class IconButtonBackground implements Rep<spriteOrImage> {
+    createRep(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): spriteOrImage {
+        let background = addPlugin.sprite(x, y, 'cards', 0).setScale(IconButtonScale)
+        return background
     }
 
-    static scale = 3 / 4
-
-    createReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): spriteOrImage[] {
-        let background = addPlugin.sprite(x, y, 'cards', 0).setScale(IconButton.scale)
-        //let icon = addPlugin.sprite(x, y, this.pieceKey, 0)//.setZ(1)
-        let pieceClass = pieceUtils.classFromKey(this.pieceKey)
-
-        let icon = this.tryUseCard(addPlugin, pieceClass, x, y)
-
-        return [icon, background]
-    }
-
-    tryUseCard(addPlugin: GameObjects.GameObjectFactory, pieceClass: PieceType, x: number, y: number): spriteOrImage {
-        let icon = pieceClass.createCard(addPlugin, x, y)[0]
-        if (icon)
-            icon.setScale(IconButton.scale)
-        if (!icon)
-            icon = pieceClass.createRep(addPlugin, x, y)[0]
-        return icon
-    }
-
-    static loadReps(loadPlugin: Loader.LoaderPlugin) {
-        // loadPlugin.spritesheet('buttons', 'ClassicalButtons.png', {
-        //     frameWidth:16,
-        //     frameHeight: 16
-        // })
+    loadRep(loadPlugin: Loader.LoaderPlugin): void {
         loadPlugin.spritesheet('cards', 'V1_Cards.png', {
             frameWidth: 256,
             frameHeight: 256,
             margin: 0,
         })
     }
+}
+
+const visualMixin = VisualMixin(Object, [new IconButtonBackground()])
+export class IconButton extends visualMixin {
+    numReps: number = 3
+    //dragable: GameObjects.Image
+    pieceKey: string
+
+    background?: GameObjects.Sprite
+    icon?: GameObjects.Image
+
+    constructor(inputManager: InputManager, key: string) {
+        super()
+        //this.dragable = this.reps[2]
+        this.pieceKey = key
+        // this.reps = this.createReps(addPlugin, x, y)
+        this.createInteraction(inputManager)
+    }
+
+    initReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): void {
+        let pieceClass = pieceUtils.classFromKey(this.pieceKey)
+        let reps = IconButton.createReps(addPlugin, x, y, pieceClass)
+
+        if (!(reps[0] instanceof GameObjects.Sprite))
+            throw new Error("something very wrong")
+
+        this.background = reps[0]
+        this.icon = reps[1]
+    }
+
+    static createReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number, pieceClass: PieceType = DefaultPiece)
+        : [GameObjects.Sprite, GameObjects.Image] {
+        let background = IconButton.reps[0].createRep(addPlugin, x, y)
+
+        let icon = IconButton.tryUseCard(addPlugin, pieceClass, x, y)
+
+        return [background, icon]
+    }
+
+    static tryUseCard(addPlugin: GameObjects.GameObjectFactory, pieceClass: PieceType, x: number, y: number): spriteOrImage {
+        let icon = pieceClass.createCard(addPlugin, x, y)[0]
+        if (icon)
+            icon.setScale(IconButtonScale)
+        if (!icon)
+            icon = pieceClass.createReps(addPlugin, x, y)[0]
+        return icon
+    }
 
     createInteraction(inputManager: InputManager) {
-        this.reps[0].setInteractive()
-        this.reps[0].on('pointerdown', () => {
+        this.icon?.setInteractive()
+        this.icon?.on('pointerdown', () => {
             inputManager.selectForSpawn(pieceUtils.classFromKey(this.pieceKey));
         })
     }
 
     stopInteraction() {
-        this.reps[0].removeInteractive()
+        this.icon?.removeInteractive()
     }
 
     updateIcon(addPlugin: GameObjects.GameObjectFactory, key: PieceKey) {
         this.pieceKey = key
 
-        let oldRep = this.reps[0]
+        let oldRep = this.icon
+        if (!oldRep) {
+            throw new Error("trying to update Icon when not init yet")
+        }
         let x = oldRep.x
         let y = oldRep.y
         // create icon where the old one was
-        let pieceClass = pieceUtils.classFromKey(this.pieceKey)
-        let icon = this.tryUseCard(addPlugin, pieceClass, x, y)
         oldRep.destroy(true)
-        this.reps[0] = icon
+
+        let pieceClass = pieceUtils.classFromKey(this.pieceKey)
+        let icon = IconButton.tryUseCard(addPlugin, pieceClass, x, y)
+        this.icon = icon
     }
 }

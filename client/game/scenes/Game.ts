@@ -1,10 +1,10 @@
 import { Scene } from 'phaser';
-// import io, {type Socket} from 'socket.io-client'
 import { InputManager } from '../lib/InputManager'
-import { Piece, PieceKey, PieceType } from '@common/Piece.mjs';
+import { PieceKey, PieceType } from '@common/Piece.mjs';
 import { Board } from '@common/Board.mjs';
 import { IchorDisplay } from '../lib/IchorDisplay';
 import { Client, Callbacks } from '@colyseus/sdk'
+import { pieceUtils } from '@common/pieceRegistery.mjs';
 
 export class Game extends Scene {
 
@@ -27,22 +27,17 @@ export class Game extends Scene {
     hand: PieceKey[] = []
 
     async create() {
-        // this.socket = io("http://localhost:8080/");
+        this.board.initReps(this.make, 300, 0)
 
-        // this.socket.on('playerAssignment', (playerNumber:number)=>{
-        //     this.board.playerNumber = playerNumber
-        //     console.log("I am Player "+playerNumber)
-        // })
+        this.inputManager.initReps(this.add)
 
-        this.board.createReps(this.make, 300, 0)
-
-        this.inputManager.createReps(this.add)
-
-        this.ichorDisplay.createReps(this.add, 350, 675)
+        this.ichorDisplay.initReps(this.add, 350, 675)
         this.ichorDisplay.updateIchor(Board.maxIchorPerTurn)
 
         this.input.on('pointerdown', () => {
-            let tileClicked = this.board?.reps[0]?.getTileAtWorldXY(this.input.x, this.input.y)
+            // if(!this.board.tilemap)
+            //     console.warn("clicked but no tilemap")
+            let tileClicked = this.board?.tilemap?.getTileAtWorldXY(this.input.x, this.input.y)
             if (tileClicked) {
                 this.inputManager.proccessClick(this.add, this.board, tileClicked.x, tileClicked.y)
             } else {
@@ -78,7 +73,7 @@ export class Game extends Scene {
 
         room.onMessage('otherSpawn', (message: any[]) => {
             let [pieceTypeKey, x, y] = message;
-            let pieceType = Piece.classFromKey(pieceTypeKey)
+            let pieceType = pieceUtils.classFromKey(pieceTypeKey)
             this.board.spawnPiece(pieceType, this.add, x, y, this.board.otherPlayerNumber)
         })
 
@@ -145,28 +140,6 @@ export class Game extends Scene {
                 room.send('endTurn')
             }
         }
-
-        // this.socket.on('otherSpawn', (message: Array<any>)=>{
-        //     console.log(message)
-        //     let [pieceTypeKey, x, y] = message;
-        //     let pieceType = Piece.classFromKey(pieceTypeKey)
-        //     this.board.spawnPiece(pieceType, this.add, x, y, this.board.otherPlayerNumber)
-        // })
-
-        // this.socket.on('otherMove', (message:any[])=>{
-        // let [startX, startY, endX, endY] = message;
-        // this.board.movePiece(startX, startY, endX, endY)
-        // })
-
-        // this.socket.on('otherAttack', (message:any[])=>{
-        //     let [attackerX, attackerY, defenderX, defenderY] = message;
-        //     this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
-        // })
-
-        // this.socket.on('otherEndTurn', ()=>{
-        //     console.log("other player requested a turn end")
-        //     this.board.endTurn()
-        // })
     }
 
     update() {

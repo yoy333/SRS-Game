@@ -1,10 +1,11 @@
 import { Scene } from 'phaser';
-import { PieceType } from '@common/Piece.mjs';
 import { pieceTypeRegistery } from '@common/pieceRegistery.mjs';
 import { Board } from '@common/Board.mjs';
 import { IconButton } from '../lib/IconButton';
 import { EndTurnButton } from 'game/lib/ImageButton';
 import { IchorDisplay } from 'game/lib/IchorDisplay';
+import { PieceType } from '@common/Piece.mjs';
+import { VisualConstructor } from 'game/lib/Visual';
 
 export class Preloader extends Scene {
     constructor() {
@@ -28,7 +29,7 @@ export class Preloader extends Scene {
         this.load.setPath('phaserAssets');
 
         Board.loadReps(this.load)
-        pieceTypeRegistery.forEach((pieceType: PieceType) => {
+        pieceTypeRegistery.forEach((pieceType: VisualConstructor & PieceType) => {
             pieceType.loadReps(this.load)
             pieceType.loadCard(this.load)
         })

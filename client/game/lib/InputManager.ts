@@ -1,17 +1,18 @@
 import { GameObjects } from "phaser";
 import { Board } from "@common/Board.mjs";
-import { Piece, PieceType, PieceKey } from "@common/Piece.mjs";
+import { Piece, PieceKey, PieceType } from "@common/Piece.mjs";
 import { DefaultPiece } from "@common/Pieces/DefaultPiece.mjs";
-// import { pieceTypeRegistery } from "@common/pieceRegistery.mjs";
-import { Visual } from "./Visual";
 import { IconButton } from "./IconButton";
-import { EndTurnButton, ImageButton } from "./ImageButton";
+import { EndTurnButton } from "./ImageButton";
 import { Hand } from '@common/Hand.mjs'
+import { VisualMixin } from "./Visual";
 
-export class InputManager implements Visual<undefined> {
+
+const visualMixin = VisualMixin(Object, [])
+export class InputManager extends visualMixin {
 
     constructor() {
-
+        super()
     }
 
     proccessClick(addPlugin: GameObjects.GameObjectFactory, board: Board, perspectiveX: number, perspectiveY: number) {
@@ -79,14 +80,9 @@ export class InputManager implements Visual<undefined> {
     reps: undefined[] = []
     numReps = 0
     iconButtons: IconButton[] = []
-    endTurnButton?: ImageButton
+    endTurnButton?: EndTurnButton
 
-    createReps(addPlugin: GameObjects.GameObjectFactory): undefined[] {
-        /*
-        Probably should have them extend from the same thing
-        Definently should standarize the implementation of both
-        */
-
+    initReps(addPlugin: GameObjects.GameObjectFactory): void {
         /* fix */
 
         const rows = 3
@@ -101,30 +97,20 @@ export class InputManager implements Visual<undefined> {
             let xPos = startX + xGrid * cellWidth;
             let yPos = startY + yGrid * cellHeight;
 
+            let button = new IconButton(this, DefaultPiece.key)
+            button.initReps(addPlugin, xPos, yPos)
+
             this.iconButtons.push(
-                new IconButton(addPlugin, this, xPos, yPos, DefaultPiece.key)
+                button
             )
         }
 
-        // this.iconButtons[0] =
-        //     new IconButton(addPlugin, this, 768, 96, DefaultPiece.key)
-
-        // this.iconButtons[1] =
-        //     new IconButton(addPlugin, this, 768, 296, Zeus.key)
-
-        // this.iconButtons[2] =
-        //     new IconButton(addPlugin, this, 768, 496, Artemis.key)
-
-        // this.iconButtons[3] =
-        //     new IconButton(addPlugin, this, 918, 96, Artemis.key)
-
-        this.endTurnButton = new EndTurnButton(addPlugin, 850, 680)
+        this.endTurnButton = new EndTurnButton()
+        this.endTurnButton.initReps(addPlugin, 850, 680)
         this.endTurnButton.onClick = () => {
             if (this.onEndTurn)
                 this.onEndTurn()
         }
-
-        return [];
     }
 
     updateHand(addPlugin: GameObjects.GameObjectFactory, hand: PieceKey[]) {

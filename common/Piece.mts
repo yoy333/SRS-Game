@@ -1,8 +1,6 @@
+import { VisualConstructor, VisualInstance, VisualMixin, visualPlugin } from "../client/game/lib/Visual.js";
 import { Board } from "./Board.mjs";
-import { Visual } from "../client/game/lib/Visual.js";
-import { Game, GameObjects } from "phaser";
-import { Loader } from "phaser";
-// import { pieceTypeRegistery } from './pieceRegistery.mjs'
+import { GameObjects, Loader } from "phaser";
 
 type sprite = GameObjects.Sprite
 type image = GameObjects.Image
@@ -10,25 +8,23 @@ type point = [number, number]
 export type pattern = Set<point>
 const emptyPattern: pattern = new Set()
 
-type PT = new (...args: any[]) => Piece
-
 export type PieceKey = string
-type pieceStatics = {
-    /* fix */
+
+type PieceStatics = {
     key: string
-    createRep: (addPlugin: GameObjects.GameObjectFactory, x: number, y: number) => Array<sprite | image>
-    createCard: (addPlugin: GameObjects.GameObjectFactory, x: number, y: number) => Array<sprite | image>
-    loadReps: (loadPlugin: Loader.LoaderPlugin) => void
+
     loadCard: (loadPlugin: Loader.LoaderPlugin) => void
+    createCard: (addPlugin: GameObjects.GameObjectFactory, x: number, y: number) => (sprite | image)[]
     spawnCost: number
     moveCost: number
 }
-export type PieceType = PT & pieceStatics
+type pieceConstructor = new (...args: any[]) => Piece
+export type PieceType = pieceConstructor & PieceStatics & VisualConstructor
 
-
-export abstract class Piece implements Visual<sprite | image> {
-    reps: Array<sprite | image>
-    numReps = 1;
+// const visualMixin = VisualMixin(Object, [])
+export abstract class Piece {
+    // extends visualMixin {
+    token?: sprite | image
     board: Board
 
     coordX: number
@@ -36,21 +32,21 @@ export abstract class Piece implements Visual<sprite | image> {
     perspectiveX: number
     perspectiveY: number
 
-    static key: string
     isClientSide: boolean
     playerOwner: number
 
     relativeMovementPattern: pattern = emptyPattern;
     relativeAttackingPattern: pattern = emptyPattern;
 
-    static spawnCost = 1;
-
     constructor(addPlugin: GameObjects.GameObjectFactory | undefined, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {
+        // super()
         if (addPlugin == undefined && isClientSide) {
             throw new Error("add plugin must be provided for client side pieces")
         }
 
-        this.reps = []
+        // if (addPlugin)
+        //     this.initReps(addPlugin, x, y)
+
         this.board = board;
 
         this.coordX = x;
@@ -64,18 +60,24 @@ export abstract class Piece implements Visual<sprite | image> {
 
         this.isClientSide = isClientSide;
         this.playerOwner = playerOwner;
+
+        if (!addPlugin)
+            return;
     }
 
     getWorldXYFromPerspective(x: number, y: number): [number, number] {
         // console.log(`creating rep at ${x}, ${y}`)
-        let tile = this.board.reps[0].getTileAt(x, y)
+        let tile = this.board.tilemap?.getTileAt(x, y)
         if (!tile)
             throw new Error(`no tile at (${x}, ${y})`)
         return [tile.getCenterX(), tile.getCenterY()]
     }
 
-    createReps(addPlugin: GameObjects.GameObjectFactory): Array<sprite | image> {
-        return []
+    initReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): void {
+        let [worldX, worldY] = this.getWorldXYFromPerspective(this.perspectiveX, this.perspectiveY) as [number, number]
+
+        // this.initToken(addPlugin, worldX, worldY)
+        [this.token] = (this.constructor as VisualConstructor).createReps(addPlugin, worldX, worldY)
     }
 
     setCoord(x: number, y: number) {
@@ -89,12 +91,12 @@ export abstract class Piece implements Visual<sprite | image> {
     }
 
     updateRep() {
-        let tile = this.board.reps[0].getTileAt(this.perspectiveX, this.perspectiveY)
+        let tile = this.board.tilemap?.getTileAt(this.perspectiveX, this.perspectiveY)
         if (!tile)
             throw new Error(`no tile at (${this.coordX}, ${this.coordY})`)
         let worldX = tile.getCenterX()
         let worldY = tile.getCenterY()
-        this.reps[0].setPosition(worldX, worldY)
+        this.token?.setPosition(worldX, worldY)
     }
 
     withinPattern(pattern: pattern, x: number, y: number) {
@@ -148,9 +150,9 @@ export abstract class Piece implements Visual<sprite | image> {
     }
 
     die() {
-        this.reps.forEach((rep: sprite | image) => {
-            rep.destroy(true)
-        })
+        // this.reps.forEach((rep: sprite | image) => {
+        this.token?.destroy(true)
+        // })
         this.board.setPiece(this.coordX, this.coordY, null)
     }
 }
@@ -163,6 +165,3 @@ export const square_1: pattern = new Set([
 export const forward_1: pattern = new Set([
     [-1, -1], [0, -1], [1, -1]
 ])
-
-
-

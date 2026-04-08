@@ -1,41 +1,10 @@
 import { GameObjects, Tilemaps } from "phaser"
 import { Piece, PieceKey, PieceType } from "./Piece.mjs"
-import { Visual } from "../client/game/lib/Visual.js"
+import { Rep, VisualMixin } from "../client/game/lib/Visual.js"
 import { Loader } from "phaser"
 
-export class Board implements Visual<Tilemaps.Tilemap> {
-    static rows = 10
-    static columns = 10
-    reps: Array<Tilemaps.Tilemap>
-    numReps = 1
-    lookup: (Piece | null)[]
-    playerNumber: number = 0;
-    //0 by default until assigned
-    isClientSide: boolean
-
-    static maxIchorPerTurn: number = 5;
-    ichor: [number, number] = [Board.maxIchorPerTurn, Board.maxIchorPerTurn];
-
-    get myIchor(): number {
-        return this.ichor[this.playerNumber]
-    }
-
-    constructor(isClientSide: boolean) {
-        this.reps = []
-        this.lookup = [];
-        this.lookup.fill(null)
-        this.isClientSide = isClientSide
-    }
-
-    static flipPoint(x: number, y: number): [number, number] {
-        // -1 because it starts at 0
-        y = (Board.rows - 1) - y
-        return [x, y]
-    }
-
-    createReps(makePlugin: GameObjects.GameObjectCreator, x: number, y: number): Array<Tilemaps.Tilemap> {
-        if (!this.isClientSide)
-            throw new Error("Cannot create reps server-side")
+class BoardTilemap implements Rep<Tilemaps.Tilemap> {
+    createRep(makePlugin: GameObjects.GameObjectCreator, x: number, y: number): Tilemaps.Tilemap {
         //Create the Tilemap
         let map = makePlugin.tilemap({ key: 'tilemap' })
 
@@ -49,15 +18,61 @@ export class Board implements Visual<Tilemaps.Tilemap> {
         let ground = map.createLayer(0, tiles, x, y)
         // ground!.setScale(1/8)
 
-        this.reps = [map]
-        return this.reps
+        return map
+    }
+
+    loadRep(loadPlugin: Loader.LoaderPlugin) {
+        loadPlugin.image('V1_Tiles', 'tilemap/V1_Tiles.png')
+        loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/DemoBoard.json')
+    }
+}
+
+const visualMixin = VisualMixin(Object, [new BoardTilemap()])
+export class Board extends visualMixin {
+    static rows = 10
+    static columns = 10
+    static reps: Rep<any>[] = [new BoardTilemap()]
+    numReps = 1
+    lookup: (Piece | null)[]
+    playerNumber: number = 0;
+    //0 by default until assigned
+    isClientSide: boolean
+    tilemap?: Tilemaps.Tilemap
+
+
+    static maxIchorPerTurn: number = 5;
+    ichor: [number, number] = [Board.maxIchorPerTurn, Board.maxIchorPerTurn];
+
+    get myIchor(): number {
+        return this.ichor[this.playerNumber]
+    }
+
+    constructor(isClientSide: boolean) {
+        super()
+        this.lookup = [];
+        this.lookup.fill(null)
+        this.isClientSide = isClientSide
+    }
+
+    static flipPoint(x: number, y: number): [number, number] {
+        // -1 because it starts at 0
+        y = (Board.rows - 1) - y
+        return [x, y]
+    }
+
+    initReps(makePlugin: GameObjects.GameObjectCreator, x: number, y: number): void {
+        if (!this.isClientSide)
+            throw new Error("Cannot create reps server-side")
+
+        this.tilemap = Board.reps[0].createRep(makePlugin, x, y)
+    }
+
+    static createReps(makePlugin: GameObjects.GameObjectCreator, x: number, y: number): Tilemaps.Tilemap[] {
+        return [Board.reps[0].createRep(makePlugin, x, y)]
     }
 
     static loadReps(loadPlugin: Loader.LoaderPlugin) {
-        loadPlugin.image('V1_Tiles', 'tilemap/V1_Tiles.png')
-        loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/DemoBoard.json')
-        // loadPlugin.image('exp_tileset_01', 'tilemap/exp_tileset_02.png')
-        // loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/exp_tilemap_01.json')
+        Board.reps[0].loadRep(loadPlugin)
     }
 
     isOnHomeRow(y: number, playerNumber?: number) {
@@ -140,6 +155,10 @@ export class Board implements Visual<Tilemaps.Tilemap> {
         if (playerOwner == undefined)
             playerOwner = this.playerNumber
         let piece = new pieceType(addPlugin, this, x, y, this.isClientSide, playerOwner);
+        if (!addPlugin && this.isClientSide)
+            throw new Error("add plugin undefined even though borad is client side")
+        if (addPlugin)
+            piece.initReps(addPlugin, x, y)
         this.setPiece(x, y, piece)
         console.log(`removing ${pieceType.spawnCost} from player: ${playerOwner}`)
         this.ichor[playerOwner] -= pieceType.spawnCost;

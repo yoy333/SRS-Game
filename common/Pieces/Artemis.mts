@@ -1,8 +1,8 @@
-import { Piece, pattern, forward_1, square_1 } from "../Piece.mjs";
-import { Board } from "../Board.mts";
+import { Piece, pattern, square_1 } from "../Piece.mjs";
+import { Board } from "../Board.mjs";
 import { GameObjects, Loader } from "phaser";
+import { Rep, VisualMixin } from "../../client/game/lib/Visual.js";
 
-type sprite = GameObjects.Sprite
 type image = GameObjects.Image
 
 const artemis_attack: pattern = new Set([
@@ -12,40 +12,31 @@ const artemis_attack: pattern = new Set([
   [-2, 2], [2, 2],
 ])
 
-export class Artemis extends Piece {
+class ArtemisToken implements Rep<GameObjects.Sprite | GameObjects.Image> {
+  createRep(plugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Sprite | GameObjects.Image {
+    let icon = plugin.image(x, y, Artemis.key, 0)
+    icon.setScale(1 / 32, 1 / 32)
+    icon.setOrigin(0.5, 0.4)
+    return icon
+  }
+
+  loadRep(loadPlugin: Loader.LoaderPlugin): void {
+    loadPlugin.image(Artemis.key, 'artemis_v02.png')
+  }
+}
+
+const visualMixin = VisualMixin(Piece, [new ArtemisToken()])
+export class Artemis extends visualMixin {
   static key = 'artemis'
-  key = 'artemis'
+  static reps: Rep<image>[] = [new ArtemisToken()]
 
   static spawnCost = 2;
   static moveCost = 1;
 
   constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {
     super(addPlugin, board, x, y, isClientSide, playerOwner)
-    if (this.isClientSide)
-      this.reps = this.createReps(addPlugin)
-  }
-
-  createReps(addPlugin: GameObjects.GameObjectFactory): Array<sprite | image> {
     if (!this.isClientSide)
-      throw new Error("Cannot create reps server-side")
-    let [worldX, worldY] = this.getWorldXYFromPerspective(this.perspectiveX, this.perspectiveY)
-
-    if (this.key == "") {
-      console.warn('no key specified')
-    }
-    let [primaryRep] = Artemis.createRep(addPlugin, worldX, worldY)
-    return [primaryRep]
-  }
-
-  static createRep(addPlugin: GameObjects.GameObjectFactory, x: number, y: number) {
-    let icon = addPlugin.image(x, y, this.key, 0)
-    icon.setScale(1 / 32, 1 / 32)
-    icon.setOrigin(0.5, 0.4)
-    return [icon]
-  }
-
-  static loadReps(loadPlugin: Loader.LoaderPlugin) {
-    loadPlugin.image(Artemis.key, 'artemis_v02.png')
+      return;
   }
 
   static loadCard(loadPlugin: Loader.LoaderPlugin) {
