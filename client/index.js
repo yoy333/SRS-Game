@@ -6,14 +6,6 @@ const app = express();
 import http from 'http'
 const server = new http.Server(app);
 
-// import { Server as SocketIOServer } from 'socket.io';
-// legacy server
-// const io = new SocketIOServer(server, {
-//   cors: {
-//     origin: '*'
-//   }
-// });
-
 import jsdom from 'jsdom'
 const { JSDOM } = jsdom;
 
