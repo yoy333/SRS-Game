@@ -1,9 +1,9 @@
 import { GameObjects, Tilemaps } from "phaser"
 import { Piece, PieceKey, PieceType } from "./Piece.mjs"
-import { Rep, VisualMixin } from "../client/game/lib/Visual.js"
+import { Rep, VisualMixin, visualPlugin } from "../client/game/lib/Visual.js"
 import { Loader } from "phaser"
 
-class BoardTilemap implements Rep<Tilemaps.Tilemap> {
+class TilemapRep implements Rep<Tilemaps.Tilemap> {
     createRep(makePlugin: GameObjects.GameObjectCreator, x: number, y: number): Tilemaps.Tilemap {
         //Create the Tilemap
         let map = makePlugin.tilemap({ key: 'tilemap' })
@@ -21,17 +21,16 @@ class BoardTilemap implements Rep<Tilemaps.Tilemap> {
         return map
     }
 
-    loadRep(loadPlugin: Loader.LoaderPlugin) {
+    loadRep(loadPlugin: Loader.LoaderPlugin): void {
         loadPlugin.image('V1_Tiles', 'tilemap/V1_Tiles.png')
         loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/DemoBoard.json')
     }
 }
 
-const visualMixin = VisualMixin(Object, [new BoardTilemap()])
+const visualMixin = VisualMixin(Object, [new TilemapRep])
 export class Board extends visualMixin {
     static rows = 10
     static columns = 10
-    static reps: Rep<any>[] = [new BoardTilemap()]
     numReps = 1
     lookup: (Piece | null)[]
     playerNumber: number = 0;
@@ -39,9 +38,13 @@ export class Board extends visualMixin {
     isClientSide: boolean
     tilemap?: Tilemaps.Tilemap
 
-
     static maxIchorPerTurn: number = 5;
-    ichor: [number, number] = [Board.maxIchorPerTurn, Board.maxIchorPerTurn];
+    private ichor: [number, number] = [Board.maxIchorPerTurn, Board.maxIchorPerTurn];
+    private ichorForNextTurn: [number, number] = [0, 0]
+
+    addIchorToNextTurn(ichor: number, playerNumber: number) {
+        this.ichorForNextTurn[playerNumber] += ichor
+    }
 
     get myIchor(): number {
         return this.ichor[this.playerNumber]
@@ -54,29 +57,18 @@ export class Board extends visualMixin {
         this.isClientSide = isClientSide
     }
 
+    initReps(plugin: GameObjects.GameObjectCreator, x: number, y: number): void {
+        [this.tilemap] = Board.createReps(plugin, x, y)
+    }
+
     static flipPoint(x: number, y: number): [number, number] {
         // -1 because it starts at 0
         y = (Board.rows - 1) - y
         return [x, y]
     }
 
-    initReps(makePlugin: GameObjects.GameObjectCreator, x: number, y: number): void {
-        if (!this.isClientSide)
-            throw new Error("Cannot create reps server-side")
-
-        this.tilemap = Board.reps[0].createRep(makePlugin, x, y)
-    }
-
-    static createReps(makePlugin: GameObjects.GameObjectCreator, x: number, y: number): Tilemaps.Tilemap[] {
-        return [Board.reps[0].createRep(makePlugin, x, y)]
-    }
-
-    static loadReps(loadPlugin: Loader.LoaderPlugin) {
-        Board.reps[0].loadRep(loadPlugin)
-    }
-
     isOnHomeRow(y: number, playerNumber?: number) {
-        if (playerNumber == undefined)
+        if (!playerNumber)
             playerNumber = this.playerNumber
 
         //console.log("checking "+y)
@@ -97,14 +89,14 @@ export class Board extends visualMixin {
     }
 
     isNotSpectator(playerNumber?: number): boolean {
-        if (playerNumber == undefined)
+        if (!playerNumber)
             playerNumber = this.playerNumber
 
-        return playerNumber != -1;
+        return playerNumber >= 0
     }
 
     doesHaveEnoughIchor(cost: number, playerNumber?: number) {
-        if (playerNumber == undefined)
+        if (!playerNumber)
             playerNumber = this.playerNumber
 
         return cost <= this.ichor[playerNumber]
@@ -113,6 +105,9 @@ export class Board extends visualMixin {
     isMyTurn(playerNumber?: number): boolean {
         if (!playerNumber)
             playerNumber = this.playerNumber
+
+        // console.log("player number: "+playerNumber)
+        // console.log("current turn: "+this.currentTurn)
 
         return playerNumber == this.currentTurn
     }
@@ -132,7 +127,7 @@ export class Board extends visualMixin {
         //     this.isOnHomeRow(y, playerNumber),
         //     this.isNotSpectator(playerNumber),
         //     this.doesHaveEnoughIchor(pieceType.spawnCost, playerNumber),
-        // this.isMyTurn(playerNumber),
+        //     this.isMyTurn(playerNumber),
         // ])
 
 
@@ -151,16 +146,13 @@ export class Board extends visualMixin {
         if (this.isClientSide && addPlugin == undefined) {
             throw new Error("must specify add plugin for client side pieces")
         }
-        console.log(`spawning from: ${x}, ${y}`)
+        // console.log(`spawning from: ${x}, ${y}`)
         if (playerOwner == undefined)
             playerOwner = this.playerNumber
         let piece = new pieceType(addPlugin, this, x, y, this.isClientSide, playerOwner);
-        if (!addPlugin && this.isClientSide)
-            throw new Error("add plugin undefined even though borad is client side")
         if (addPlugin)
             piece.initReps(addPlugin, x, y)
         this.setPiece(x, y, piece)
-        console.log(`removing ${pieceType.spawnCost} from player: ${playerOwner}`)
         this.ichor[playerOwner] -= pieceType.spawnCost;
         return piece
     }
@@ -189,7 +181,7 @@ export class Board extends visualMixin {
     }
 
     canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber?: number): boolean {
-        if (playerNumber == undefined)
+        if (!playerNumber)
             playerNumber = this.playerNumber;
 
         let piece = this.getPiece(startX, startY)
@@ -206,10 +198,8 @@ export class Board extends visualMixin {
     }
 
     movePiece(startX: number, startY: number, endX: number, endY: number, playerNumber?: number) {
-        console.log("player number before: " + playerNumber)
-        if (playerNumber == undefined)
+        if (!playerNumber)
             playerNumber = this.playerNumber
-        console.log("player number after: " + playerNumber)
 
         let piece = this.getPiece(startX, startY)
         if (!piece)
@@ -217,7 +207,6 @@ export class Board extends visualMixin {
 
         const cost = (piece.constructor as PieceType).moveCost
 
-        console.log(`removing ${cost} from player: ${playerNumber}`)
         this.ichor[playerNumber] -= cost
 
         piece.movePiece(startX, startY, endX, endY)
@@ -226,14 +215,13 @@ export class Board extends visualMixin {
     currentTurn = 0;
 
     canEndTurn(playerNumber?: number) {
-        if (playerNumber == undefined)
+        if (!playerNumber)
             playerNumber = this.playerNumber
 
         return this.isMyTurn(playerNumber)
     }
 
     endTurn() {
-        console.log("ending turn for player: " + this.currentTurn)
         this.ichor[this.currentTurn] = Board.maxIchorPerTurn;
 
         if (this.currentTurn == 0) {
@@ -253,7 +241,7 @@ export class Board extends visualMixin {
 
     //move to Game Rules
     canAttackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number, playerNumber?: number) {
-        if (playerNumber == undefined)
+        if (!playerNumber)
             playerNumber = this.playerNumber
 
         let attackingPiece = this.getPiece(attackerX, attackerY)
@@ -291,12 +279,15 @@ export class Board extends visualMixin {
         let i = this.getIndexFromXY(x, y);
 
         this.lookup[i] = p
+
+        // console.log("immediate")
+        // console.log(this.lookup[i])
     }
 
     get otherPlayerNumber() {
-        if (this.playerNumber == 0)
-            return 1;
+        if (this.playerNumber == 1)
+            return 2;
         else
-            return 0;
+            return 1;
     }
 }
