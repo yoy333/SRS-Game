@@ -1,8 +1,7 @@
 import { Piece, pattern, forward_1, square_1 } from "../Piece.mjs";
 import { Board } from "../Board.mjs";
 import { GameObjects, Loader } from "phaser";
-import { pieceTypeRegistery } from "@common/pieceRegistery.mjs";
-import { Rep, VisualConstructor, VisualMixin, visualPlugin } from "../../client/game/lib/Visual";
+import { Rep, VisualConstructor, VisualMixin, visualPlugin } from "../../client/game/lib/Visual.js";
 
 type sprite = GameObjects.Sprite
 
@@ -21,7 +20,6 @@ class DefaultPieceToken implements Rep<sprite> {
     }
 }
 
-
 const visualMixin = VisualMixin(Piece, [new DefaultPieceToken()])
 export class DefaultPiece extends visualMixin {
     static key = 'default'
@@ -33,8 +31,6 @@ export class DefaultPiece extends visualMixin {
 
     constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {
         super(addPlugin, board, x, y, isClientSide, playerOwner)
-        // if (this.isClientSide)
-        //     this.reps = this.createReps(addPlugin)
     }
 
     static loadCard(loadPlugin: Loader.LoaderPlugin) {

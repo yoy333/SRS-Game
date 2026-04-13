@@ -1,9 +1,8 @@
 import { Piece, pattern, forward_1, square_1 } from "../Piece.mjs";
 import { Board } from "../Board.mjs";
 import { GameObjects, Loader } from "phaser";
-import { Rep, VisualMixin } from "../../client/game/lib/Visual";
+import { Rep, VisualMixin } from "../../client/game/lib/Visual.js";
 
-type image = GameObjects.Image
 
 class ApolloToken implements Rep<GameObjects.Image> {
   createRep(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Image {
