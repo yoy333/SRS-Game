@@ -1,7 +1,10 @@
 import { GameObjects, Tilemaps } from "phaser"
 import { Piece, PieceKey, PieceType } from "./Piece.mjs"
-import { Rep, VisualMixin, visualPlugin } from "../client/game/lib/Visual.js"
+import { Rep, VisualConstructor, VisualMixin } from "../client/game/lib/Visual.js"
 import { Loader } from "phaser"
+import { NeutralObjective } from './NeutralObjective.mjs'
+import { IchorObj } from "./IchorObj.mjs"
+import { ConcreteConstructor } from "./utils.mjs"
 
 class TilemapRep implements Rep<Tilemaps.Tilemap> {
     createRep(makePlugin: GameObjects.GameObjectCreator, x: number, y: number): Tilemaps.Tilemap {
@@ -65,6 +68,25 @@ export class Board extends visualMixin {
         // -1 because it starts at 0
         y = (Board.rows - 1) - y
         return [x, y]
+    }
+
+    getWorldXYFromPerspective(x: number, y: number): [number, number] {
+        // console.log(`creating rep at ${x}, ${y}`)
+        let tile = this.tilemap?.getTileAt(x, y)
+        if (!tile)
+            throw new Error(`no tile at (${x}, ${y})`)
+        return [tile.getCenterX(), tile.getCenterY()]
+    }
+
+    addNObj(addPlugin: GameObjects.GameObjectFactory | undefined, nObj: ConcreteConstructor<NeutralObjective> & VisualConstructor,
+        xCoord: number, yCoord: number) {
+
+        let [xPerspectiveCoord, yPerspectiveCoord] = this.adjustIfFlip(xCoord, yCoord)
+        let [worldX, worldY] = this.getWorldXYFromPerspective(xPerspectiveCoord, yPerspectiveCoord)
+        let inst = new nObj(xCoord, yCoord)
+        if (addPlugin)
+            inst.initReps(addPlugin, worldX, worldY)
+        this.nObjs.push(inst)
     }
 
     isOnHomeRow(y: number, playerNumber?: number) {
@@ -197,6 +219,14 @@ export class Board extends visualMixin {
             piece.canMovePiece(startX, startY, endX, endY, playerNumber))
     }
 
+    nObjs: NeutralObjective[] = []
+
+    getNObj(xCoord: number, yCoord: number): NeutralObjective[] {
+        return this.nObjs.filter((nObj: NeutralObjective) => {
+            return (nObj.xCoord == xCoord && nObj.yCoord == yCoord)
+        })
+    }
+
     movePiece(startX: number, startY: number, endX: number, endY: number, playerNumber?: number) {
         if (!playerNumber)
             playerNumber = this.playerNumber
@@ -210,6 +240,10 @@ export class Board extends visualMixin {
         this.ichor[playerNumber] -= cost
 
         piece.movePiece(startX, startY, endX, endY)
+
+        this.getNObj(endX, endY).forEach((objective: NeutralObjective) => {
+            objective.onCollision(piece)
+        })
     }
 
     currentTurn = 0;
@@ -222,7 +256,8 @@ export class Board extends visualMixin {
     }
 
     endTurn() {
-        this.ichor[this.currentTurn] = Board.maxIchorPerTurn;
+        this.ichor[this.currentTurn] = Board.maxIchorPerTurn + this.ichorForNextTurn[this.playerNumber]
+        this.ichorForNextTurn[this.currentTurn] = 0
 
         if (this.currentTurn == 0) {
             this.currentTurn = 1

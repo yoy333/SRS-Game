@@ -5,6 +5,7 @@ import { Board } from '@common/Board.mjs';
 import { IchorDisplay } from '../lib/IchorDisplay';
 import { Client, Callbacks } from '@colyseus/sdk'
 import { pieceUtils } from '@common/pieceRegistery.mjs';
+import { IchorObj } from '@common/IchorObj.mjs';
 
 export class Game extends Scene {
 
@@ -55,6 +56,8 @@ export class Game extends Scene {
         room.onMessage("playerAssignment", (playerNumber: number) => {
             console.log(`recieved player assignment, ${playerNumber}, from Colyseus`)
             this.board.playerNumber = playerNumber;
+
+            this.board.addNObj(this.add, IchorObj, 5, 5)
         })
 
         room.onMessage("startingHand", (hand: PieceKey[]) => {
