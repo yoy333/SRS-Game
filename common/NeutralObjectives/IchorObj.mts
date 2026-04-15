@@ -1,8 +1,8 @@
+import { NeutralObjective } from "@common/NeutralObjective.mjs";
+import { Piece } from "@common/Piece.mjs";
 import { GameObjects } from "phaser";
-import { NeutralObjective } from "./NeutralObjective.mjs";
-import { Piece } from "./Piece.mjs";
-import { VisualMixin } from "../client/game/lib/Visual";
-import { Drop } from '../client/game/lib/IchorDisplay'
+import { VisualMixin } from "../../client/game/lib/Visual.js";
+import { Drop } from '../../client/game/lib/IchorDisplay.js'
 
 const visualMixin = VisualMixin(NeutralObjective, [new Drop()])
 export class IchorObj extends visualMixin {

@@ -17,6 +17,7 @@ type PieceStatics = {
     createCard: (addPlugin: GameObjects.GameObjectFactory, x: number, y: number) => (sprite | image)[]
     spawnCost: number
     moveCost: number
+    // attackCost?: number
 }
 type pieceConstructor = new (...args: any[]) => Piece
 export type PieceType = pieceConstructor & PieceStatics & VisualConstructor
@@ -80,7 +81,7 @@ export abstract class Piece {
         [this.token] = (this.constructor as VisualConstructor).createReps(addPlugin, worldX, worldY)
     }
 
-    setCoord(x: number, y: number) {
+    setCoord(x: number, y: number): void {
         this.coordX = x;
         this.coordY = y;
 
@@ -121,12 +122,7 @@ export abstract class Piece {
 
     movePiece(startX: number, startY: number, endX: number, endY: number) {
         // console.log(`moving from ${startX}, ${startY} to ${endX}, ${endY}`)
-
-        this.board.setPiece(endX, endY, this)
-
         this.setCoord(endX, endY)
-
-        this.board.setPiece(startX, startY, null);
     }
 
     canAttackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number, playerNumber: number) {

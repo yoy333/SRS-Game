@@ -1,4 +1,8 @@
 {
+  "references":[
+    {"path": "../common/"}
+  ],
+
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     // File Layout
@@ -6,6 +10,9 @@
     "paths": {
       "@common/*": ["../common/*"]
     },
+
+    "composite": true,
+
     // "rootDir": "./src",
     // "outDir": "./dist",
 

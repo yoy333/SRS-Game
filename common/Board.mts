@@ -3,7 +3,6 @@ import { Piece, PieceKey, PieceType } from "./Piece.mjs"
 import { Rep, VisualConstructor, VisualMixin } from "../client/game/lib/Visual.js"
 import { Loader } from "phaser"
 import { NeutralObjective } from './NeutralObjective.mjs'
-import { IchorObj } from "./IchorObj.mjs"
 import { ConcreteConstructor } from "./utils.mjs"
 
 class TilemapRep implements Rep<Tilemaps.Tilemap> {
@@ -81,11 +80,13 @@ export class Board extends visualMixin {
     addNObj(addPlugin: GameObjects.GameObjectFactory | undefined, nObj: ConcreteConstructor<NeutralObjective> & VisualConstructor,
         xCoord: number, yCoord: number) {
 
+        console.log([xCoord, yCoord])
         let [xPerspectiveCoord, yPerspectiveCoord] = this.adjustIfFlip(xCoord, yCoord)
-        let [worldX, worldY] = this.getWorldXYFromPerspective(xPerspectiveCoord, yPerspectiveCoord)
         let inst = new nObj(xCoord, yCoord)
-        if (addPlugin)
+        if (addPlugin) {
+            let [worldX, worldY] = this.getWorldXYFromPerspective(xPerspectiveCoord, yPerspectiveCoord)
             inst.initReps(addPlugin, worldX, worldY)
+        }
         this.nObjs.push(inst)
     }
 
@@ -240,6 +241,9 @@ export class Board extends visualMixin {
         this.ichor[playerNumber] -= cost
 
         piece.movePiece(startX, startY, endX, endY)
+
+        this.setPiece(endX, endY, piece)
+        this.setPiece(startX, startY, null)
 
         this.getNObj(endX, endY).forEach((objective: NeutralObjective) => {
             objective.onCollision(piece)

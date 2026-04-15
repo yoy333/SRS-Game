@@ -1,19 +1,22 @@
-import { Room, Client, CloseCode, } from "colyseus";
+import { Room, Client, CloseCode } from "colyseus";
 import { MyRoomState } from "./schema/MyRoomState.js";
 import { Board } from '@common/Board.mjs'
-import { Deck } from "src/lib/Deck.js";
+import { Deck } from "../lib/Deck.js";
 import { Hand } from "@common/Hand.mjs";
 import { pieceUtils } from "@common/pieceRegistery.mjs";
+import { GameRules } from "@common/GameRules.mjs";
 
 export class MyRoom extends Room {
   maxClients = 4;
   state = new MyRoomState();
   board = new Board(false);
   gameStarted: boolean = false;
+  gameRules: GameRules
 
   constructor() {
     super()
     this.deck = new Deck()
+    this.gameRules = new GameRules(this.board)
   }
 
   messages = {
@@ -118,6 +121,7 @@ export class MyRoom extends Room {
     for (let p = 0; p <= 1; p++) {
       this.clients[p].send('startingHand', this.hands[p].hand)
     }
+    this.gameRules.startGame(undefined)
   }
 
   onLeave(client: Client, code: CloseCode) {

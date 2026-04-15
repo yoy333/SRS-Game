@@ -6,6 +6,8 @@
     "paths": {
       "@common/*": ["../common/*"]
     },
+
+    "composite": true,
     // "rootDir": "./src",
     // "outDir": "./dist",
 
@@ -62,5 +64,10 @@
     "**/index.js",
     "node_modules",
     "**/ecosystem.config.cjs" // node_modules is excluded by default, but explicitly listing it is fine
-  ]
+  ],
+  "include": [
+    "./",
+    "../client/game/",
+    "../client/utils/"
+  ],
 }
