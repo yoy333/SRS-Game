@@ -81,7 +81,6 @@ export class Board extends visualMixin {
     addNObj(addPlugin: GameObjects.GameObjectFactory | undefined, nObj: ConcreteConstructor<NeutralObjective> & VisualConstructor,
         xCoord: number, yCoord: number) {
 
-        console.log([xCoord, yCoord])
         let [xPerspectiveCoord, yPerspectiveCoord] = this.adjustIfFlip(xCoord, yCoord)
         let inst = new nObj(xCoord, yCoord)
         if (addPlugin) {

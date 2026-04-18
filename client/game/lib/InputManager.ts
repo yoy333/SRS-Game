@@ -106,7 +106,7 @@ export class InputManager extends visualMixin {
         }
 
         this.endTurnButton = new EndTurnButton()
-        this.endTurnButton.initReps(addPlugin, 850, 680)
+        this.endTurnButton.initReps(addPlugin, 1050, 680)
         this.endTurnButton.onClick = () => {
             if (this.onEndTurn)
                 this.onEndTurn()
