@@ -70,4 +70,45 @@ function getOverrideOrRandomSessionValue(queryParam: string) {
   return randomString;
 }
 
-export { discordSdk, initiateDiscordSDK };
+async function sendAuth() {
+  await discordSdk.ready()
+
+  console.log("discord sdk ready")
+
+  const { code } = await discordSdk.commands.authorize({
+    //@ts-ignore
+    client_id: import.meta.env.VITE_CLIENT_ID,
+    response_type: 'code',
+    state: '',
+    prompt: 'none',
+    scope: [
+      // Activities will launch through app commands and interactions of user-installable apps.
+      // https://discord.com/developers/docs/tutorials/developing-a-user-installable-app#configuring-default-install-settings-adding-default-install-settings
+      'applications.commands',
+
+      // "applications.builds.upload",
+      // "applications.builds.read",
+      // "applications.store.update",
+      // "applications.entitlements",
+      // "bot",
+      'identify',
+      // "connections",
+      // "email",
+      // "gdm.join",
+      'guilds',
+      // "guilds.join",
+      'guilds.members.read',
+      // "messages.read",
+      // "relationships.read",
+      // 'rpc.activities.write',
+      // "rpc.notifications.read",
+      // "rpc.voice.write",
+      'rpc.voice.read',
+      // "webhook.incoming",
+    ]
+  })
+
+  console.log(code)
+}
+
+export { discordSdk, initiateDiscordSDK, sendAuth };

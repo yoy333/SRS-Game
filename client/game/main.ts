@@ -7,60 +7,27 @@ import { Game as MainGame } from './scenes/Game.js';
 import { MainMenu } from './scenes/MainMenu.js';
 import { Preloader } from './scenes/Preloader.js';
 
-import { initiateDiscordSDK, discordSdk } from '../utils/discordSdk';
+import { initiateDiscordSDK } from '../utils/discordSdk';
 
 initiateDiscordSDK();
-
-async function sendAuth() {
-    await discordSdk.ready()
-
-    console.log("discord sdk ready")
-
-    const { code } = await discordSdk.commands.authorize({
-        //@ts-ignore
-        client_id: import.meta.env.VITE_CLIENT_ID,
-        response_type: 'code',
-        state: '',
-        prompt: 'none',
-        scope: [
-            // Activities will launch through app commands and interactions of user-installable apps.
-            // https://discord.com/developers/docs/tutorials/developing-a-user-installable-app#configuring-default-install-settings-adding-default-install-settings
-            'applications.commands',
-
-            // "applications.builds.upload",
-            // "applications.builds.read",
-            // "applications.store.update",
-            // "applications.entitlements",
-            // "bot",
-            'identify',
-            // "connections",
-            // "email",
-            // "gdm.join",
-            'guilds',
-            // "guilds.join",
-            'guilds.members.read',
-            // "messages.read",
-            // "relationships.read",
-            // 'rpc.activities.write',
-            // "rpc.notifications.read",
-            // "rpc.voice.write",
-            'rpc.voice.read',
-            // "webhook.incoming",
-        ]
-    })
-
-    console.log(code)
-}
 
 // sendAuth()
 
 const RATIO = 2 / 3
+// const MAX_RATIO = 1
 
 var config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
     parent: 'viewport',
+    // min: {
     width: Math.round(1920 * RATIO),
     height: Math.round(1080 * RATIO),
+    // },
+    // max: {
+    //     width: Math.round(1920 * MAX_RATIO),
+    //     height: Math.round(1080 * MAX_RATIO),
+    // },
+    mode: Phaser.Scale.NONE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
     backgroundColor: "#fff7f1",
     scene: [
@@ -71,4 +38,19 @@ var config: Phaser.Types.Core.GameConfig = {
         GameOver
     ]
 };
-var game = new Game(config);
+
+let game = new Game(config);
+
+function resizeGame(...args: any[]) {
+    // if(window.innerWidth<1400){
+    // console.log("applying")
+    let idealWidth = 1920
+    let idealHeight = 996
+    let heightRatio = window.innerHeight / idealHeight
+    let widthRatio = window.innerWidth / idealWidth
+    let zoom = heightRatio < widthRatio ? heightRatio : widthRatio
+    game.scale.setZoom(zoom);
+}
+resizeGame()
+
+window.onresize = resizeGame
