@@ -11,28 +11,29 @@ class TilemapRep implements Rep<Tilemaps.Tilemap> {
         let map = makePlugin.tilemap({ key: 'tilemap' })
 
         // add the tileset image we are using
-        const tiles = map.addTilesetImage('V1_Tiles')
-        // const tiles = map.addTilesetImage('exp_tileset_01')
+        const tiles = map.addTilesetImage('V2_Tiles')
+        const edges = map.addTilesetImage('V2_Edges')
 
-        if (!tiles)
+        if (!tiles || !edges)
             throw new Error("tileset failed to load")
 
-        let ground = map.createLayer(0, tiles, x, y)
-        // ground!.setScale(1/8)
+        let ground = map.createLayer(0, [tiles, edges], x, y)
+        ground!.setScale(5 / 8)
 
         return map
     }
 
     loadRep(loadPlugin: Loader.LoaderPlugin): void {
-        loadPlugin.image('V1_Tiles', 'tilemap/V1_Tiles.png')
-        loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/DemoBoard.json')
+        loadPlugin.image('V2_Tiles', 'tilemap/V2_Tiles.png')
+        loadPlugin.image('V2_Edges', 'tilemap/V2_Edges.png')
+        loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/Board_V2.json')
     }
 }
 
 const visualMixin = VisualMixin(Object, [new TilemapRep])
 export class Board extends visualMixin {
-    static rows = 10
-    static columns = 10
+    static rows = 8
+    static columns = 8
     numReps = 1
     lookup: (Piece | null)[]
     playerNumber: number = 0;

@@ -10,9 +10,9 @@ export class GameRules {
   }
 
   startGame(addPlugin: GameObjects.GameObjectFactory | undefined) {
-    this.actionSpace.addNObj(addPlugin, IchorObj, 3, 5)
-    this.actionSpace.addNObj(addPlugin, IchorObj, 6, 5)
-    this.actionSpace.addNObj(addPlugin, IchorObj, 3, 4)
-    this.actionSpace.addNObj(addPlugin, IchorObj, 6, 4)
+    this.actionSpace.addNObj(addPlugin, IchorObj, 2, 4)
+    this.actionSpace.addNObj(addPlugin, IchorObj, 5, 4)
+    this.actionSpace.addNObj(addPlugin, IchorObj, 2, 3)
+    this.actionSpace.addNObj(addPlugin, IchorObj, 5, 3)
   }
 }
