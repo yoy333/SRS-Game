@@ -7,13 +7,11 @@ export class Deck {
     discardedCards: PieceKey[] = []
 
     constructor() {
-        console.log(pieceTypeRegistery)
         for (let i = 0; i < 5; i++) {
             pieceTypeRegistery.forEach((piece: PieceType) => {
                 this.drawCards.push(piece.key)
             })
         }
-        console.log(this.drawCards.length)
     }
 
     shuffle() {

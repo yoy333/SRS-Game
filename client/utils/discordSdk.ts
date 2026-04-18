@@ -3,10 +3,11 @@ import { DiscordSDK, DiscordSDKMock } from "@discord/embedded-app-sdk";
 const queryParams = new URLSearchParams(window.location.search);
 const isEmbedded = queryParams.get("frame_id") != null;
 
-let discordSdk:DiscordSDK|DiscordSDKMock;
+let discordSdk: DiscordSDK | DiscordSDKMock;
 
 const initiateDiscordSDK = async () => {
   if (isEmbedded) {
+    //@ts-ignore
     discordSdk = new DiscordSDK(import.meta.env.VITE_CLIENT_ID);
   } else {
     // We're using session storage for user_id, guild_id, and channel_id
@@ -20,6 +21,7 @@ const initiateDiscordSDK = async () => {
     const mockChannelId = getOverrideOrRandomSessionValue("channel_id");
 
     discordSdk = new DiscordSDKMock(
+      //@ts-ignore
       import.meta.env.VITE_CLIENT_ID,
       mockGuildId,
       mockChannelId,
@@ -52,7 +54,7 @@ const initiateDiscordSDK = async () => {
   }
 };
 
-function getOverrideOrRandomSessionValue(queryParam:string) {
+function getOverrideOrRandomSessionValue(queryParam: string) {
   const overrideValue = queryParams.get(queryParam);
   if (overrideValue != null) {
     return overrideValue;
@@ -68,4 +70,45 @@ function getOverrideOrRandomSessionValue(queryParam:string) {
   return randomString;
 }
 
-export { discordSdk, initiateDiscordSDK };
+async function sendAuth() {
+  await discordSdk.ready()
+
+  console.log("discord sdk ready")
+
+  const { code } = await discordSdk.commands.authorize({
+    //@ts-ignore
+    client_id: import.meta.env.VITE_CLIENT_ID,
+    response_type: 'code',
+    state: '',
+    prompt: 'none',
+    scope: [
+      // Activities will launch through app commands and interactions of user-installable apps.
+      // https://discord.com/developers/docs/tutorials/developing-a-user-installable-app#configuring-default-install-settings-adding-default-install-settings
+      'applications.commands',
+
+      // "applications.builds.upload",
+      // "applications.builds.read",
+      // "applications.store.update",
+      // "applications.entitlements",
+      // "bot",
+      'identify',
+      // "connections",
+      // "email",
+      // "gdm.join",
+      'guilds',
+      // "guilds.join",
+      'guilds.members.read',
+      // "messages.read",
+      // "relationships.read",
+      // 'rpc.activities.write',
+      // "rpc.notifications.read",
+      // "rpc.voice.write",
+      'rpc.voice.read',
+      // "webhook.incoming",
+    ]
+  })
+
+  console.log(code)
+}
+
+export { discordSdk, initiateDiscordSDK, sendAuth };

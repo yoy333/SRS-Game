@@ -12,7 +12,6 @@ import { VisualConstructor, VisualInstance } from "../client/game/lib/Visual.js"
 const pieceTypeRegistery: Map<string, VisualConstructor & PieceType> = new Map()
 type ConcretePiece = new (...args: any[]) => Piece
 
-type Constructor = new (...args: any[]) => {};
 export const pieceUtils = {
   classFromKey: function (key: string): PieceType {
     let pt = pieceTypeRegistery.get(key)

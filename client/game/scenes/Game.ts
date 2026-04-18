@@ -5,6 +5,8 @@ import { Board } from '@common/Board.mjs';
 import { IchorDisplay } from '../lib/IchorDisplay';
 import { Client, Callbacks } from '@colyseus/sdk'
 import { pieceUtils } from '@common/pieceRegistery.mjs';
+import { GameRules } from '@common/GameRules.mjs';
+// import {GameRules} from '@common/GameRules.mjs'
 
 export class Game extends Scene {
 
@@ -16,6 +18,7 @@ export class Game extends Scene {
         this.inputManager = new InputManager()
         this.board = new Board(true)
         this.ichorDisplay = new IchorDisplay()
+        this.gameRules = new GameRules(this.board)
     }
 
     preload() {
@@ -23,6 +26,7 @@ export class Game extends Scene {
     }
 
     board: Board
+    gameRules: GameRules
     ichorDisplay: IchorDisplay
     hand: PieceKey[] = []
 
@@ -31,7 +35,7 @@ export class Game extends Scene {
 
         this.inputManager.initReps(this.add)
 
-        this.ichorDisplay.initReps(this.add, 350, 675)
+        this.ichorDisplay.initReps(this.add, 250, 675)
         this.ichorDisplay.updateIchor(Board.maxIchorPerTurn)
 
         this.input.on('pointerdown', () => {
@@ -60,6 +64,7 @@ export class Game extends Scene {
         room.onMessage("startingHand", (hand: PieceKey[]) => {
             this.hand = hand;
             this.inputManager.updateHand(this.add, this.hand)
+            this.gameRules.startGame(this.add)
         })
 
         room.onMessage("drawCard", (card: PieceKey) => {
