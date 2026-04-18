@@ -3,10 +3,11 @@ import { DiscordSDK, DiscordSDKMock } from "@discord/embedded-app-sdk";
 const queryParams = new URLSearchParams(window.location.search);
 const isEmbedded = queryParams.get("frame_id") != null;
 
-let discordSdk:DiscordSDK|DiscordSDKMock;
+let discordSdk: DiscordSDK | DiscordSDKMock;
 
 const initiateDiscordSDK = async () => {
   if (isEmbedded) {
+    //@ts-ignore
     discordSdk = new DiscordSDK(import.meta.env.VITE_CLIENT_ID);
   } else {
     // We're using session storage for user_id, guild_id, and channel_id
@@ -20,6 +21,7 @@ const initiateDiscordSDK = async () => {
     const mockChannelId = getOverrideOrRandomSessionValue("channel_id");
 
     discordSdk = new DiscordSDKMock(
+      //@ts-ignore
       import.meta.env.VITE_CLIENT_ID,
       mockGuildId,
       mockChannelId,
@@ -52,7 +54,7 @@ const initiateDiscordSDK = async () => {
   }
 };
 
-function getOverrideOrRandomSessionValue(queryParam:string) {
+function getOverrideOrRandomSessionValue(queryParam: string) {
   const overrideValue = queryParams.get(queryParam);
   if (overrideValue != null) {
     return overrideValue;
