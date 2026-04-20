@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="8" height="8" tilewidth="128" tileheight="128" infinite="0" nextlayerid="2" nextobjectid="1">
+ <tileset firstgid="1" name="V2_Tiles" tilewidth="128" tileheight="128" tilecount="4" columns="2">
+  <image source="V2_Tiles.png" width="256" height="256"/>
+ </tileset>
+ <tileset firstgid="5" name="V2_Edges" tilewidth="128" tileheight="128" tilecount="4" columns="2">
+  <image source="V2_Edges.png" width="256" height="256"/>
+ </tileset>
+ <layer id="1" name="Tile Layer 1" width="8" height="8">
+  <data encoding="csv">
+1,2,1,2,1,2,1,2,
+2,1,2,1,2,1,2,1,
+1,2,1,2,1,2,1,2,
+2,1,2,1,2,1,2,1,
+1,2,1,2,1,2,1,2,
+2,1,2,1,2,1,2,1,
+1,2,1,2,1,2,1,2,
+5,6,5,6,5,6,5,6
+</data>
+ </layer>
+</map>

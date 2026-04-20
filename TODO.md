@@ -1,7 +1,5 @@
 # Features
-Neutral map objectives
 matchmaking
-screen resizing
 sound FX
 
 # characters to add
@@ -9,8 +7,6 @@ Hades
 Nike
 
 # Later
-smaller board
-new board
 add attack cost
 Refactor Board into three classes - GameRules - ActionSpace - Board
 Migrate to phaser 4
