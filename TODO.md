@@ -14,6 +14,7 @@ make hand standardized
 refactor IconButton
 split inputManager
 Add more UI
+make it so that moves and attacks just pass around references to the pieces themselves
 
 # Maybe
 Map variations

@@ -1,4 +1,4 @@
-import { VisualConstructor, VisualInstance, VisualMixin, visualPlugin } from "../client/game/lib/Visual.js";
+import { VisualConstructor } from "../client/game/lib/Visual.js";
 import { Board } from "./Board.mjs";
 import { GameObjects, Loader } from "phaser";
 
@@ -17,7 +17,7 @@ type PieceStatics = {
     createCard: (addPlugin: GameObjects.GameObjectFactory, x: number, y: number) => (sprite | image)[]
     spawnCost: number
     moveCost: number
-    // attackCost?: number
+    attackCost: number
 }
 type pieceConstructor = new (...args: any[]) => Piece
 export type PieceType = pieceConstructor & PieceStatics & VisualConstructor

@@ -24,8 +24,9 @@ const visualMixin = VisualMixin(Piece, [new DefaultPieceToken()])
 export class DefaultPiece extends visualMixin {
     static key = 'default'
 
-    static spawnCost = 2;
-    static moveCost = 1;
+    static spawnCost = 0;
+    static moveCost = 0;
+    static attackCost = 0;
 
     // static reps: Rep<sprite>[] = [new DefaultPieceToken()]
 

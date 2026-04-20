@@ -7,7 +7,7 @@ import { Apollo } from "./Pieces/Apollo.mjs"
 
 import { GameObjects } from "phaser"
 import { Board } from "./Board.mjs"
-import { VisualConstructor, VisualInstance } from "../client/game/lib/Visual.js"
+import { VisualConstructor } from "../client/game/lib/Visual.js"
 
 const pieceTypeRegistery: Map<string, VisualConstructor & PieceType> = new Map()
 type ConcretePiece = new (...args: any[]) => Piece

@@ -288,10 +288,14 @@ export class Board extends visualMixin {
         if (!attackingPiece || !defendingPiece)
             return false;
 
+        let cost = (attackingPiece.constructor as PieceType).attackCost
+
         return (this.areEnemyPieces(attackingPiece, defendingPiece) &&
             this.isMyTurn(playerNumber) &&
             attackingPiece.canAttackPiece(attackerX, attackerY, defenderX, defenderY, playerNumber) &&
-            defendingPiece.canBeAttacked(attackerX, attackerY, defenderX, defenderY, playerNumber))
+            defendingPiece.canBeAttacked(attackerX, attackerY, defenderX, defenderY, playerNumber) &&
+            this.doesHaveEnoughIchor(cost, playerNumber)
+        )
     }
 
     attackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number) {
@@ -302,6 +306,9 @@ export class Board extends visualMixin {
         if (!defendingPiece)
             throw new Error("no piece to defend")
         attackingPiece.attackPiece(defendingPiece)
+
+        let cost = (attackingPiece.constructor as PieceType).attackCost
+        this.ichor[attackingPiece.playerOwner] -= cost
     }
 
     getIndexFromXY(x: number, y: number): number {

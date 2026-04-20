@@ -113,7 +113,6 @@ export class Game extends Scene {
         this.inputManager.onSpawn = (pieceType: PieceType, x: number, y: number, playerOwner?: number) => {
             if (this.board.canSpawnPiece(pieceType, x, y, this.hand, playerOwner)) {
                 this.board.spawnPiece(pieceType, this.add, x, y)
-                console.log(this.board.myIchor)
                 this.ichorDisplay.updateIchor(this.board.myIchor)
                 // this.socket.emit('spawn', [DefaultPiece.key, x, y])
                 room.send('spawn', [pieceType.key, x, y])
@@ -132,6 +131,7 @@ export class Game extends Scene {
         this.inputManager.onAttack = (attackerX, attackerY, defenderX, defenderY) => {
             if (this.board.canAttackPiece(attackerX, attackerY, defenderX, defenderY)) {
                 this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
+                this.ichorDisplay.updateIchor(this.board.myIchor)
                 room.send('attack', [attackerX, attackerY, defenderX, defenderY])
             } else {
                 console.log("illegal attack")

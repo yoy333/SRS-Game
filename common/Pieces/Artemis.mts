@@ -31,7 +31,8 @@ export class Artemis extends visualMixin {
   static reps: Rep<image>[] = [new ArtemisToken()]
 
   static spawnCost = 2;
-  static moveCost = 1;
+  static moveCost = 2;
+  static attackCost = 1;
 
   constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {
     super(addPlugin, board, x, y, isClientSide, playerOwner)

@@ -24,6 +24,7 @@ export class Aries extends visualMixin {
 
   static spawnCost = 2;
   static moveCost = 1;
+  static attackCost = 1
 
   constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {
     super(addPlugin, board, x, y, isClientSide, playerOwner)
