@@ -4,6 +4,7 @@ import { Rep, VisualConstructor, VisualMixin } from "../client/game/lib/Visual.j
 import { Loader } from "phaser"
 import { NeutralObjective } from './NeutralObjective.mjs'
 import { ConcreteConstructor } from "./utils.mjs"
+import { GameSounds } from "../client/game/lib/GameSounds.js"
 
 class TilemapRep implements Rep<Tilemaps.Tilemap> {
     createRep(makePlugin: GameObjects.GameObjectCreator, x: number, y: number): Tilemaps.Tilemap {
@@ -177,6 +178,9 @@ export class Board extends visualMixin {
             piece.initReps(addPlugin, x, y)
         this.setPiece(x, y, piece)
         this.ichor[playerOwner] -= pieceType.spawnCost;
+        if (this.isClientSide)
+            GameSounds.place()
+
         return piece
     }
 
@@ -248,6 +252,9 @@ export class Board extends visualMixin {
         this.getNObj(endX, endY).forEach((objective: NeutralObjective) => {
             objective.onCollision(piece)
         })
+
+        if (this.isClientSide)
+            GameSounds.place()
     }
 
     currentTurn = 0;
@@ -309,6 +316,9 @@ export class Board extends visualMixin {
 
         let cost = (attackingPiece.constructor as PieceType).attackCost
         this.ichor[attackingPiece.playerOwner] -= cost
+
+        if (this.isClientSide)
+            GameSounds.capturePiece()
     }
 
     getIndexFromXY(x: number, y: number): number {

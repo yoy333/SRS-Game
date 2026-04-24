@@ -6,6 +6,7 @@ import { IconButton } from "./IconButton";
 import { EndTurnButton } from "./ImageButton";
 import { Hand } from '@common/Hand.mjs'
 import { VisualMixin } from "./Visual";
+import { GameSounds } from "./GameSounds";
 
 
 const visualMixin = VisualMixin(Object, [])
@@ -64,17 +65,20 @@ export class InputManager extends visualMixin {
         this.selectionForSpawn = pieceType;
         this.selectionForMove = undefined;
         this.selectionForAttack = undefined;
+        GameSounds.click()
     }
 
     selectForMove(piece: Piece) {
         this.selectionForSpawn = undefined;
         this.selectionForMove = piece;
+        GameSounds.click()
     }
 
     selectForAttack(piece: Piece) {
         this.selectionForAttack = piece;
         this.selectionForSpawn = undefined;
         this.selectionForMove = undefined
+        GameSounds.doubleClick()
     }
 
     reps: undefined[] = []

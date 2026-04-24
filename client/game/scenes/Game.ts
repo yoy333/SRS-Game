@@ -6,6 +6,7 @@ import { IchorDisplay } from '../lib/IchorDisplay';
 import { Client, Callbacks } from '@colyseus/sdk'
 import { pieceUtils } from '@common/pieceRegistery.mjs';
 import { GameRules } from '@common/GameRules.mjs';
+import { GameSounds } from '../lib/GameSounds';
 // import {GameRules} from '@common/GameRules.mjs'
 
 export class Game extends Scene {
@@ -38,6 +39,8 @@ export class Game extends Scene {
         this.ichorDisplay.initReps(this.add, 250, 675)
         this.ichorDisplay.updateIchor(Board.maxIchorPerTurn)
 
+        GameSounds.initSound(this.sound)
+
         this.input.on('pointerdown', () => {
             // if(!this.board.tilemap)
             //     console.warn("clicked but no tilemap")
@@ -62,6 +65,7 @@ export class Game extends Scene {
         })
 
         room.onMessage("startingHand", (hand: PieceKey[]) => {
+            GameSounds.drawCard()
             this.hand = hand;
             this.inputManager.updateHand(this.add, this.hand)
             this.gameRules.startGame(this.add)

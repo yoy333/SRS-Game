@@ -2,10 +2,11 @@ import { Scene } from 'phaser';
 import { pieceTypeRegistery } from '@common/pieceRegistery.mjs';
 import { Board } from '@common/Board.mjs';
 import { IconButton } from '../lib/IconButton';
-import { EndTurnButton } from 'game/lib/ImageButton';
-import { IchorDisplay } from 'game/lib/IchorDisplay';
+import { EndTurnButton } from '../lib/ImageButton';
+import { IchorDisplay } from '../lib/IchorDisplay';
 import { PieceType } from '@common/Piece.mjs';
-import { VisualConstructor } from 'game/lib/Visual';
+import { VisualConstructor } from '../lib/Visual';
+import { GameSounds, SoundManager } from '../lib/GameSounds';
 
 export class Preloader extends Scene {
     constructor() {
@@ -43,6 +44,8 @@ export class Preloader extends Scene {
         IchorDisplay.loadReps(this.load)
 
         EndTurnButton.loadReps(this.load)
+
+        GameSounds.loadSounds(this.load)
     }
 
     create() {
