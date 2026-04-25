@@ -279,6 +279,9 @@ export class Board extends visualMixin {
         } else {
             throw new Error("how did we get here")
         }
+
+        if (this.isClientSide)
+            GameSounds.endTurn()
     }
 
     areEnemyPieces(x: Piece, y: Piece): boolean {

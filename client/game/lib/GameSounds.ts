@@ -13,8 +13,8 @@ export class GameSounds {
     loadPlugin.audio('double_click', 'Minimalist12.ogg')
     loadPlugin.audio('place', 'Minimalist8.ogg')
     loadPlugin.audio('capture_piece', 'kick.ogg')
+    loadPlugin.audio('end_turn', 'toggle_on.ogg')
     loadPlugin.setPath()
-
   }
 
   static initSound(soundManager: SoundManager) {
@@ -39,5 +39,9 @@ export class GameSounds {
 
   static capturePiece() {
     sound!.play('capture_piece')
+  }
+
+  static endTurn() {
+    sound!.play('end_turn')
   }
 }
