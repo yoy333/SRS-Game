@@ -1,3 +1,4 @@
+import { AnimationManager } from "../client/game/lib/AnimationManager.js";
 import { VisualConstructor } from "../client/game/lib/Visual.js";
 import { Board } from "./Board.mjs";
 import { GameObjects, Loader } from "phaser";
@@ -45,9 +46,6 @@ export abstract class Piece {
             throw new Error("add plugin must be provided for client side pieces")
         }
 
-        // if (addPlugin)
-        //     this.initReps(addPlugin, x, y)
-
         this.board = board;
 
         this.coordX = x;
@@ -79,6 +77,9 @@ export abstract class Piece {
 
         // this.initToken(addPlugin, worldX, worldY)
         [this.token] = (this.constructor as VisualConstructor).createReps(addPlugin, worldX, worldY)
+        if (!this!.token)
+            throw new Error("create reps failed")
+        AnimationManager.addSpawnAnim(this!.token)
     }
 
     setCoord(x: number, y: number): void {
@@ -97,7 +98,10 @@ export abstract class Piece {
             throw new Error(`no tile at (${this.coordX}, ${this.coordY})`)
         let worldX = tile.getCenterX()
         let worldY = tile.getCenterY()
-        this.token?.setPosition(worldX, worldY)
+        // this.token?.setPosition(worldX, worldY)
+        if (!this.token)
+            throw new Error("no token. Sadge")
+        AnimationManager.addMoveAnim(this.token, worldX, worldY)
     }
 
     withinPattern(pattern: pattern, x: number, y: number) {

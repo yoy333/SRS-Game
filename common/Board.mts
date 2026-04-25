@@ -5,6 +5,7 @@ import { Loader } from "phaser"
 import { NeutralObjective } from './NeutralObjective.mjs'
 import { ConcreteConstructor } from "./utils.mjs"
 import { GameSounds } from "../client/game/lib/GameSounds.js"
+import { AnimationManager } from "../client/game/lib/AnimationManager.js"
 
 class TilemapRep implements Rep<Tilemaps.Tilemap> {
     createRep(makePlugin: GameObjects.GameObjectCreator, x: number, y: number): Tilemaps.Tilemap {
@@ -174,8 +175,9 @@ export class Board extends visualMixin {
         if (playerOwner == undefined)
             playerOwner = this.playerNumber
         let piece = new pieceType(addPlugin, this, x, y, this.isClientSide, playerOwner);
-        if (addPlugin)
+        if (addPlugin) {
             piece.initReps(addPlugin, x, y)
+        }
         this.setPiece(x, y, piece)
         this.ichor[playerOwner] -= pieceType.spawnCost;
         if (this.isClientSide)

@@ -7,6 +7,7 @@ import { Client, Callbacks } from '@colyseus/sdk'
 import { pieceUtils } from '@common/pieceRegistery.mjs';
 import { GameRules } from '@common/GameRules.mjs';
 import { GameSounds } from '../lib/GameSounds';
+import { AnimationManager } from '../lib/AnimationManager';
 // import {GameRules} from '@common/GameRules.mjs'
 
 export class Game extends Scene {
@@ -152,6 +153,6 @@ export class Game extends Scene {
     }
 
     update() {
-
+        AnimationManager.update()
     }
 }
