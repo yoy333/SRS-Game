@@ -70,6 +70,7 @@ export class Game extends Scene {
             this.hand = hand;
             this.inputManager.updateHand(this.add, this.hand)
             this.gameRules.startGame(this.add)
+            console.log(this.hand)
         })
 
         room.onMessage("drawCard", (card: PieceKey) => {
@@ -124,10 +125,10 @@ export class Game extends Scene {
 
                 // freeze interaction until we can draw a new card
                 //let index = this.hand.indexOf(pieceType.key)
-                if(buttonIndex !== undefined) {
+                if (buttonIndex !== undefined) {
                     this.hand[buttonIndex] = ""
 
-                
+
                     this.inputManager.iconButtons[buttonIndex].stopInteraction()
                 }
             } else {

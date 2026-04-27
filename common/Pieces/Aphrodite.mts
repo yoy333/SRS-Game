@@ -3,22 +3,22 @@ import { Board } from "../Board.mjs";
 import { GameObjects, Loader } from "phaser";
 import { Rep, VisualMixin } from "../../client/game/lib/Visual.js";
 
-class AriesToken implements Rep<GameObjects.Image> {
+class AphroditeToken implements Rep<GameObjects.Image> {
   createRep(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Image {
-    let icon = addPlugin.image(x, y, Aries.key)
-    icon.setScale(1 / 25)
+    let icon = addPlugin.image(x, y, Aphrodite.key)
+    icon.setScale(1 / 40)
     return icon
   }
 
   loadRep(loadPlugin: Loader.LoaderPlugin): void {
-    loadPlugin.image(Aries.key, 'aries_v01.png')
+    loadPlugin.image(Aphrodite.key, 'aphrodite_v01.png')
   }
 }
 
-const visualMixin = VisualMixin(Piece, [new AriesToken()])
-export class Aries extends visualMixin {
-  static key = 'aries'
-  key = 'aries'
+const visualMixin = VisualMixin(Piece, [new AphroditeToken()])
+export class Aphrodite extends visualMixin {
+  static key = 'aphrodite'
+  key = 'aphrodite'
 
   static spawnCost = 2;
   static moveCost = 1;
@@ -29,12 +29,12 @@ export class Aries extends visualMixin {
   }
 
   static loadCard(loadPlugin: Loader.LoaderPlugin) {
-    loadPlugin.image('aries_card', 'aries_card_v01.png')
+    // loadPlugin.image('aphrodite_card', 'aphrodite_card_v01.png')
   }
 
   static createCard(addPlugin: GameObjects.GameObjectFactory, x: number, y: number) {
-    let rep = addPlugin.image(x, y, 'aries_card')
-    return [rep];
+    // let rep = addPlugin.image(x, y, 'aphrodite_card')
+    return []
   }
 
   relativeMovementPattern: pattern = forward_1

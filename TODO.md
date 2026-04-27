@@ -1,13 +1,9 @@
 # Features
 matchmaking
-sound FX
 
 # characters to add
-Hades
-Nike
 
 # Later
-add attack cost
 Refactor Board into three classes - GameRules - ActionSpace - Board
 Migrate to phaser 4
 make hand standardized

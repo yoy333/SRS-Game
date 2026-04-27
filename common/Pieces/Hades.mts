@@ -3,22 +3,22 @@ import { Board } from "../Board.mjs";
 import { GameObjects, Loader } from "phaser";
 import { Rep, VisualMixin } from "../../client/game/lib/Visual.js";
 
-class AriesToken implements Rep<GameObjects.Image> {
+class HadesToken implements Rep<GameObjects.Image> {
   createRep(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Image {
-    let icon = addPlugin.image(x, y, Aries.key)
+    let icon = addPlugin.image(x, y, Hades.key)
     icon.setScale(1 / 25)
     return icon
   }
 
   loadRep(loadPlugin: Loader.LoaderPlugin): void {
-    loadPlugin.image(Aries.key, 'aries_v01.png')
+    loadPlugin.image(Hades.key, 'nike_v01.png')
   }
 }
 
-const visualMixin = VisualMixin(Piece, [new AriesToken()])
-export class Aries extends visualMixin {
-  static key = 'aries'
-  key = 'aries'
+const visualMixin = VisualMixin(Piece, [new HadesToken()])
+export class Hades extends visualMixin {
+  static key = 'nike'
+  key = 'nike'
 
   static spawnCost = 2;
   static moveCost = 1;
@@ -29,12 +29,12 @@ export class Aries extends visualMixin {
   }
 
   static loadCard(loadPlugin: Loader.LoaderPlugin) {
-    loadPlugin.image('aries_card', 'aries_card_v01.png')
+    // loadPlugin.image('nike_card', 'nike_card_v01.png')
   }
 
   static createCard(addPlugin: GameObjects.GameObjectFactory, x: number, y: number) {
-    let rep = addPlugin.image(x, y, 'aries_card')
-    return [rep];
+    // let rep = addPlugin.image(x, y, 'nike_card')
+    return []
   }
 
   relativeMovementPattern: pattern = forward_1

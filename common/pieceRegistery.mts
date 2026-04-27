@@ -8,6 +8,10 @@ import { Apollo } from "./Pieces/Apollo.mjs"
 import { GameObjects } from "phaser"
 import { Board } from "./Board.mjs"
 import { VisualConstructor } from "../client/game/lib/Visual.js"
+import { Nike } from "./Pieces/Nike.mjs"
+import { Hermes } from "./Pieces/Hermes.mjs"
+import { Aphrodite } from "./Pieces/Aphrodite.mjs"
+import { Hades } from "./Pieces/Hades.mjs"
 
 const pieceTypeRegistery: Map<string, VisualConstructor & PieceType> = new Map()
 type ConcretePiece = new (...args: any[]) => Piece
@@ -31,4 +35,8 @@ pieceTypeRegistery.set(Zeus.key, Zeus)
 pieceTypeRegistery.set(Artemis.key, Artemis)
 pieceTypeRegistery.set(Aries.key, Aries)
 pieceTypeRegistery.set(Apollo.key, Apollo)
+pieceTypeRegistery.set(Nike.key, Nike)
+pieceTypeRegistery.set(Hermes.key, Hermes)
+pieceTypeRegistery.set(Aphrodite.key, Aphrodite)
+pieceTypeRegistery.set(Hades.key, Hades)
 export { pieceTypeRegistery }

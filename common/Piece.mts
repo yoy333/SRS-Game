@@ -23,9 +23,7 @@ type PieceStatics = {
 type pieceConstructor = new (...args: any[]) => Piece
 export type PieceType = pieceConstructor & PieceStatics & VisualConstructor
 
-// const visualMixin = VisualMixin(Object, [])
 export abstract class Piece {
-    // extends visualMixin {
     token?: sprite | image
     board: Board
 
