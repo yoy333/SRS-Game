@@ -1,4 +1,4 @@
-import { GameObjects } from "phaser";
+import { GameObjects, Input } from "phaser";
 import { Board } from "@common/Board.mjs";
 import { Piece, PieceKey, PieceType } from "@common/Piece.mjs";
 import { DefaultPiece } from "@common/Pieces/DefaultPiece.mjs";
@@ -21,7 +21,7 @@ export class InputManager extends visualMixin {
         if (this.selectionForSpawn) {
             let pieceType = this.selectionForSpawn
             if (this.onSpawn)
-                this.onSpawn(pieceType, x, y)
+                this.onSpawn(pieceType, x, y, undefined, this.selectedButtonIndex)
             this.selectionForSpawn = undefined;
             return
         } else if (this.selectionForMove) {
@@ -117,6 +117,8 @@ export class InputManager extends visualMixin {
         }
     }
 
+    selectedButtonIndex?: number
+
     updateHand(addPlugin: GameObjects.GameObjectFactory, hand: PieceKey[]) {
         if (this.iconButtons.length != hand.length)
             throw new Error("Hand not equal to length of icon buttons")
@@ -130,7 +132,7 @@ export class InputManager extends visualMixin {
 
     onMove?: (startX: number, startY: number, endX: number, endY: number) => void
 
-    onSpawn?: (pieceType: PieceType, x: number, y: number, playerOwner?: number) => void
+    onSpawn?: (pieceType: PieceType, x: number, y: number, playerOwner?: number, buttonIndex?: number) => void
 
     onAttack?: (attackerX: number, attackerY: number, defenderX: number, defenderY: number) => void
 

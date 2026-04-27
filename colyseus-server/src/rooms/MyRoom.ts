@@ -1,6 +1,7 @@
 import { Room, Client, CloseCode } from "colyseus";
 import { MyRoomState } from "./schema/MyRoomState.js";
 import { Board } from '@common/Board.mjs'
+import { Piece } from '@common/Piece.mjs'
 import { Deck } from "../lib/Deck.js";
 import { Hand } from "@common/Hand.mjs";
 import { pieceUtils } from "@common/pieceRegistery.mjs";
@@ -41,7 +42,8 @@ export class MyRoom extends Room {
         this.hands[playerNumber].replace(oldCard, newCard)
 
         this.clients[playerNumber].send('drawCard', newCard)
-        // console.log(this.deck.drawCards)
+        console.log
+        //console.log(this.deck.drawCards)
       } else {
         console.log("hijacked spawn call")
       }

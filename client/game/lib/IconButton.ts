@@ -74,6 +74,8 @@ export class IconButton extends visualMixin {
         this.icon?.setInteractive()
         this.icon?.on('pointerdown', () => {
             inputManager.selectForSpawn(pieceUtils.classFromKey(this.pieceKey));
+            inputManager.selectedButtonIndex = inputManager.iconButtons.indexOf(this);
+            console.log('selected icon button index:', inputManager.selectedButtonIndex);
         })
     }
 

@@ -115,7 +115,7 @@ export class Game extends Scene {
             }
         }
 
-        this.inputManager.onSpawn = (pieceType: PieceType, x: number, y: number, playerOwner?: number) => {
+        this.inputManager.onSpawn = (pieceType: PieceType, x: number, y: number, playerOwner?: number, buttonIndex?: number) => {
             if (this.board.canSpawnPiece(pieceType, x, y, this.hand, playerOwner)) {
                 this.board.spawnPiece(pieceType, this.add, x, y)
                 this.ichorDisplay.updateIchor(this.board.myIchor)
@@ -123,11 +123,13 @@ export class Game extends Scene {
                 room.send('spawn', [pieceType.key, x, y])
 
                 // freeze interaction until we can draw a new card
-                let index = this.hand.indexOf(pieceType.key)
+                //let index = this.hand.indexOf(pieceType.key)
+                if(buttonIndex !== undefined) {
+                    this.hand[buttonIndex] = ""
 
-                this.hand[index] = ""
-
-                this.inputManager.iconButtons[index].stopInteraction()
+                
+                    this.inputManager.iconButtons[buttonIndex].stopInteraction()
+                }
             } else {
                 console.log("illegal spawn")
             }
