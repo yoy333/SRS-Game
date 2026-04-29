@@ -70,7 +70,6 @@ export class Game extends Scene {
             this.hand = hand;
             this.inputManager.updateHand(this.add, this.hand)
             this.gameRules.startGame(this.add)
-            console.log(this.hand)
         })
 
         room.onMessage("drawCard", (card: PieceKey) => {
@@ -100,6 +99,7 @@ export class Game extends Scene {
 
         room.onMessage('otherEndTurn', () => {
             this.board.endTurn()
+            this.ichorDisplay.updateIchor(this.board.myIchor)
         })
 
         this.inputManager.onMove = (startX: number, startY: number, endX: number, endY: number) => {

@@ -1,7 +1,7 @@
 import { Piece, pattern, forward_1, square_1 } from "../Piece.mjs";
 import { Board } from "../Board.mjs";
 import { GameObjects, Loader } from "phaser";
-import { Rep, VisualConstructor, VisualMixin, visualPlugin } from "../../client/game/lib/Visual.js";
+import { Rep, VisualMixin } from "../../client/game/lib/Visual.js";
 
 type sprite = GameObjects.Sprite
 

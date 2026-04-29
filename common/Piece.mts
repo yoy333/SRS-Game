@@ -148,10 +148,8 @@ export abstract class Piece {
     }
 
     die() {
-        // this.reps.forEach((rep: sprite | image) => {
         this.token?.destroy(true)
-        // })
-        this.board.setPiece(this.coordX, this.coordY, null)
+        this.board.killPiece(this.coordX, this.coordY)
     }
 }
 

@@ -6,6 +6,7 @@ import { NeutralObjective } from './NeutralObjective.mjs'
 import { ConcreteConstructor } from "./utils.mjs"
 import { GameSounds } from "../client/game/lib/GameSounds.js"
 import { AnimationManager } from "../client/game/lib/AnimationManager.js"
+import { Effect } from "./Effect.mjs"
 
 class TilemapRep implements Rep<Tilemaps.Tilemap> {
     createRep(makePlugin: GameObjects.GameObjectCreator, x: number, y: number): Tilemaps.Tilemap {
@@ -219,11 +220,31 @@ export class Board extends visualMixin {
 
         let cost = (piece.constructor as PieceType).moveCost
 
+        let effectAllowsMove = true
+        let effects = this.effects.get(piece)
+        if (!effects)
+            effects = []
+        for (let effect of effects) {
+            if (effect.onPreMove?.(endX, endY) === false) {
+                effectAllowsMove = false
+                break;
+            }
+        }
+
+        // console.log(this.doesOwnPiece(piece, playerNumber))
+        // console.log(this.isSpaceEmpty(endX, endY))
+        // console.log(this.isMyTurn(playerNumber))
+        // console.log(this.doesHaveEnoughIchor(cost, playerNumber))
+        // console.log(piece.canMovePiece(startX, startY, endX, endY, playerNumber))
+        // console.log(effectAllowsMove)
+
         return (this.doesOwnPiece(piece, playerNumber) &&
             this.isSpaceEmpty(endX, endY) &&
             this.isMyTurn(playerNumber) &&
             this.doesHaveEnoughIchor(cost, playerNumber) &&
-            piece.canMovePiece(startX, startY, endX, endY, playerNumber))
+            piece.canMovePiece(startX, startY, endX, endY, playerNumber) &&
+            effectAllowsMove
+        )
     }
 
     nObjs: NeutralObjective[] = []
@@ -253,6 +274,10 @@ export class Board extends visualMixin {
 
         this.getNObj(endX, endY).forEach((objective: NeutralObjective) => {
             objective.onCollision(piece)
+        })
+
+        this.effects.get(piece)?.forEach((effect: Effect) => {
+            effect.onPostMove?.(endX, endY)
         })
 
         if (this.isClientSide)
@@ -302,12 +327,66 @@ export class Board extends visualMixin {
 
         let cost = (attackingPiece.constructor as PieceType).attackCost
 
+        let effectAllowsAttack = true
+        let effects = this.effects.get(attackingPiece)
+        if (!effects)
+            effects = []
+        for (let effect of effects) {
+            if (effect.onPreAttack?.(defendingPiece) === false) {
+                effectAllowsAttack = false
+                break;
+            }
+        }
+
+        console.log(this.areEnemyPieces(attackingPiece, defendingPiece))
+        console.log(this.isMyTurn(playerNumber))
+        console.log(attackingPiece.canAttackPiece(attackerX, attackerY, defenderX, defenderY, playerNumber))
+        console.log(defendingPiece.canBeAttacked(attackerX, attackerY, defenderX, defenderY, playerNumber))
+        console.log(this.doesHaveEnoughIchor(cost, playerNumber))
+        console.log(effectAllowsAttack)
+
         return (this.areEnemyPieces(attackingPiece, defendingPiece) &&
             this.isMyTurn(playerNumber) &&
             attackingPiece.canAttackPiece(attackerX, attackerY, defenderX, defenderY, playerNumber) &&
             defendingPiece.canBeAttacked(attackerX, attackerY, defenderX, defenderY, playerNumber) &&
-            this.doesHaveEnoughIchor(cost, playerNumber)
+            this.doesHaveEnoughIchor(cost, playerNumber) &&
+            effectAllowsAttack
         )
+    }
+
+    effects: Map<Piece, Effect[]> = new Map()
+    applyEffect(effectType: ConcreteConstructor<Effect>, originatingPiece: Piece, xCoord?: number, yCoord?: number): boolean {
+        let effect = new effectType(this, originatingPiece, xCoord, yCoord)
+        // if no target coords are specified the piece is assumed to be targeting itself
+        let targetedPiece
+        if (!xCoord || !yCoord)
+            targetedPiece = originatingPiece
+        else
+            targetedPiece = this.getPiece(xCoord, yCoord)
+
+        if (!targetedPiece) {
+            console.log("settings effect out of bounds")
+            console.log(xCoord, yCoord)
+            console.log(this.lookup)
+            return false;
+        }
+        let effects = this.effects.get(targetedPiece)
+        if (!effects)
+            effects = []
+        effects.push(effect)
+        this.effects.set(targetedPiece, effects)
+        return true
+    }
+
+    removeEffect(piece: Piece, effect: Effect) {
+        let effects = this.effects.get(piece)
+        if (!effects)
+            return;
+        let index = effects.indexOf(effect)
+        if (index == -1) {
+            throw new Error("no element at that index")
+        }
+        effects.splice(index, 1)
     }
 
     attackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number) {
@@ -322,8 +401,26 @@ export class Board extends visualMixin {
         let cost = (attackingPiece.constructor as PieceType).attackCost
         this.ichor[attackingPiece.playerOwner] -= cost
 
+        this.effects.get(attackingPiece)?.forEach((effect: Effect) => {
+            effect.onPostAttack?.(defendingPiece)
+        })
+
         if (this.isClientSide)
             GameSounds.capturePiece()
+    }
+
+    killPiece(coordX: number, coordY: number) {
+        let piece = this.getPiece(coordX, coordY)
+        if (!piece)
+            throw new Error("no piece there")
+        let effects = this.effects.get(piece)
+        if (!effects)
+            return;
+        effects.forEach((effect: Effect) => {
+            effect.onPostDeath?.()
+        })
+
+        this.setPiece(coordX, coordY, null)
     }
 
     getIndexFromXY(x: number, y: number): number {
