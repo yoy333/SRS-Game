@@ -16,7 +16,7 @@ make it so that moves and attacks just pass around references to the pieces them
 Map variations
 
 # Bugs
-Don't replace highest card always, just replace the one last selected
+Desynced callbacks
 
 # Extra
 Turn History

@@ -325,7 +325,6 @@ export class Board extends visualMixin {
         if (!attackingPiece || !defendingPiece)
             return false;
 
-        let cost = (attackingPiece.constructor as PieceType).attackCost
 
         let effectAllowsAttack = true
         let effects = this.effects.get(attackingPiece)
@@ -338,18 +337,15 @@ export class Board extends visualMixin {
             }
         }
 
-        console.log(this.areEnemyPieces(attackingPiece, defendingPiece))
-        console.log(this.isMyTurn(playerNumber))
-        console.log(attackingPiece.canAttackPiece(attackerX, attackerY, defenderX, defenderY, playerNumber))
-        console.log(defendingPiece.canBeAttacked(attackerX, attackerY, defenderX, defenderY, playerNumber))
-        console.log(this.doesHaveEnoughIchor(cost, playerNumber))
-        console.log(effectAllowsAttack)
+        // console.log(this.isMyTurn(playerNumber))
+        // console.log(attackingPiece.canAttackPiece(attackerX, attackerY, defenderX, defenderY, playerNumber))
+        // console.log(defendingPiece.canBeAttacked(attackerX, attackerY, defenderX, defenderY, playerNumber))
+        // console.log(effectAllowsAttack)
 
-        return (this.areEnemyPieces(attackingPiece, defendingPiece) &&
+        return (
             this.isMyTurn(playerNumber) &&
             attackingPiece.canAttackPiece(attackerX, attackerY, defenderX, defenderY, playerNumber) &&
             defendingPiece.canBeAttacked(attackerX, attackerY, defenderX, defenderY, playerNumber) &&
-            this.doesHaveEnoughIchor(cost, playerNumber) &&
             effectAllowsAttack
         )
     }

@@ -22,7 +22,7 @@ export class Nike extends visualMixin {
 
   static spawnCost = 2;
   static moveCost = 1;
-  static attackCost = 1
+  static attackCost = 2
 
   constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {
     super(addPlugin, board, x, y, isClientSide, playerOwner)
@@ -40,9 +40,12 @@ export class Nike extends visualMixin {
   relativeMovementPattern: pattern = forward_1
   relativeAttackingPattern: pattern = square_1;
 
+  killCount = 0;
   attackPiece(defendingPiece: Piece): void {
     if (defendingPiece.tryToKill(this)) {
       this.board.movePiece(this.coordX, this.coordY, defendingPiece.coordX, defendingPiece.coordY)
+      this.killCount++
+      this.board.addIchorToNextTurn(this.killCount, this.playerOwner)
     }
   }
 }

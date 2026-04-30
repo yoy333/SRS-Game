@@ -115,7 +115,6 @@ export abstract class Piece {
         return false;
     }
 
-    /* fix: move certain conditions to the board */
     canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber: number) {
         return (
             this.withinPattern(this.relativeMovementPattern, endX, endY)
@@ -128,8 +127,17 @@ export abstract class Piece {
     }
 
     canAttackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number, playerNumber: number) {
+        let attackingPiece = this.board.getPiece(attackerX, attackerY)
+        let defendingPiece = this.board.getPiece(defenderX, defenderY)
+        if (!attackingPiece || !defendingPiece)
+            return false;
+
+        let cost = (this.constructor as PieceType).attackCost
+
         return (
-            this.board.isSpaceFull(defenderX, defenderY) &&
+            this.board.areEnemyPieces(attackingPiece, defendingPiece) &&
+            // this.board.isSpaceFull(defenderX, defenderY) &&
+            this.board.doesHaveEnoughIchor(cost, playerNumber) &&
             this.withinPattern(this.relativeAttackingPattern, defenderX, defenderY)
         )
     }
