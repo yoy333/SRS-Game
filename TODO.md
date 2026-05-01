@@ -5,12 +5,11 @@ matchmaking
 
 # Later
 Refactor Board into three classes - GameRules - ActionSpace - Board
-Migrate to phaser 4
-make hand standardized
+Remove classwide dependency on board in piece
 refactor IconButton
-split inputManager
 Add more UI
 make it so that moves and attacks just pass around references to the pieces themselves
+make Input Manager take in input bounds
 
 # Maybe
 Map variations

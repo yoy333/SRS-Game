@@ -8,12 +8,14 @@ import { pieceUtils } from '@common/pieceRegistery.mjs';
 import { GameRules } from '@common/GameRules.mjs';
 import { GameSounds } from '../lib/GameSounds';
 import { AnimationManager } from '../lib/AnimationManager';
+import { HCard } from '@common/HCard';
 // import {GameRules} from '@common/GameRules.mjs'
 
 export class Game extends Scene {
 
     // socket?: Socket;
     inputManager: InputManager
+    hCard: HCard
 
     constructor() {
         super('Game');
@@ -21,6 +23,7 @@ export class Game extends Scene {
         this.board = new Board(true)
         this.ichorDisplay = new IchorDisplay()
         this.gameRules = new GameRules(this.board)
+        this.hCard = new HCard(0, 300, 0, 1000)
     }
 
     preload() {
@@ -116,19 +119,18 @@ export class Game extends Scene {
             }
         }
 
-        this.inputManager.onSpawn = (pieceType: PieceType, x: number, y: number, playerOwner?: number, buttonIndex?: number) => {
+        this.inputManager.onSpawn = (pieceType: PieceType, x: number, y: number, playerOwner?: number) => {
             if (this.board.canSpawnPiece(pieceType, x, y, this.hand, playerOwner)) {
                 this.board.spawnPiece(pieceType, this.add, x, y)
                 this.ichorDisplay.updateIchor(this.board.myIchor)
                 // this.socket.emit('spawn', [DefaultPiece.key, x, y])
                 room.send('spawn', [pieceType.key, x, y])
 
-                // freeze interaction until we can draw a new card
-                //let index = this.hand.indexOf(pieceType.key)
-                if (buttonIndex !== undefined) {
+                let buttonIndex = this.inputManager.selectionIndex
+                if (buttonIndex != undefined) {
                     this.hand[buttonIndex] = ""
 
-
+                    // freeze interaction until we can draw a new card
                     this.inputManager.iconButtons[buttonIndex].stopInteraction()
                 }
             } else {
@@ -144,6 +146,10 @@ export class Game extends Scene {
             } else {
                 console.log("illegal attack")
             }
+        }
+
+        this.inputManager.onSelection = (pieceType: PieceType) => {
+            this.hCard.updateCard(this.add, pieceType)
         }
 
         this.inputManager.onEndTurn = () => {

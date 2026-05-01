@@ -7,11 +7,11 @@ import { EndTurnButton } from "./ImageButton";
 import { Hand } from '@common/Hand.mjs'
 import { VisualMixin } from "./Visual";
 import { GameSounds } from "./GameSounds";
+import { pieceUtils } from "@common/pieceRegistery.mjs";
 
 
 const visualMixin = VisualMixin(Object, [])
 export class InputManager extends visualMixin {
-
     constructor() {
         super()
     }
@@ -21,7 +21,7 @@ export class InputManager extends visualMixin {
         if (this.selectionForSpawn) {
             let pieceType = this.selectionForSpawn
             if (this.onSpawn)
-                this.onSpawn(pieceType, x, y, undefined, this.selectedButtonIndex)
+                this.onSpawn(pieceType, x, y, undefined)
             this.selectionForSpawn = undefined;
             return
         } else if (this.selectionForMove) {
@@ -61,16 +61,21 @@ export class InputManager extends visualMixin {
         this.selectionForAttack = undefined
     }
 
+    onSelection?: (pieceType: PieceType) => void
+
+    selectionIndex: number = 0
     selectForSpawn(pieceType: PieceType) {
         this.selectionForSpawn = pieceType;
         this.selectionForMove = undefined;
         this.selectionForAttack = undefined;
+        this?.onSelection?.(pieceType)
         GameSounds.click()
     }
 
     selectForMove(piece: Piece) {
         this.selectionForSpawn = undefined;
         this.selectionForMove = piece;
+        this?.onSelection?.(piece.constructor as PieceType)
         GameSounds.click()
     }
 
@@ -78,6 +83,7 @@ export class InputManager extends visualMixin {
         this.selectionForAttack = piece;
         this.selectionForSpawn = undefined;
         this.selectionForMove = undefined
+        this?.onSelection?.(piece.constructor as PieceType)
         GameSounds.doubleClick()
     }
 
@@ -87,8 +93,6 @@ export class InputManager extends visualMixin {
     endTurnButton?: EndTurnButton
 
     initReps(addPlugin: GameObjects.GameObjectFactory): void {
-        /* fix */
-
         const rows = 3
         const startX = 1168
         const startY = 96
@@ -104,6 +108,11 @@ export class InputManager extends visualMixin {
             let button = new IconButton(this, DefaultPiece.key)
             button.initReps(addPlugin, xPos, yPos)
 
+            button.onClick = () => {
+                this.selectForSpawn(pieceUtils.classFromKey(button.pieceKey));
+                this.selectionIndex = i
+            }
+
             this.iconButtons.push(
                 button
             )
@@ -117,14 +126,12 @@ export class InputManager extends visualMixin {
         }
     }
 
-    selectedButtonIndex?: number
-
     updateHand(addPlugin: GameObjects.GameObjectFactory, hand: PieceKey[]) {
         if (this.iconButtons.length != hand.length)
             throw new Error("Hand not equal to length of icon buttons")
         this.iconButtons.forEach((button: IconButton, index: number) => {
             button.updateIcon(addPlugin, hand[index])
-            button.createInteraction(this)
+            button.createInteraction()
         })
     }
 
@@ -132,7 +139,7 @@ export class InputManager extends visualMixin {
 
     onMove?: (startX: number, startY: number, endX: number, endY: number) => void
 
-    onSpawn?: (pieceType: PieceType, x: number, y: number, playerOwner?: number, buttonIndex?: number) => void
+    onSpawn?: (pieceType: PieceType, x: number, y: number, playerOwner?: number) => void
 
     onAttack?: (attackerX: number, attackerY: number, defenderX: number, defenderY: number) => void
 

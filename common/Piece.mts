@@ -1,5 +1,5 @@
 import { AnimationManager } from "../client/game/lib/AnimationManager.js";
-import { VisualConstructor } from "../client/game/lib/Visual.js";
+import { Rep, VisualConstructor } from "../client/game/lib/Visual.js";
 import { Board } from "./Board.mjs";
 import { GameObjects, Loader } from "phaser";
 
@@ -11,6 +11,20 @@ const emptyPattern: pattern = new Set()
 
 export type PieceKey = string
 
+type hexColor = `#${string}`
+
+export type ColorPallete = {
+    fg_1: hexColor
+    fg_2: hexColor
+    muted: hexColor
+    accent: hexColor
+    bg_1: hexColor
+    bg_2: hexColor
+    bg_3: hexColor
+    bg_4: hexColor
+    text: hexColor
+}
+
 type PieceStatics = {
     key: string
 
@@ -19,6 +33,9 @@ type PieceStatics = {
     spawnCost: number
     moveCost: number
     attackCost: number
+    colorPallete?: ColorPallete,
+    hCard_fg?: Rep<GameObjects.Image>
+    hCard_bg?: Rep<GameObjects.Image>
 }
 type pieceConstructor = new (...args: any[]) => Piece
 export type PieceType = pieceConstructor & PieceStatics & VisualConstructor
