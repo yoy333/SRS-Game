@@ -87,7 +87,7 @@ export class InputManager extends visualMixin {
     endTurnButton?: EndTurnButton
 
     initReps(addPlugin: GameObjects.GameObjectFactory): void {
-        /* fix */
+        /* fix add boundaries from constructor */
 
         const rows = 3
         const startX = 1168

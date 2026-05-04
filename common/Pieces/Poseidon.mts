@@ -52,10 +52,24 @@ export class Poseidon extends visualMixin {
   relativeMovementPattern: pattern = forward_1
   relativeAttackingPattern: pattern = square_1;
 
+  getBackY(y: number): number {
+    return y + (y === 0 ? -1 : 1)
+  }
+
+  canAttackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number, playerNumber: number): boolean {
+    let defendingPiece = this.board.getPiece(defenderX, defenderY)
+    if (!defendingPiece)
+      return false
+
+    const backY = this.getBackY(defenderY)
+    let backYInBounds = backY >= 0 && backY < Board.rows
+    let backYOpen = this.board.getPiece(defendingPiece.coordX, backY) === null
+    return super.canAttackPiece(attackerX, attackerY, defenderX, defenderY, playerNumber) &&
+      backYInBounds && backYOpen
+  }
+
   attackPiece(defendingPiece: Piece): void {
-    const backY = defendingPiece.coordY + (defendingPiece.playerOwner === 0 ? -1 : 1)
-    if (backY >= 0 && backY < Board.rows && this.board.getPiece(defendingPiece.coordX, backY) === null) {
-      this.board.movePiece(defendingPiece.coordX, defendingPiece.coordY, defendingPiece.coordX, backY)
-    }
+    let backY = this.getBackY(defendingPiece.coordY)
+    this.board.movePiece(defendingPiece.coordX, defendingPiece.coordY, defendingPiece.coordX, backY)
   }
 }

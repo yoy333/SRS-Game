@@ -115,7 +115,6 @@ export abstract class Piece {
         return false;
     }
 
-    /* fix: move certain conditions to the board */
     canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber: number) {
         return (
             this.withinPattern(this.relativeMovementPattern, endX, endY)
