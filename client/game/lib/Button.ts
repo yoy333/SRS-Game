@@ -12,4 +12,8 @@ export abstract class Button {
                 this.onClick()
         })
     }
+
+    stopInteraction() {
+        this.button?.removeInteractive()
+    }
 }

@@ -1,4 +1,4 @@
-import { Piece, pattern, forward_1, square_1 } from "../Piece.mjs";
+import { Piece, pattern, square_1 } from "../Piece.mjs";
 import { Board } from "../Board.mjs";
 import { GameObjects, Loader } from "phaser";
 import { Rep, VisualMixin } from "../../client/game/lib/Visual.js";
@@ -15,6 +15,14 @@ class HermesToken implements Rep<GameObjects.Image> {
     loadPlugin.image(Hermes.key, 'hermes_v01.png')
   }
 }
+
+const diamond_2_1: Set<[number, number]> = new Set([
+  [0, -2],
+  [-1, -1], [0, -1], [1, -1],
+  [-1, 0], [1, 0],
+  [-1, 1], [0, 1], [1, 1],
+  [0, 2]
+])
 
 const visualMixin = VisualMixin(Piece, [new HermesToken()])
 export class Hermes extends visualMixin {
@@ -38,7 +46,7 @@ export class Hermes extends visualMixin {
     return []
   }
 
-  relativeMovementPattern: pattern = forward_1
+  relativeMovementPattern: pattern = diamond_2_1;
   relativeAttackingPattern: pattern = square_1;
 
   attackPiece(defendingPiece: Piece): void {
