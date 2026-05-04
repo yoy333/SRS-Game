@@ -12,6 +12,7 @@ import { Nike } from "./Pieces/Nike.mjs"
 import { Hermes } from "./Pieces/Hermes.mjs"
 import { Aphrodite } from "./Pieces/Aphrodite.mjs"
 import { Hades } from "./Pieces/Hades.mjs"
+import { Poseidon } from "./Pieces/Poseidon.mjs"
 
 const pieceTypeRegistery: Map<string, VisualConstructor & PieceType> = new Map()
 type ConcretePiece = new (...args: any[]) => Piece
@@ -39,4 +40,5 @@ pieceTypeRegistery.set(Nike.key, Nike)
 pieceTypeRegistery.set(Hermes.key, Hermes)
 pieceTypeRegistery.set(Aphrodite.key, Aphrodite)
 pieceTypeRegistery.set(Hades.key, Hades)
+pieceTypeRegistery.set(Poseidon.key, Poseidon)
 export { pieceTypeRegistery }
