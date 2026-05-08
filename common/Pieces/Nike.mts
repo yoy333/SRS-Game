@@ -43,7 +43,7 @@ export class Nike extends visualMixin {
   killCount = 0;
   attackPiece(defendingPiece: Piece): void {
     if (defendingPiece.tryToKill(this)) {
-      this.board.movePiece(this.coordX, this.coordY, defendingPiece.coordX, defendingPiece.coordY)
+      this.board.pushPiece(this, defendingPiece.coordX, defendingPiece.coordY)
       this.killCount++
       this.board.addIchorToNextTurn(this.killCount, this.playerOwner)
     }

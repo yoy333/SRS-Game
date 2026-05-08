@@ -46,14 +46,7 @@ export class Game extends Scene {
         GameSounds.initSound(this.sound)
 
         this.input.on('pointerdown', () => {
-            // if(!this.board.tilemap)
-            //     console.warn("clicked but no tilemap")
-            let tileClicked = this.board?.tilemap?.getTileAtWorldXY(this.input.x, this.input.y)
-            if (tileClicked) {
-                this.inputManager.proccessClick(this.add, this.board, tileClicked.x, tileClicked.y)
-            } else {
-                //console.log("no tile clicked")
-            }
+            this.inputManager.proccessClick(this.add, this.board, this.input.x, this.input.y)
         })
 
         const client = new Client('http://localhost:2567');

@@ -1,7 +1,6 @@
 import { Room, Client, CloseCode } from "colyseus";
 import { MyRoomState } from "./schema/MyRoomState.js";
 import { Board } from '@common/Board.mjs'
-import { Piece } from '@common/Piece.mjs'
 import { Deck } from "../lib/Deck.js";
 import { Hand } from "@common/Hand.mjs";
 import { pieceUtils } from "@common/pieceRegistery.mjs";

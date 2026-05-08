@@ -51,7 +51,7 @@ export class Hermes extends visualMixin {
 
   attackPiece(defendingPiece: Piece): void {
     if (defendingPiece.tryToKill(this)) {
-      this.board.movePiece(this.coordX, this.coordY, defendingPiece.coordX, defendingPiece.coordY)
+      this.board.pushPiece(this, defendingPiece.coordX, defendingPiece.coordY)
     }
   }
 }

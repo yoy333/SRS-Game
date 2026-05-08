@@ -52,14 +52,14 @@ export class Zeus extends visualMixin {
   relativeMovementPattern: pattern = forward_1
   relativeAttackingPattern: pattern = square_1;
 
-  tryToKill(attackingPiece: Piece, override?: string[]): boolean {
+  tryToKill(attackingPiece: Piece, override: boolean = false): boolean {
     let attackerY = attackingPiece.coordY
     let defenderY = this.coordY
     if (this.playerOwner == 1) {
       attackerY = Board.flipPoint(0, attackerY)[1]
       defenderY = Board.flipPoint(0, defenderY)[1]
     }
-    if (override?.includes('power')) {
+    if (override) {
       this.die();
       return true;
     } else if (attackerY >= defenderY) {

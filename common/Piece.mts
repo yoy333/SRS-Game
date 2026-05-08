@@ -49,6 +49,10 @@ export abstract class Piece {
     perspectiveX: number
     perspectiveY: number
 
+    // if dynXCost is suppied then it overrides XCost
+    dynMoveCost?: number
+    dynAttackCost?: number
+
     isClientSide: boolean
     playerOwner: number
 
@@ -132,6 +136,18 @@ export abstract class Piece {
         return false;
     }
 
+    getMoveCost(): number {
+        let staticCost = (this.constructor as PieceType).moveCost;
+        let dynamicCost = this?.dynMoveCost;
+        return dynamicCost ?? staticCost;
+    }
+
+    getAttackCost(): number {
+        let staticCost = (this.constructor as PieceType).attackCost;
+        let dynamicCost = this?.dynAttackCost;
+        return dynamicCost ?? staticCost;
+    }
+
     canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber: number) {
         return (
             this.withinPattern(this.relativeMovementPattern, endX, endY)
@@ -149,12 +165,9 @@ export abstract class Piece {
         if (!attackingPiece || !defendingPiece)
             return false;
 
-        let cost = (this.constructor as PieceType).attackCost
-
         return (
             this.board.areEnemyPieces(attackingPiece, defendingPiece) &&
             // this.board.isSpaceFull(defenderX, defenderY) &&
-            this.board.doesHaveEnoughIchor(cost, playerNumber) &&
             this.withinPattern(this.relativeAttackingPattern, defenderX, defenderY)
         )
     }
@@ -167,10 +180,13 @@ export abstract class Piece {
         return true;
     }
 
-    tryToKill(attackingPiece: Piece, override?: string[]): boolean {
+    tryToKill(attackingPiece: Piece, override: boolean = false): boolean {
         this.die()
         return true
     }
+
+    // TODO implement optional turn number parameter
+    onEndTurn() { }
 
     die() {
         this.token?.destroy(true)

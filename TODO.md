@@ -3,7 +3,11 @@ matchmaking
 2 new tileset
 ! split spawn and move reasources
 2 cards
-win con
+! win con
+on end turn, on start turn
+n ichorDisplay handles two digits
+n tints for move squares
+n tints for enemy pieces
 
 # characters balanced
 Zeus
@@ -13,7 +17,6 @@ Hermes D
 Nike 
 
 # characters to add
-! Aries
 ! Appolo
 ! Aphrodite
 
@@ -22,8 +25,9 @@ Nike
 ? Dionysius
 
 # Later
-? Refactor Board into three classes - GameRules - ActionSpace - Board
-Remove classwide dependency on board in piece
+refactor to global gamestate
+refactor board to be outside of gamestate
+refactor actions space inferface exposed to game
 Add more UI
 make it so that moves and attacks just pass around references to the pieces themselves
 make Input Manager take in input bounds

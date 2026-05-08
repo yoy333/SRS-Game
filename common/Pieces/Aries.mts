@@ -20,9 +20,10 @@ export class Aries extends visualMixin {
   static key = 'aries'
   key = 'aries'
 
-  static spawnCost = 2;
+  static spawnCost = 1;
   static moveCost = 1;
-  static attackCost = 1
+  static attackCost = 2;
+  dynAttackCost = Aries.attackCost;
 
   constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {
     super(addPlugin, board, x, y, isClientSide, playerOwner)
@@ -40,9 +41,17 @@ export class Aries extends visualMixin {
   relativeMovementPattern: pattern = forward_1
   relativeAttackingPattern: pattern = square_1;
 
+  attackedPieceThisTurn: boolean = false
   attackPiece(defendingPiece: Piece): void {
-    if (defendingPiece.tryToKill(this)) {
-      this.board.movePiece(this.coordX, this.coordY, defendingPiece.coordX, defendingPiece.coordY)
+    if (defendingPiece.tryToKill(this, true)) {
+      this.board.pushPiece(this, defendingPiece.coordX, defendingPiece.coordY)
+      this.dynAttackCost = 0;
+      this.attackedPieceThisTurn = true
     }
+  }
+
+  onEndTurn() {
+    this.dynAttackCost = Aries.attackCost
+    this.attackedPieceThisTurn = false
   }
 }

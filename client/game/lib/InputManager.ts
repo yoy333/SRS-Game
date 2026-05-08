@@ -1,10 +1,10 @@
-import { GameObjects, Input } from "phaser";
+import { GameObjects } from "phaser";
 import { Board } from "@common/Board.mjs";
 import { Piece, PieceKey, PieceType } from "@common/Piece.mjs";
 import { DefaultPiece } from "@common/Pieces/DefaultPiece.mjs";
 import { IconButton } from "./IconButton";
 import { EndTurnButton } from "./ImageButton";
-import { Hand } from '@common/Hand.mjs'
+import { Hand } from '@common/Hand.mjs';
 import { VisualMixin } from "./Visual";
 import { GameSounds } from "./GameSounds";
 import { pieceUtils } from "@common/pieceRegistery.mjs";
@@ -16,8 +16,17 @@ export class InputManager extends visualMixin {
         super()
     }
 
-    proccessClick(addPlugin: GameObjects.GameObjectFactory, board: Board, perspectiveX: number, perspectiveY: number) {
+    proccessClick(addPlugin: GameObjects.GameObjectFactory, board: Board, worldX: number, worldY: number) {
+        let tileClicked = board?.tilemap?.getTileAtWorldXY(worldX, worldY)
+        if (!tileClicked) {
+            return;
+        }
+
+        let perspectiveX = tileClicked.x
+        let perspectiveY = tileClicked.y
         let [x, y] = board.adjustIfFlip(perspectiveX, perspectiveY)
+
+
         if (this.selectionForSpawn) {
             let pieceType = this.selectionForSpawn
             if (this.onSpawn)

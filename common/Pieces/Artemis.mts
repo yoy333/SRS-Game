@@ -68,7 +68,7 @@ export class Artemis extends visualMixin {
   static key = 'artemis'
   static reps: Rep<image>[] = [new ArtemisToken()]
 
-  static spawnCost = 2;
+  static spawnCost = 1;
   static moveCost = 2;
   static attackCost = 1;
 

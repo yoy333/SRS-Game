@@ -17,6 +17,9 @@ export abstract class Effect {
   onPostAttack?: (defendingPiece: Piece) => void
   // onPreDeath?: () => boolean
   onPostDeath?: () => void
+  // TODO
+  // onEndTurn
+  // onStartTurn
 
   // effect only removes itself by default
   // but you may want to remove related effects
