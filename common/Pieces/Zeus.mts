@@ -13,7 +13,7 @@ class ZeusToken implements Rep<GameObjects.Image> {
   }
 
   loadRep(loadPlugin: Loader.LoaderPlugin): void {
-    loadPlugin.image(Zeus.key, 'zeus_v01.png')
+    loadPlugin.image(Zeus.key, 'zeus_v02.png')
   }
 }
 

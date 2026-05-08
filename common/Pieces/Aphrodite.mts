@@ -6,12 +6,12 @@ import { Rep, VisualMixin } from "../../client/game/lib/Visual.js";
 class AphroditeToken implements Rep<GameObjects.Image> {
   createRep(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Image {
     let icon = addPlugin.image(x, y, Aphrodite.key)
-    icon.setScale(1 / 40)
+    icon.setScale(1 / 20)
     return icon
   }
 
   loadRep(loadPlugin: Loader.LoaderPlugin): void {
-    loadPlugin.image(Aphrodite.key, 'aphrodite_v01.png')
+    loadPlugin.image(Aphrodite.key, 'aphrodite_v02.png')
   }
 }
 

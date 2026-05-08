@@ -13,7 +13,7 @@ class PoseidonToken implements Rep<GameObjects.Image> {
   }
 
   loadRep(loadPlugin: Loader.LoaderPlugin): void {
-    loadPlugin.image(Poseidon.key, 'poseidon_v01.png')
+    loadPlugin.image(Poseidon.key, 'poseidon_v02.png')
   }
 }
 
