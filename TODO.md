@@ -3,7 +3,6 @@ matchmaking
 2 new tileset
 ! split spawn and move reasources
 2 cards
-! win con
 on end turn, on start turn
 n ichorDisplay handles two digits
 n tints for move squares

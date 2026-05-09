@@ -47,6 +47,8 @@ export class Board extends visualMixin {
     static maxIchorPerTurn: number = 5;
     private ichor: [number, number] = [Board.maxIchorPerTurn, Board.maxIchorPerTurn];
     private ichorForNextTurn: [number, number] = [0, 0]
+    static maxSpawnsPerTurn: number = 1;
+    private spawnCreditsThisTurn: [number, number] = [Board.maxSpawnsPerTurn, Board.maxSpawnsPerTurn]
 
     addIchorToNextTurn(ichor: number, playerNumber: number) {
         this.ichorForNextTurn[playerNumber] += ichor
@@ -142,6 +144,13 @@ export class Board extends visualMixin {
         return hand.includes(pieceType.key)
     }
 
+    withinMaxSpawn(playerNumber?: number) {
+        if (!playerNumber)
+            playerNumber = this.playerNumber
+
+        return this.spawnCreditsThisTurn[playerNumber] > 0
+    }
+
     // move to Game Rules
     canSpawnPiece(pieceType: PieceType, x: number, y: number, hand: PieceKey[], playerNumber?: number) {
         // console.log(`inputs ${x}, ${y}`)
@@ -160,6 +169,7 @@ export class Board extends visualMixin {
         if (this.isSpaceEmpty(x, y) &&
             this.isOnHomeRow(y, playerNumber) &&
             this.isNotSpectator(playerNumber) &&
+            this.withinMaxSpawn(playerNumber) &&
             this.doesHaveEnoughIchor(pieceType.spawnCost, playerNumber) &&
             this.isMyTurn(playerNumber) &&
             this.isInHand(pieceType, hand))
@@ -180,6 +190,8 @@ export class Board extends visualMixin {
             piece.initReps(addPlugin, x, y)
         }
         this.setPiece(x, y, piece)
+
+        this.spawnCreditsThisTurn[playerOwner]--
         this.ichor[playerOwner] -= pieceType.spawnCost;
         if (this.isClientSide)
             GameSounds.place()
@@ -364,6 +376,8 @@ export class Board extends visualMixin {
         for (let piece of this.piecesOfPlayer(this.currentTurn)) {
             piece.onEndTurn()
         }
+
+        this.spawnCreditsThisTurn[this.currentTurn] = Board.maxSpawnsPerTurn
 
         if (this.currentTurn == 0) {
             this.currentTurn = 1
