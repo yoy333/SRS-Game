@@ -13,7 +13,7 @@ class ApolloToken implements Rep<GameObjects.Image> {
   }
 
   loadRep(loadPlugin: Loader.LoaderPlugin): void {
-    loadPlugin.image(Apollo.key, 'apollo_v01.png')
+    loadPlugin.image(Apollo.key, 'apollo_v03.png')
   }
 }
 

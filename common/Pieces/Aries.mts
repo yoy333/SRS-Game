@@ -11,7 +11,7 @@ class AriesToken implements Rep<GameObjects.Image> {
   }
 
   loadRep(loadPlugin: Loader.LoaderPlugin): void {
-    loadPlugin.image(Aries.key, 'aries_v01.png')
+    loadPlugin.image(Aries.key, 'aries_v02.png')
   }
 }
 

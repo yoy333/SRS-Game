@@ -12,7 +12,7 @@ class HermesToken implements Rep<GameObjects.Image> {
   }
 
   loadRep(loadPlugin: Loader.LoaderPlugin): void {
-    loadPlugin.image(Hermes.key, 'hermes_v01.png')
+    loadPlugin.image(Hermes.key, 'hermes_v02.png')
   }
 }
 
