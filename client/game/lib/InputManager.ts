@@ -19,6 +19,8 @@ export class InputManager extends visualMixin {
     proccessClick(addPlugin: GameObjects.GameObjectFactory, board: Board, worldX: number, worldY: number) {
         let tileClicked = board?.tilemap?.getTileAtWorldXY(worldX, worldY)
         if (!tileClicked) {
+            if (this.selectionForAttack || this.selectionForMove)
+                this.clearSelection()
             return;
         }
 
