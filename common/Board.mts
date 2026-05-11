@@ -6,6 +6,7 @@ import { NeutralObjective } from './NeutralObjective.mjs'
 import { ConcreteConstructor } from "./utils.mjs"
 import { GameSounds } from "../client/game/lib/GameSounds.js"
 import { AnimationManager } from "../client/game/lib/AnimationManager.js"
+import { Effect } from "./Effect.mjs"
 
 class TilemapRep implements Rep<Tilemaps.Tilemap> {
     createRep(makePlugin: GameObjects.GameObjectCreator, x: number, y: number): Tilemaps.Tilemap {
@@ -46,6 +47,8 @@ export class Board extends visualMixin {
     static maxIchorPerTurn: number = 5;
     private ichor: [number, number] = [Board.maxIchorPerTurn, Board.maxIchorPerTurn];
     private ichorForNextTurn: [number, number] = [0, 0]
+    static maxSpawnsPerTurn: number = 1;
+    private spawnCreditsThisTurn: [number, number] = [Board.maxSpawnsPerTurn, Board.maxSpawnsPerTurn]
 
     addIchorToNextTurn(ichor: number, playerNumber: number) {
         this.ichorForNextTurn[playerNumber] += ichor
@@ -73,7 +76,6 @@ export class Board extends visualMixin {
     }
 
     getWorldXYFromPerspective(x: number, y: number): [number, number] {
-        // console.log(`creating rep at ${x}, ${y}`)
         let tile = this.tilemap?.getTileAt(x, y)
         if (!tile)
             throw new Error(`no tile at (${x}, ${y})`)
@@ -131,9 +133,6 @@ export class Board extends visualMixin {
         if (!playerNumber)
             playerNumber = this.playerNumber
 
-        // console.log("player number: "+playerNumber)
-        // console.log("current turn: "+this.currentTurn)
-
         return playerNumber == this.currentTurn
     }
 
@@ -141,9 +140,15 @@ export class Board extends visualMixin {
         return hand.includes(pieceType.key)
     }
 
+    withinMaxSpawn(playerNumber?: number) {
+        if (!playerNumber)
+            playerNumber = this.playerNumber
+
+        return this.spawnCreditsThisTurn[playerNumber] > 0
+    }
+
     // move to Game Rules
     canSpawnPiece(pieceType: PieceType, x: number, y: number, hand: PieceKey[], playerNumber?: number) {
-        // console.log(`inputs ${x}, ${y}`)
         if (playerNumber == undefined)
             playerNumber = this.playerNumber
 
@@ -159,6 +164,7 @@ export class Board extends visualMixin {
         if (this.isSpaceEmpty(x, y) &&
             this.isOnHomeRow(y, playerNumber) &&
             this.isNotSpectator(playerNumber) &&
+            this.withinMaxSpawn(playerNumber) &&
             this.doesHaveEnoughIchor(pieceType.spawnCost, playerNumber) &&
             this.isMyTurn(playerNumber) &&
             this.isInHand(pieceType, hand))
@@ -179,6 +185,8 @@ export class Board extends visualMixin {
             piece.initReps(addPlugin, x, y)
         }
         this.setPiece(x, y, piece)
+
+        this.spawnCreditsThisTurn[playerOwner]--
         this.ichor[playerOwner] -= pieceType.spawnCost;
         if (this.isClientSide)
             GameSounds.place()
@@ -209,6 +217,64 @@ export class Board extends visualMixin {
         return this.getPiece(x, y) == null;
     }
 
+    isInBounds(x: number, y: number) {
+        return (
+            x >= 0 &&
+            x < Board.columns &&
+            y >= 0 &&
+            y < Board.rows
+        )
+    }
+
+    canPushPiece(piece: Piece, endX: number, endY: number) {
+        return (
+            this.isSpaceEmpty(endX, endY) &&
+            this.isInBounds(endX, endY)
+        )
+    }
+
+    hasWon(playerNumber?: number): number {
+        if (playerNumber == undefined) {
+            if (this.hasWon(0) != -1)
+                return 0
+            else if (this.hasWon(1) != -1)
+                return 1
+            else
+                return -1;
+        }
+
+        let opposingHomerow = 0
+        if (playerNumber == 1)
+            opposingHomerow = Board.flipPoint(0, opposingHomerow)[1]
+
+        for (let column = 0; column < Board.columns; column++) {
+            if (this.getPiece(column, opposingHomerow)?.playerOwner === playerNumber) {
+                return playerNumber
+            }
+        }
+
+        return -1
+    }
+
+    // returns -1 if no one won
+    pushPiece(piece: Piece, endX: number, endY: number) {
+        let startX = piece.coordX
+        let startY = piece.coordY
+
+        piece.movePiece(startX, startY, endX, endY)
+
+        this.setPiece(endX, endY, piece)
+        this.setPiece(startX, startY, null)
+
+        this.getNObj(endX, endY).forEach((objective: NeutralObjective) => {
+            objective.onCollision(piece)
+        })
+
+        if (this.hasWon(piece.playerOwner) != -1) {
+            console.log("this is where the win screen would go, be we haven't made that yet")
+        }
+    }
+
     canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber?: number): boolean {
         if (!playerNumber)
             playerNumber = this.playerNumber;
@@ -217,13 +283,34 @@ export class Board extends visualMixin {
         if (!piece)
             return false;
 
-        let cost = (piece.constructor as PieceType).moveCost
+        let cost = piece.getMoveCost()
 
-        return (this.doesOwnPiece(piece, playerNumber) &&
-            this.isSpaceEmpty(endX, endY) &&
+        let effectAllowsMove = true
+        let effects = this.effects.get(piece)
+        if (!effects)
+            effects = []
+        for (let effect of effects) {
+            if (effect.onPreMove?.(endX, endY) === false) {
+                effectAllowsMove = false
+                break;
+            }
+        }
+
+        // console.log(this.doesOwnPiece(piece, playerNumber))
+        // console.log(this.isSpaceEmpty(endX, endY))
+        // console.log(this.isMyTurn(playerNumber))
+        // console.log(this.doesHaveEnoughIchor(cost, playerNumber))
+        // console.log(piece.canMovePiece(startX, startY, endX, endY, playerNumber))
+        // console.log(effectAllowsMove)
+
+        return (
+            this.canPushPiece(piece, endX, endY) &&
+            this.doesOwnPiece(piece, playerNumber) &&
             this.isMyTurn(playerNumber) &&
             this.doesHaveEnoughIchor(cost, playerNumber) &&
-            piece.canMovePiece(startX, startY, endX, endY, playerNumber))
+            piece.canMovePiece(startX, startY, endX, endY, playerNumber) &&
+            effectAllowsMove
+        )
     }
 
     nObjs: NeutralObjective[] = []
@@ -234,25 +321,21 @@ export class Board extends visualMixin {
         })
     }
 
-    movePiece(startX: number, startY: number, endX: number, endY: number, playerNumber?: number) {
-        if (!playerNumber)
-            playerNumber = this.playerNumber
-
+    movePiece(startX: number, startY: number, endX: number, endY: number, playerOwner?: number) {
         let piece = this.getPiece(startX, startY)
         if (!piece)
             return;
 
-        const cost = (piece.constructor as PieceType).moveCost
+        if (!playerOwner)
+            playerOwner = piece.playerOwner
 
-        this.ichor[playerNumber] -= cost
+        const cost = piece.getMoveCost()
+        this.ichor[playerOwner] -= cost
 
-        piece.movePiece(startX, startY, endX, endY)
+        this.pushPiece(piece, endX, endY)
 
-        this.setPiece(endX, endY, piece)
-        this.setPiece(startX, startY, null)
-
-        this.getNObj(endX, endY).forEach((objective: NeutralObjective) => {
-            objective.onCollision(piece)
+        this.effects.get(piece)?.forEach((effect: Effect) => {
+            effect.onPostMove?.(endX, endY)
         })
 
         if (this.isClientSide)
@@ -268,9 +351,24 @@ export class Board extends visualMixin {
         return this.isMyTurn(playerNumber)
     }
 
+    piecesOfPlayer(playerNumber: number): Piece[] {
+        let ans = []
+        for (let piece of this.lookup) {
+            if (piece?.playerOwner == playerNumber)
+                ans.push(piece)
+        }
+        return ans;
+    }
+
     endTurn() {
         this.ichor[this.currentTurn] = Board.maxIchorPerTurn + this.ichorForNextTurn[this.playerNumber]
         this.ichorForNextTurn[this.currentTurn] = 0
+
+        for (let piece of this.piecesOfPlayer(this.currentTurn)) {
+            piece.onEndTurn()
+        }
+
+        this.spawnCreditsThisTurn[this.currentTurn] = Board.maxSpawnsPerTurn
 
         if (this.currentTurn == 0) {
             this.currentTurn = 1
@@ -278,6 +376,10 @@ export class Board extends visualMixin {
             this.currentTurn = 0
         } else {
             throw new Error("how did we get here")
+        }
+
+        for (let piece of this.piecesOfPlayer(this.currentTurn)) {
+            piece.onStartTurn()
         }
 
         if (this.isClientSide)
@@ -291,7 +393,9 @@ export class Board extends visualMixin {
     }
 
     //move to Game Rules
-    canAttackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number, playerNumber?: number) {
+    canAttackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number,
+        playerNumber?: number, override: boolean = false) {
+
         if (!playerNumber)
             playerNumber = this.playerNumber
 
@@ -300,14 +404,70 @@ export class Board extends visualMixin {
         if (!attackingPiece || !defendingPiece)
             return false;
 
-        let cost = (attackingPiece.constructor as PieceType).attackCost
+        let effectAllowsAttack = true
+        let effects = this.effects.get(attackingPiece)
+        if (!effects)
+            effects = []
 
-        return (this.areEnemyPieces(attackingPiece, defendingPiece) &&
+        for (let effect of effects) {
+            if (effect.onPreAttack?.(defendingPiece) === false) {
+                effectAllowsAttack = false
+                break;
+            }
+        }
+
+        let cost = attackingPiece.getAttackCost()
+
+        // console.log(this.isMyTurn(playerNumber))
+        // console.log(this.doesHaveEnoughIchor(cost, playerNumber))
+        // console.log(attackingPiece.canAttackPiece(attackerX, attackerY, defenderX, defenderY, playerNumber))
+        // console.log(defendingPiece.canBeAttacked(attackerX, attackerY, playerNumber))
+        // console.log(effectAllowsAttack)
+
+        return (
             this.isMyTurn(playerNumber) &&
+            this.doesHaveEnoughIchor(cost, playerNumber) &&
             attackingPiece.canAttackPiece(attackerX, attackerY, defenderX, defenderY, playerNumber) &&
-            defendingPiece.canBeAttacked(attackerX, attackerY, defenderX, defenderY, playerNumber) &&
-            this.doesHaveEnoughIchor(cost, playerNumber)
+            defendingPiece.canBeAttacked(attackingPiece, override) &&
+            effectAllowsAttack
         )
+    }
+
+    effects: Map<Piece, Effect[]> = new Map()
+    applyEffect<T extends Effect>(effectType: ConcreteConstructor<T>, originatingPiece: Piece, xCoord?: number, yCoord?: number):
+        T | undefined {
+
+        let targetedPiece
+        if (!xCoord || !yCoord)
+            targetedPiece = originatingPiece
+        else
+            targetedPiece = this.getPiece(xCoord, yCoord)
+
+        if (!targetedPiece) {
+            return undefined;
+        }
+
+        let effect: T = new effectType(this, originatingPiece, targetedPiece)
+        // if no target coords are specified the piece is assumed to be targeting itself
+
+        let effects = this.effects.get(targetedPiece)
+        if (!effects)
+            effects = []
+        effects.push(effect)
+        this.effects.set(targetedPiece, effects)
+        return effect
+    }
+
+    removeEffect(piece: Piece, effect: Effect) {
+        let effects = this.effects.get(piece)
+        if (!effects)
+            throw new Error("no effects on that piece")
+        // return;
+        let index = effects.indexOf(effect)
+        if (index == -1) {
+            throw new Error("no element at that index")
+        }
+        effects.splice(index, 1)
     }
 
     attackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number) {
@@ -317,13 +477,32 @@ export class Board extends visualMixin {
             throw new Error("no piece to attack with")
         if (!defendingPiece)
             throw new Error("no piece to defend")
+
+        let cost = attackingPiece.getAttackCost()
+        this.ichor[attackingPiece.playerOwner] -= cost
+
         attackingPiece.attackPiece(defendingPiece)
 
-        let cost = (attackingPiece.constructor as PieceType).attackCost
-        this.ichor[attackingPiece.playerOwner] -= cost
+        this.effects.get(attackingPiece)?.forEach((effect: Effect) => {
+            effect.onPostAttack?.(defendingPiece)
+        })
 
         if (this.isClientSide)
             GameSounds.capturePiece()
+    }
+
+    killPiece(coordX: number, coordY: number) {
+        let piece = this.getPiece(coordX, coordY)
+        if (!piece)
+            throw new Error("no piece there")
+        let effects = this.effects.get(piece)
+        if (!effects)
+            return;
+        effects.forEach((effect: Effect) => {
+            effect.onPostDeath?.()
+        })
+
+        this.setPiece(coordX, coordY, null)
     }
 
     getIndexFromXY(x: number, y: number): number {
@@ -340,15 +519,26 @@ export class Board extends visualMixin {
         let i = this.getIndexFromXY(x, y);
 
         this.lookup[i] = p
+    }
 
-        // console.log("immediate")
-        // console.log(this.lookup[i])
+    printBoardState() {
+        console.log("board state")
+        for (let y = 0; y < Board.rows; y++) {
+            let rowStr = "| "
+            for (let x = 0; x < Board.columns; x++) {
+                let name = this.getPiece(x, y)?.constructor.name ?? 0
+                rowStr += name + " | "
+            }
+            console.log(rowStr)
+        }
     }
 
     get otherPlayerNumber() {
-        if (this.playerNumber == 1)
-            return 2;
-        else
+        if (this.playerNumber == 0)
             return 1;
+        else if (this.playerNumber == 1)
+            return 0;
+        else
+            throw new Error("uhhhh ... wrong player number bucko")
     }
 }

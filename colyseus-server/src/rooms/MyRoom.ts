@@ -1,7 +1,6 @@
 import { Room, Client, CloseCode } from "colyseus";
 import { MyRoomState } from "./schema/MyRoomState.js";
 import { Board } from '@common/Board.mjs'
-import { Piece } from '@common/Piece.mjs'
 import { Deck } from "../lib/Deck.js";
 import { Hand } from "@common/Hand.mjs";
 import { pieceUtils } from "@common/pieceRegistery.mjs";
@@ -42,8 +41,6 @@ export class MyRoom extends Room {
         this.hands[playerNumber].replace(oldCard, newCard)
 
         this.clients[playerNumber].send('drawCard', newCard)
-        console.log
-        //console.log(this.deck.drawCards)
       } else {
         console.log("hijacked spawn call")
       }
@@ -66,12 +63,14 @@ export class MyRoom extends Room {
       let attackingPiece = this.board.getPiece(attackerX, attackerY)
       let defendingPiece = this.board.getPiece(defenderX, defenderY)
       if (!attackingPiece || !defendingPiece)
-        return false;
+        throw new Error("Attack is not between two valid pieces")
+
+      // this.board.printBoardState()
 
       let playerNumber = this.getPlayerAssignment(client.sessionId)
 
       if (this.board.canAttackPiece(attackerX, attackerY, defenderX, defenderY, playerNumber)) {
-        this.board.movePiece(attackerX, attackerY, defenderX, defenderY)
+        this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
         this.broadcast('otherAttack', message, {
           except: client
         })

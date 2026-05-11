@@ -4,6 +4,7 @@ import { PieceKey, PieceType } from '@common/Piece.mjs'
 import { pieceUtils } from '@common/pieceRegistery.mjs'
 import { Rep, VisualMixin } from './Visual'
 import { DefaultPiece } from '@common/Pieces/DefaultPiece.mjs'
+import { Button } from './Button'
 
 type spriteOrImage = GameObjects.Sprite | GameObjects.Image
 
@@ -24,21 +25,20 @@ class IconButtonBackground implements Rep<spriteOrImage> {
     }
 }
 
-const visualMixin = VisualMixin(Object, [new IconButtonBackground()])
+const visualMixin = VisualMixin(Button, [new IconButtonBackground()])
 export class IconButton extends visualMixin {
-    numReps: number = 3
-    //dragable: GameObjects.Image
     pieceKey: string
 
     background?: GameObjects.Sprite
-    icon?: GameObjects.Image
+    // icon?: GameObjects.Image
+    button?: GameObjects.Image
 
     constructor(inputManager: InputManager, key: string) {
         super()
         //this.dragable = this.reps[2]
         this.pieceKey = key
         // this.reps = this.createReps(addPlugin, x, y)
-        this.createInteraction(inputManager)
+        this.createInteraction()
     }
 
     initReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): void {
@@ -49,7 +49,7 @@ export class IconButton extends visualMixin {
             throw new Error("something very wrong")
 
         this.background = reps[0]
-        this.icon = reps[1]
+        this.button = reps[1]
     }
 
     static createReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number, pieceClass: PieceType = DefaultPiece)
@@ -70,23 +70,10 @@ export class IconButton extends visualMixin {
         return icon
     }
 
-    createInteraction(inputManager: InputManager) {
-        this.icon?.setInteractive()
-        this.icon?.on('pointerdown', () => {
-            inputManager.selectForSpawn(pieceUtils.classFromKey(this.pieceKey));
-            inputManager.selectedButtonIndex = inputManager.iconButtons.indexOf(this);
-            console.log('selected icon button index:', inputManager.selectedButtonIndex);
-        })
-    }
-
-    stopInteraction() {
-        this.icon?.removeInteractive()
-    }
-
     updateIcon(addPlugin: GameObjects.GameObjectFactory, key: PieceKey) {
         this.pieceKey = key
 
-        let oldRep = this.icon
+        let oldRep = this.button
         if (!oldRep) {
             throw new Error("trying to update Icon when not init yet")
         }
@@ -97,6 +84,6 @@ export class IconButton extends visualMixin {
 
         let pieceClass = pieceUtils.classFromKey(this.pieceKey)
         let icon = IconButton.tryUseCard(addPlugin, pieceClass, x, y)
-        this.icon = icon
+        this.button = icon
     }
 }

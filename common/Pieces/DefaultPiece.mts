@@ -1,7 +1,7 @@
 import { Piece, pattern, forward_1, square_1 } from "../Piece.mjs";
 import { Board } from "../Board.mjs";
 import { GameObjects, Loader } from "phaser";
-import { Rep, VisualConstructor, VisualMixin, visualPlugin } from "../../client/game/lib/Visual.js";
+import { Rep, VisualMixin } from "../../client/game/lib/Visual.js";
 
 type sprite = GameObjects.Sprite
 
@@ -46,8 +46,8 @@ export class DefaultPiece extends visualMixin {
     relativeAttackingPattern: pattern = square_1;
 
     attackPiece(defendingPiece: Piece): void {
-        if (defendingPiece.tryToKill(this)) {
-            this.board.movePiece(this.coordX, this.coordY, defendingPiece.coordX, defendingPiece.coordY)
+        if (defendingPiece.tryToKill(this, true)) {
+            this.board.pushPiece(this, defendingPiece.coordX, defendingPiece.coordY)
         }
     }
 }

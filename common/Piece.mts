@@ -1,5 +1,5 @@
 import { AnimationManager } from "../client/game/lib/AnimationManager.js";
-import { VisualConstructor } from "../client/game/lib/Visual.js";
+import { Rep, VisualConstructor } from "../client/game/lib/Visual.js";
 import { Board } from "./Board.mjs";
 import { GameObjects, Loader } from "phaser";
 
@@ -11,6 +11,20 @@ const emptyPattern: pattern = new Set()
 
 export type PieceKey = string
 
+type hexColor = `#${string}`
+
+export type ColorPallete = {
+    fg_1: hexColor
+    fg_2: hexColor
+    muted: hexColor
+    accent: hexColor
+    bg_1: hexColor
+    bg_2: hexColor
+    bg_3: hexColor
+    bg_4: hexColor
+    text: hexColor
+}
+
 type PieceStatics = {
     key: string
 
@@ -19,13 +33,14 @@ type PieceStatics = {
     spawnCost: number
     moveCost: number
     attackCost: number
+    colorPallete?: ColorPallete,
+    hCard_fg?: Rep<GameObjects.Image>
+    hCard_bg?: Rep<GameObjects.Image>
 }
 type pieceConstructor = new (...args: any[]) => Piece
 export type PieceType = pieceConstructor & PieceStatics & VisualConstructor
 
-// const visualMixin = VisualMixin(Object, [])
 export abstract class Piece {
-    // extends visualMixin {
     token?: sprite | image
     board: Board
 
@@ -33,6 +48,10 @@ export abstract class Piece {
     coordY: number
     perspectiveX: number
     perspectiveY: number
+
+    // if dynXCost is suppied then it overrides XCost
+    dynMoveCost?: number
+    dynAttackCost?: number
 
     isClientSide: boolean
     playerOwner: number
@@ -117,7 +136,18 @@ export abstract class Piece {
         return false;
     }
 
-    /* fix: move certain conditions to the board */
+    getMoveCost(): number {
+        let staticCost = (this.constructor as PieceType).moveCost;
+        let dynamicCost = this?.dynMoveCost;
+        return dynamicCost ?? staticCost;
+    }
+
+    getAttackCost(): number {
+        let staticCost = (this.constructor as PieceType).attackCost;
+        let dynamicCost = this?.dynAttackCost;
+        return dynamicCost ?? staticCost;
+    }
+
     canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber: number) {
         return (
             this.withinPattern(this.relativeMovementPattern, endX, endY)
@@ -130,8 +160,14 @@ export abstract class Piece {
     }
 
     canAttackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number, playerNumber: number) {
+        let attackingPiece = this.board.getPiece(attackerX, attackerY)
+        let defendingPiece = this.board.getPiece(defenderX, defenderY)
+        if (!attackingPiece || !defendingPiece)
+            return false;
+
         return (
-            this.board.isSpaceFull(defenderX, defenderY) &&
+            this.board.areEnemyPieces(attackingPiece, defendingPiece) &&
+            // this.board.isSpaceFull(defenderX, defenderY) &&
             this.withinPattern(this.relativeAttackingPattern, defenderX, defenderY)
         )
     }
@@ -140,20 +176,30 @@ export abstract class Piece {
         defendingPiece.tryToKill(this)
     }
 
-    canBeAttacked(attackerX: number, attackerY: number, defenderX: number, defenderY: number, playerNumber: number) {
-        return true;
-    }
-
-    tryToKill(attackingPiece: Piece, override?: string[]): boolean {
-        this.die()
+    canBePushed(attacker?: Piece) {
         return true
     }
 
+    canBeAttacked(attacker: Piece, override: boolean = false) {
+        return true;
+    }
+
+    tryToKill(attackingPiece: Piece, override: boolean = false): boolean {
+        console.log("ttk: " + override)
+        if (this.canBeAttacked(attackingPiece, override)) {
+            this.die()
+            return true
+        }
+        return false
+    }
+
+    // TODO implement optional turn number parameter
+    onStartTurn() { }
+    onEndTurn() { }
+
     die() {
-        // this.reps.forEach((rep: sprite | image) => {
         this.token?.destroy(true)
-        // })
-        this.board.setPiece(this.coordX, this.coordY, null)
+        this.board.killPiece(this.coordX, this.coordY)
     }
 }
 

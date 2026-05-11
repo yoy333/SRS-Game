@@ -6,18 +6,20 @@ export default ({ mode }) => {
   return defineConfig({
     envDir: './',
     server: {
-      proxy:{
+      proxy: {
         '/phaserAssets': 'http://localhost:8080',
-        '/http' : 'https://localhost:8080'
+        '/http': 'https://localhost:8080'
       },
       hmr: {
         clientPort: 5173,
       },
-      allowedHosts:true
+      allowedHosts: true
     },
-    publicDir:'game/assets',
-    plugins: [tsconfigPaths()]
-    // build:{
+    publicDir: 'game/assets',
+    plugins: [tsconfigPaths()],
+    build: {
+      sourcemap: true,
+    }
     //   lib: {
     //     entry: 'game/main.ts',
     //     name: 'MyGame',
