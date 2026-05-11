@@ -176,16 +176,25 @@ export abstract class Piece {
         defendingPiece.tryToKill(this)
     }
 
-    canBeAttacked(attackerX: number, attackerY: number, defenderX: number, defenderY: number, playerNumber: number) {
+    canBePushed(attacker?: Piece) {
+        return true
+    }
+
+    canBeAttacked(attacker: Piece, override: boolean = false) {
         return true;
     }
 
     tryToKill(attackingPiece: Piece, override: boolean = false): boolean {
-        this.die()
-        return true
+        console.log("ttk: " + override)
+        if (this.canBeAttacked(attackingPiece, override)) {
+            this.die()
+            return true
+        }
+        return false
     }
 
     // TODO implement optional turn number parameter
+    onStartTurn() { }
     onEndTurn() { }
 
     die() {

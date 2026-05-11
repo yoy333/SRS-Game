@@ -63,8 +63,7 @@ export class MyRoom extends Room {
       let attackingPiece = this.board.getPiece(attackerX, attackerY)
       let defendingPiece = this.board.getPiece(defenderX, defenderY)
       if (!attackingPiece || !defendingPiece)
-        1;
-      // throw new Error("Attack is not between two valid pieces")
+        throw new Error("Attack is not between two valid pieces")
 
       // this.board.printBoardState()
 

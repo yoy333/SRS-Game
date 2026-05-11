@@ -46,7 +46,7 @@ export class DefaultPiece extends visualMixin {
     relativeAttackingPattern: pattern = square_1;
 
     attackPiece(defendingPiece: Piece): void {
-        if (defendingPiece.tryToKill(this)) {
+        if (defendingPiece.tryToKill(this, true)) {
             this.board.pushPiece(this, defendingPiece.coordX, defendingPiece.coordY)
         }
     }

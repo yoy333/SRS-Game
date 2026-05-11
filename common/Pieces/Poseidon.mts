@@ -53,7 +53,8 @@ export class Poseidon extends visualMixin {
   relativeAttackingPattern: pattern = square_1;
 
   getBackY(y: number): number {
-    return y + (y === 0 ? -1 : 1)
+    const push = 2;
+    return y + (y === 0 ? -push : push)
   }
 
   canAttackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number, playerNumber: number): boolean {

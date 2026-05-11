@@ -1,12 +1,11 @@
 # Features
 matchmaking
 2 new tileset
-! split spawn and move reasources
 2 cards
-on end turn, on start turn
 n ichorDisplay handles two digits
 n tints for move squares
 n tints for enemy pieces
+n change how neutral objectives spawn
 
 # characters balanced
 Zeus
@@ -35,7 +34,7 @@ make Input Manager take in input bounds
 Map variations
 
 # Bugs
-Desynced callbacks
+! Desynced callbacks
 
 # Extra
 Turn History

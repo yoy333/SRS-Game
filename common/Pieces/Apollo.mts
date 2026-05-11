@@ -7,7 +7,7 @@ import { Rep, VisualMixin } from "../../client/game/lib/Visual.js";
 class ApolloToken implements Rep<GameObjects.Image> {
   createRep(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Image {
     let icon = addPlugin.image(x, y, Apollo.key)
-    icon.setScale(1 / 25)
+    icon.setScale(1 / 20)
     return icon
   }
 
