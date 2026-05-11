@@ -159,15 +159,13 @@ export abstract class Piece {
         this.setCoord(endX, endY)
     }
 
-    canAttackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number, playerNumber: number) {
-        let attackingPiece = this.board.getPiece(attackerX, attackerY)
+    canAttackPiece(defenderX: number, defenderY: number, playerNumber: number) {
         let defendingPiece = this.board.getPiece(defenderX, defenderY)
-        if (!attackingPiece || !defendingPiece)
+        if (!defendingPiece)
             return false;
 
         return (
-            this.board.areEnemyPieces(attackingPiece, defendingPiece) &&
-            // this.board.isSpaceFull(defenderX, defenderY) &&
+            this.board.areEnemyPieces(this, defendingPiece) &&
             this.withinPattern(this.relativeAttackingPattern, defenderX, defenderY)
         )
     }
@@ -185,7 +183,6 @@ export abstract class Piece {
     }
 
     tryToKill(attackingPiece: Piece, override: boolean = false): boolean {
-        console.log("ttk: " + override)
         if (this.canBeAttacked(attackingPiece, override)) {
             this.die()
             return true
@@ -210,4 +207,7 @@ export const square_1: pattern = new Set([
 ])
 export const forward_1: pattern = new Set([
     [-1, -1], [0, -1], [1, -1]
+])
+export const myself: pattern = new Set([
+    [0, 0]
 ])
