@@ -283,8 +283,6 @@ export class Board extends visualMixin {
         if (!piece)
             return false;
 
-        let cost = piece.getMoveCost()
-
         let effectAllowsMove = true
         let effects = this.effects.get(piece)
         if (!effects)
@@ -295,6 +293,8 @@ export class Board extends visualMixin {
                 break;
             }
         }
+
+        let cost = piece.getMoveCost()
 
         // console.log(this.doesOwnPiece(piece, playerNumber))
         // console.log(this.isSpaceEmpty(endX, endY))
@@ -387,9 +387,13 @@ export class Board extends visualMixin {
     }
 
     areEnemyPieces(x: Piece, y: Piece): boolean {
+        return !this.areFriendlyPieces(x, y)
+    }
+
+    areFriendlyPieces(x: Piece, y: Piece): boolean {
         let xPlayerNumber = x?.playerOwner;
         let yPlayerNumber = y?.playerOwner;
-        return xPlayerNumber != yPlayerNumber
+        return xPlayerNumber == yPlayerNumber
     }
 
     //move to Game Rules
@@ -417,6 +421,7 @@ export class Board extends visualMixin {
         }
 
         let cost = attackingPiece.getAttackCost()
+        console.log("cost: " + cost)
 
         // console.log(this.isMyTurn(playerNumber))
         // console.log(this.doesHaveEnoughIchor(cost, playerNumber))
@@ -427,7 +432,7 @@ export class Board extends visualMixin {
         return (
             this.isMyTurn(playerNumber) &&
             this.doesHaveEnoughIchor(cost, playerNumber) &&
-            attackingPiece.canAttackPiece(attackerX, attackerY, defenderX, defenderY, playerNumber) &&
+            attackingPiece.canAttackPiece(defenderX, defenderY, playerNumber) &&
             defendingPiece.canBeAttacked(attackingPiece, override) &&
             effectAllowsAttack
         )
