@@ -22,7 +22,7 @@ export class Game extends Scene {
         this.board = new Board(true)
         this.ichorDisplay = new IchorDisplay()
         this.gameRules = new GameRules(this.board)
-        this.hCard = new HCard(0, 300, 0, 1000)
+        this.hCard = new HCard(10, 390, 10, 990)
     }
 
     preload() {
@@ -35,7 +35,7 @@ export class Game extends Scene {
     hand: PieceKey[] = []
 
     async create() {
-        this.board.initReps(this.make, 300, 0)
+        this.board.initReps(this.make, 400, 0)
 
         this.inputManager.initReps(this.add)
 

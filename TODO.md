@@ -26,6 +26,7 @@ Nike
 refactor to global gamestate
 refactor board to be outside of gamestate
 refactor actions space inferface exposed to game
+refactor objects to take bounds as they are constructed or initReps
 Add more UI
 make it so that moves and attacks just pass around references to the pieces themselves
 make Input Manager take in input bounds

@@ -37,7 +37,7 @@ const artemisPallete: ColorPallete = {
   bg_4: '#727D90',
 }
 
-const CARD_SCALE = 1 / 6
+const CARD_SCALE = 1 // 6
 
 class artemisHCard_fg implements Rep<GameObjects.Image> {
   createRep(plugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Image {
