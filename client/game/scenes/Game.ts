@@ -22,7 +22,7 @@ export class Game extends Scene {
         this.board = new Board(true)
         this.ichorDisplay = new IchorDisplay()
         this.gameRules = new GameRules(this.board)
-        this.hCard = new HCard(10, 390, 10, 990)
+        this.hCard = new HCard(10, 375, 10, 1000)
     }
 
     preload() {
@@ -39,7 +39,7 @@ export class Game extends Scene {
 
         this.inputManager.initReps(this.add)
 
-        this.ichorDisplay.initReps(this.add, 250, 675)
+        this.ichorDisplay.initReps(this.add, 425, 675)
         this.ichorDisplay.updateIchor(Board.maxIchorPerTurn)
 
         GameSounds.initSound(this.sound)

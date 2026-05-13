@@ -1,7 +1,8 @@
-import { ColorPallete, Piece, pattern, square_1 } from "../Piece.mjs";
+import { ColorPallete, HCardStyle, Piece, pattern, square_1 } from "../Piece.mjs";
 import { Board } from "../Board.mjs";
 import { GameObjects, Loader } from "phaser";
 import { Rep, VisualMixin, visualPlugin } from "../../client/game/lib/Visual.js";
+import { HCard } from "@common/HCard.js";
 
 type image = GameObjects.Image
 
@@ -37,12 +38,9 @@ const artemisPallete: ColorPallete = {
   bg_4: '#727D90',
 }
 
-const CARD_SCALE = 1 // 6
-
 class artemisHCard_fg implements Rep<GameObjects.Image> {
   createRep(plugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Image {
     let fg = plugin.image(x, y, 'artemis_hcard_fg')
-    fg.setScale(CARD_SCALE)
     return fg
   }
 
@@ -54,13 +52,18 @@ class artemisHCard_fg implements Rep<GameObjects.Image> {
 class artemisHCard_bg implements Rep<GameObjects.Image> {
   createRep(plugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Image {
     let bg = plugin.image(x, y, 'artemis_hcard_bg')
-    bg.setScale(CARD_SCALE)
     return bg
   }
 
   loadRep(loadPlugin: Loader.LoaderPlugin): void {
     loadPlugin.image('artemis_hcard_bg', 'hCard_artemis_bg.png')
   }
+}
+
+const artemisHCard: HCardStyle = {
+  colorPallete: artemisPallete,
+  fg: new artemisHCard_fg(),
+  bg: new artemisHCard_bg()
 }
 
 const visualMixin = VisualMixin(Piece, [new ArtemisToken()])
@@ -72,9 +75,7 @@ export class Artemis extends visualMixin {
   static moveCost = 2;
   static attackCost = 1;
 
-  static colorPallete = artemisPallete;
-  static hCard_fg = new artemisHCard_fg()
-  static hCard_bg = new artemisHCard_bg()
+  static hCard = artemisHCard
 
   constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {
     super(addPlugin, board, x, y, isClientSide, playerOwner)

@@ -33,10 +33,15 @@ type PieceStatics = {
     spawnCost: number
     moveCost: number
     attackCost: number
-    colorPallete?: ColorPallete,
-    hCard_fg?: Rep<GameObjects.Image>
-    hCard_bg?: Rep<GameObjects.Image>
+    hCard?: HCardStyle
 }
+
+export type HCardStyle = {
+    colorPallete: ColorPallete,
+    fg: Rep<GameObjects.Image>
+    bg: Rep<GameObjects.Image>
+}
+
 type pieceConstructor = new (...args: any[]) => Piece
 export type PieceType = pieceConstructor & PieceStatics & VisualConstructor
 
