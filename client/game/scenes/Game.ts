@@ -1,6 +1,6 @@
 import { Scene } from 'phaser';
 import { InputManager } from '../lib/InputManager'
-import { PieceKey, PieceType } from '@common/Piece.mjs';
+import { Piece, PieceKey, PieceType } from '@common/Piece.mjs';
 import { Board } from '@common/Board.mjs';
 import { IchorDisplay } from '../lib/IchorDisplay';
 import { Client, Callbacks } from '@colyseus/sdk'
@@ -142,6 +142,14 @@ export class Game extends Scene {
 
         this.inputManager.onSelection = (pieceType: PieceType) => {
             this.hCard.updateCard(this.add, pieceType)
+        }
+
+        this.inputManager.onSelectionForMove = (piece: Piece) => {
+            this.board.hintMoves(this.add, piece)
+        }
+
+        this.inputManager.onSelectionForAttack = (piece: Piece) => {
+            this.board.hintAttacks(this.add, piece)
         }
 
         this.inputManager.onEndTurn = () => {

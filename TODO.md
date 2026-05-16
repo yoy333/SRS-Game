@@ -13,10 +13,10 @@ Artemis
 Hades
 Hermes D
 Nike 
+Aphrodite
+Apollo
 
 # characters to add
-! Appolo
-! Aphrodite
 
 # maybe characters
 ? Athena

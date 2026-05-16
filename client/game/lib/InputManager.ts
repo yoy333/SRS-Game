@@ -17,6 +17,7 @@ export class InputManager extends visualMixin {
     }
 
     proccessClick(addPlugin: GameObjects.GameObjectFactory, board: Board, worldX: number, worldY: number) {
+        board.clearHints()
         let tileClicked = board?.tilemap?.getTileAtWorldXY(worldX, worldY)
         if (!tileClicked) {
             if (this.selectionForAttack || this.selectionForMove)
@@ -70,9 +71,13 @@ export class InputManager extends visualMixin {
         this.selectionForSpawn = undefined
         this.selectionForMove = undefined
         this.selectionForAttack = undefined
+        this?.onUnselection?.()
     }
 
+    onSelectionForMove?: (piece: Piece) => void
+    onSelectionForAttack?: (piece: Piece) => void
     onSelection?: (pieceType: PieceType) => void
+    onUnselection?: () => void
 
     selectionIndex: number = 0
     selectForSpawn(pieceType: PieceType) {
@@ -87,6 +92,7 @@ export class InputManager extends visualMixin {
         this.selectionForSpawn = undefined;
         this.selectionForMove = piece;
         this?.onSelection?.(piece.constructor as PieceType)
+        this?.onSelectionForMove?.(piece)
         GameSounds.click()
     }
 
@@ -95,6 +101,7 @@ export class InputManager extends visualMixin {
         this.selectionForSpawn = undefined;
         this.selectionForMove = undefined
         this?.onSelection?.(piece.constructor as PieceType)
+        this?.onSelectionForAttack?.(piece)
         GameSounds.doubleClick()
     }
 
