@@ -1,12 +1,12 @@
 import { GameObjects, Tilemaps } from "phaser"
-import { Piece, PieceKey, PieceType } from "./Piece.mjs"
+import { pattern as Pattern, Piece, PieceKey, PieceType } from "./Piece.mjs"
 import { Rep, VisualConstructor, VisualMixin } from "../client/game/lib/Visual.js"
 import { Loader } from "phaser"
 import { NeutralObjective } from './NeutralObjective.mjs'
 import { ConcreteConstructor } from "./utils.mjs"
 import { GameSounds } from "../client/game/lib/GameSounds.js"
-import { AnimationManager } from "../client/game/lib/AnimationManager.js"
 import { Effect } from "./Effect.mjs"
+import { StyleGuide } from "../client/game/lib/StyleGuides.js"
 
 class TilemapRep implements Rep<Tilemaps.Tilemap> {
     createRep(makePlugin: GameObjects.GameObjectCreator, x: number, y: number): Tilemaps.Tilemap {
@@ -524,6 +524,53 @@ export class Board extends visualMixin {
         let i = this.getIndexFromXY(x, y);
 
         this.lookup[i] = p
+    }
+
+    hintMoves(addPlugin: GameObjects.GameObjectFactory, piece: Piece) {
+        this.hint(addPlugin, piece, piece.relativeMovementPattern, StyleGuide.moveHintColor)
+    }
+
+    hintAttacks(addPlugin: GameObjects.GameObjectFactory, piece: Piece) {
+        this.hint(addPlugin, piece, piece.relativeAttackingPattern, StyleGuide.attackHintColor)
+    }
+
+    hints: GameObjects.Rectangle[] = []
+    private hint(addPlugin: GameObjects.GameObjectFactory, piece: Piece, pattern: Pattern, color: number = 0x000000) {
+        this.clearHints()
+        for (const relCoord of pattern) {
+            console.log('pattern')
+            let [relX, relY] = relCoord
+            if (this.playerNumber == 1)
+                relY *= -1
+            const absX = piece.coordX + relX
+            const absY = piece.coordY + relY
+
+            if (!this.isInBounds(absX, absY))
+                break;
+
+            let tile = this.tilemap?.getTileAt(absX, absY)
+            if (!tile)
+                throw new Error("no tilemap. me sad")
+
+            // tile.setAlpha(0)
+
+            console.log([tile.getCenterX(), tile.getCenterY()])
+
+            let hint = addPlugin.rectangle(
+                // tile.getCenterX(), tile.getCenterX(),
+                tile.getCenterX(), tile.getCenterY(),
+                tile.getRight() - tile.getLeft(), tile.getBottom() - tile.getTop()
+            )
+            hint.setStrokeStyle(2, color)
+            this.hints.push(hint)
+        }
+    }
+
+    clearHints() {
+        for (let hint of this.hints) {
+            hint.destroy(true)
+        }
+        this.hints = []
     }
 
     printBoardState() {

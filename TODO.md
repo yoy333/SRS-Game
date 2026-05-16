@@ -1,9 +1,8 @@
 # Features
 matchmaking
 2 new tileset
-2 cards
+2 help text
 n ichorDisplay handles two digits
-n tints for move squares
 n tints for enemy pieces
 n change how neutral objectives spawn
 
@@ -13,10 +12,10 @@ Artemis
 Hades
 Hermes D
 Nike 
+Aphrodite
+Apollo
 
 # characters to add
-! Appolo
-! Aphrodite
 
 # maybe characters
 ? Athena

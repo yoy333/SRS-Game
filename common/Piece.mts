@@ -89,11 +89,12 @@ export abstract class Piece {
     }
 
     getWorldXYFromPerspective(x: number, y: number): [number, number] {
-        // console.log(`creating rep at ${x}, ${y}`)
         let tile = this.board.tilemap?.getTileAt(x, y)
         if (!tile)
             throw new Error(`no tile at (${x}, ${y})`)
-        return [tile.getCenterX(), tile.getCenterY()]
+        const ans: [number, number] = [tile.getCenterX(), tile.getCenterY()]
+        console.log(ans)
+        return ans
     }
 
     initReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): void {

@@ -34,7 +34,6 @@ export class HCard {
       let bg_ratio = (rightContent - leftContent) / this.bg.displayWidth
       this.bg.setScale(bg_ratio)
       let fg_ratio = (rightContent - leftContent) / this.fg.displayWidth
-      console.log(fg_ratio)
       this.fg.setScale(fg_ratio)
 
       let contentWidth = this.bg.displayWidth;
@@ -43,7 +42,6 @@ export class HCard {
       this.border = addPlugin.rectangle(this.leftBound, this.topBound, contentWidth, contentHeight)
       // substring one to leave out #, then parsed to a hexadecimal
       let borderColorHex: number = parseInt(styleGuide.colorPallete.bg_1.substring(1), 16)
-      console.log(styleGuide.colorPallete.accent)
       this.border.setStrokeStyle(HCard.paddingPx, borderColorHex, 1)
       this.border.setOrigin(0, 0)
     } else {
