@@ -11,18 +11,16 @@ const emptyPattern: pattern = new Set()
 
 export type PieceKey = string
 
-type hexColor = `#${string}`
-
 export type ColorPallete = {
-    fg_1: hexColor
-    fg_2: hexColor
-    muted: hexColor
-    accent: hexColor
-    bg_1: hexColor
-    bg_2: hexColor
-    bg_3: hexColor
-    bg_4: hexColor
-    text: hexColor
+    fg_1: number
+    fg_2: number
+    muted: number
+    accent: number
+    bg_1: number
+    bg_2: number
+    bg_3: number
+    bg_4: number
+    text: number
 }
 
 type PieceStatics = {
@@ -37,9 +35,10 @@ type PieceStatics = {
 }
 
 export type HCardStyle = {
-    colorPallete: ColorPallete,
+    colorPallete: ColorPallete
     fg: Rep<GameObjects.Image>
     bg: Rep<GameObjects.Image>
+    text: string
 }
 
 type pieceConstructor = new (...args: any[]) => Piece
@@ -92,9 +91,7 @@ export abstract class Piece {
         let tile = this.board.tilemap?.getTileAt(x, y)
         if (!tile)
             throw new Error(`no tile at (${x}, ${y})`)
-        const ans: [number, number] = [tile.getCenterX(), tile.getCenterY()]
-        console.log(ans)
-        return ans
+        return [tile.getCenterX(), tile.getCenterY()]
     }
 
     initReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): void {

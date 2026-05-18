@@ -1,9 +1,10 @@
 # Features
 matchmaking
-2 new tileset
-2 help text
+! new tileset
+! help text
 n ichorDisplay handles two digits
-n tints for enemy pieces
+! tints for enemy pieces
+n Death Animation
 n change how neutral objectives spawn
 
 # characters balanced
@@ -26,9 +27,11 @@ refactor to global gamestate
 refactor board to be outside of gamestate
 refactor actions space inferface exposed to game
 refactor objects to take bounds as they are constructed or initReps
+refactor to use board json data
 Add more UI
 make it so that moves and attacks just pass around references to the pieces themselves
 make Input Manager take in input bounds
+make Aries into Ares
 
 # Maybe
 Map variations

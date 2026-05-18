@@ -38,21 +38,23 @@ class ariesHCard_bg implements Rep<GameObjects.Image> {
 }
 
 const ariesPallete: ColorPallete = {
-  fg_1: '#EBBBA4',
-  fg_2: '#E48278',
-  muted: '#A86F68',
-  text: '#F1E7C6',
-  accent: '#DB3C42',
-  bg_1: '#61617f',
-  bg_2: '#564c63',
-  bg_3: '#8B8298',
-  bg_4: '#D5D1D9'
+  fg_1: 0xEBBBA4,
+  fg_2: 0xE48278,
+  muted: 0xA86F68,
+  text: 0xF1E7C6,
+  accent: 0xDB3C42,
+  bg_1: 0x61617f,
+  bg_2: 0x564c63,
+  bg_3: 0x8B8298,
+  bg_4: 0xD5D1D9
 }
 
 const ariesHCard: HCardStyle = {
   fg: new ariesHCard_fg(),
   bg: new ariesHCard_bg(),
-  colorPallete: ariesPallete
+  colorPallete: ariesPallete,
+  text: "Aries is capable of killing any piece. " +
+    "When Aries kills a piece, aries has no attack cost for that turn",
 }
 
 const visualMixin = VisualMixin(Piece, [new AriesToken()])
