@@ -538,12 +538,11 @@ export class Board extends visualMixin {
     private hint(addPlugin: GameObjects.GameObjectFactory, piece: Piece, pattern: Pattern, color: number = 0x000000) {
         this.clearHints()
         for (const relCoord of pattern) {
-            console.log('pattern')
             let [relX, relY] = relCoord
-            if (this.playerNumber == 1)
+            if (piece.playerOwner != this.playerNumber)
                 relY *= -1
-            const absX = piece.coordX + relX
-            const absY = piece.coordY + relY
+            const absX = piece.perspectiveX + relX
+            const absY = piece.perspectiveY + relY
 
             if (!this.isInBounds(absX, absY))
                 break;
@@ -553,8 +552,6 @@ export class Board extends visualMixin {
                 throw new Error("no tilemap. me sad")
 
             // tile.setAlpha(0)
-
-            console.log([tile.getCenterX(), tile.getCenterY()])
 
             let hint = addPlugin.rectangle(
                 // tile.getCenterX(), tile.getCenterX(),

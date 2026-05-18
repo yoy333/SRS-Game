@@ -40,7 +40,6 @@ export class InputManager extends visualMixin {
             let moveCoords = [this.selectionForMove.coordX, this.selectionForMove.coordY, x, y] as const
             //if double click
             if (moveCoords[0] == moveCoords[2] && moveCoords[1] == moveCoords[3]) {
-                // console.log("selection for attack")
                 this.selectForAttack(this.selectionForMove)
                 return;
             }
