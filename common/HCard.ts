@@ -68,15 +68,20 @@ export class HCard {
         tboxW, tboxH,
       ).setStrokeStyle(2, styleGuide.colorPallete.fg_2).setOrigin(0, 0)
 
+      const textSequence =
+        "Spawn Cost: " + pieceType.spawnCost + "\n" +
+        "Move Cost: " + pieceType.moveCost + "\n" +
+        "Attack Cost: " + pieceType.attackCost + "\n" +
+        styleGuide.text
       this.text = addPlugin.text(
-        tboxX + tboxW * 0.1, tboxY + tboxH * 0.1,
-        styleGuide.text,
+        tboxX + tboxW * 0.05, tboxY + tboxH * 0.05,
+        textSequence,
         {
           color: "#" + styleGuide.colorPallete.text.toString(16),
           font: '600 16px Tahoma',
           lineSpacing: 5,
           wordWrap: {
-            width: tboxW * 0.8
+            width: tboxW * 0.9
           }
         }
       )
