@@ -109,21 +109,6 @@ export abstract class Piece {
         this.coordY = y;
 
         [this.perspectiveX, this.perspectiveY] = this.board.adjustIfFlip(x, y)
-
-        if (this.isClientSide)
-            this.updateRep();
-    }
-
-    updateRep() {
-        let tile = this.board.tilemap?.getTileAt(this.perspectiveX, this.perspectiveY)
-        if (!tile)
-            throw new Error(`no tile at (${this.coordX}, ${this.coordY})`)
-        let worldX = tile.getCenterX()
-        let worldY = tile.getCenterY()
-        // this.token?.setPosition(worldX, worldY)
-        if (!this.token)
-            throw new Error("no token. Sadge")
-        AnimationManager.addMoveAnim(this.token, worldX, worldY)
     }
 
     withinPattern(pattern: pattern, x: number, y: number) {
@@ -151,15 +136,39 @@ export abstract class Piece {
         return dynamicCost ?? staticCost;
     }
 
+    updateRep() {
+        if (!this.isClientSide)
+            return;
+
+        let tile = this.board.tilemap?.getTileAt(this.perspectiveX, this.perspectiveY)
+        if (!tile)
+            throw new Error(`no tile at (${this.coordX}, ${this.coordY})`)
+        let worldX = tile.getCenterX()
+        let worldY = tile.getCenterY()
+        if (!this.token)
+            throw new Error("no token. Sadge")
+        AnimationManager.addMoveAnim(this.token, worldX, worldY)
+    }
+
     canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber: number) {
         return (
             this.withinPattern(this.relativeMovementPattern, endX, endY)
         )
     }
 
-    movePiece(startX: number, startY: number, endX: number, endY: number) {
+    pushPiece(endX: number, endY: number) {
         // console.log(`moving from ${startX}, ${startY} to ${endX}, ${endY}`)
         this.setCoord(endX, endY)
+        if (!this.isClientSide)
+            return;
+
+        if (!this.token)
+            throw new Error("no token when trying to move")
+    }
+
+    movePiece(endX: number, endY: number) {
+        this.pushPiece(endX, endY)
+        this.updateRep()
     }
 
     canAttackPiece(defenderX: number, defenderY: number, playerNumber: number) {
@@ -187,7 +196,23 @@ export abstract class Piece {
 
     tryToKill(attackingPiece: Piece, override: boolean = false): boolean {
         if (this.canBeAttacked(attackingPiece, override)) {
-            this.die()
+            if (!this.isClientSide) {
+                return true;
+            }
+
+            if (!this.token)
+                throw new Error("no token when trying to kill")
+
+            console.log("death anim starting")
+            let promise = AnimationManager.addDeathAnim(this.token)
+            promise.then(() => {
+                if (!attackingPiece.token)
+                    throw new Error("this should never happen")
+
+                console.log("move anim starting")
+                attackingPiece.updateRep()
+                this.die()
+            })
             return true
         }
         return false

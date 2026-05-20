@@ -28,6 +28,8 @@ refactor board to be outside of gamestate
 refactor actions space inferface exposed to game
 refactor objects to take bounds as they are constructed or initReps
 refactor to use board json data
+refactor to use anim info in the animation manager
+refactor tryToKill method
 Add more UI
 Change font for help text
 make it so that moves and attacks just pass around references to the pieces themselves
@@ -39,6 +41,8 @@ Map variations
 
 # Bugs
 ! Desynced callbacks
+! Don't show move hints on an attack
+! Artemis clipped attack hint
 
 # Extra
 Turn History

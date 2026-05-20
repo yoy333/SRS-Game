@@ -42,7 +42,7 @@ export class Apollo extends visualMixin {
   key = 'apollo'
 
   static spawnCost = 2;
-  static moveCost = 0;
+  static moveCost = 1;
   static attackCost = 1;
 
   constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {

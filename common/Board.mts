@@ -256,12 +256,9 @@ export class Board extends visualMixin {
         return -1
     }
 
-    // returns -1 if no one won
     pushPiece(piece: Piece, endX: number, endY: number) {
         let startX = piece.coordX
         let startY = piece.coordY
-
-        piece.movePiece(startX, startY, endX, endY)
 
         this.setPiece(endX, endY, piece)
         this.setPiece(startX, startY, null)
@@ -269,6 +266,8 @@ export class Board extends visualMixin {
         this.getNObj(endX, endY).forEach((objective: NeutralObjective) => {
             objective.onCollision(piece)
         })
+
+        piece.pushPiece(endX, endY)
 
         if (this.hasWon(piece.playerOwner) != -1) {
             console.log("this is where the win screen would go, be we haven't made that yet")
@@ -333,6 +332,7 @@ export class Board extends visualMixin {
         this.ichor[playerOwner] -= cost
 
         this.pushPiece(piece, endX, endY)
+        piece.movePiece(endX, endY)
 
         this.effects.get(piece)?.forEach((effect: Effect) => {
             effect.onPostMove?.(endX, endY)
@@ -421,7 +421,6 @@ export class Board extends visualMixin {
         }
 
         let cost = attackingPiece.getAttackCost()
-        console.log("cost: " + cost)
 
         // console.log(this.isMyTurn(playerNumber))
         // console.log(this.doesHaveEnoughIchor(cost, playerNumber))

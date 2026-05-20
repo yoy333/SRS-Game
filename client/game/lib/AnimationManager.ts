@@ -4,11 +4,25 @@ type Ref = GameObjects.Sprite | GameObjects.Image
 type AnimationRef = [Ref, number]
 type size = [number, number]
 
+type PromiseTriplet = {
+  promise: Promise<void>,
+  resolve: (value: void | PromiseLike<void>) => void
+  reject: (reason?: any) => void,
+}
+
 abstract class AnimationLoop {
   animationRefs: AnimationRef[] = []
+  private animationPromises: PromiseTriplet[] = []
 
-  addPiece(ref: Ref, ...args: any[]): void {
+  addPiece(ref: Ref, ...args: any[]): Promise<void> {
     this.animationRefs.push([ref, 1])
+    const { promise, resolve, reject } = Promise.withResolvers<void>();
+    this.animationPromises.push({
+      promise: promise,
+      resolve: resolve,
+      reject: reject
+    })
+    return promise
   }
 
   abstract totalFrames: number
@@ -27,7 +41,9 @@ abstract class AnimationLoop {
 
       if (frame == this.totalFrames) {
         this.lastLoop(ref, index)
+        this.animationPromises[index].resolve()
         this.animationRefs.splice(index, 1)
+        this.animationPromises.splice(index, 1)
       } else
         this.animationRefs[index][1]++
     })
@@ -60,6 +76,28 @@ class SpawnAnimationLoop extends AnimationLoop {
   }
 }
 
+class DeathAnimationLoop extends AnimationLoop {
+  totalFrames = 5
+
+  private originalScales: size[] = []
+  firstLoop(ref: Ref, index: number): void {
+    this.originalScales[index] = [ref.scaleX, ref.scaleY]
+  }
+
+  loop(ref: Ref, index: number, frame: number): void {
+    // console.log(`frame: ${frame}`)
+    let ogScaleX = this.originalScales[index][0]
+    let ogScaleY = this.originalScales[index][1]
+
+    let percentSize = 1 - frame / this.totalFrames
+    ref.setScale(percentSize * ogScaleX, percentSize * ogScaleY)
+  }
+
+  lastLoop(ref: Ref, index: number): void {
+    this.originalScales.splice(index, 1)
+  }
+}
+
 type coords = [number, number]
 
 class MoveAnimationLoop extends AnimationLoop {
@@ -67,9 +105,10 @@ class MoveAnimationLoop extends AnimationLoop {
 
   endCoords: coords[] = []
 
-  addPiece(ref: Ref, endX: number, endY: number): void {
-    super.addPiece(ref)
+  addPiece(ref: Ref, endX: number, endY: number): Promise<void> {
+    let promise = super.addPiece(ref)
     this.endCoords.push([endX, endY])
+    return promise
   }
 
   startCoords: coords[] = []
@@ -103,22 +142,29 @@ class MoveAnimationLoop extends AnimationLoop {
 class AM {
   spawnAnimationLoop: SpawnAnimationLoop
   moveAnimationLoop: MoveAnimationLoop
+  deathAnimationLoop: DeathAnimationLoop
   constructor() {
     this.spawnAnimationLoop = new SpawnAnimationLoop()
     this.moveAnimationLoop = new MoveAnimationLoop()
+    this.deathAnimationLoop = new DeathAnimationLoop()
   }
 
   addSpawnAnim(piece: Ref) {
-    this.spawnAnimationLoop.addPiece(piece)
+    return this.spawnAnimationLoop.addPiece(piece)
   }
 
   addMoveAnim(piece: Ref, endX: number, endY: number) {
-    this.moveAnimationLoop.addPiece(piece, endX, endY)
+    return this.moveAnimationLoop.addPiece(piece, endX, endY)
+  }
+
+  addDeathAnim(piece: Ref) {
+    return this.deathAnimationLoop.addPiece(piece)
   }
 
   update() {
     this.spawnAnimationLoop.update()
     this.moveAnimationLoop.update()
+    this.deathAnimationLoop.update()
   }
 }
 
