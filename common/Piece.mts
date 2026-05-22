@@ -106,7 +106,9 @@ export abstract class Piece extends visualMixin {
         let tile = this.board.tilemap?.getTileAt(x, y)
         if (!tile)
             throw new Error(`no tile at (${x}, ${y})`)
-        return [tile.getCenterX(), tile.getCenterY()]
+        const ans: [number, number] = [tile.getCenterX(), tile.getCenterY()]
+        console.log(ans)
+        return ans
     }
 
     setTeamRectColor() {
