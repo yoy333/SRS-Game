@@ -364,6 +364,11 @@ export class Board extends visualMixin {
         this.ichor[this.currentTurn] = Board.maxIchorPerTurn + this.ichorForNextTurn[this.playerNumber]
         this.ichorForNextTurn[this.currentTurn] = 0
 
+        // posible to make effects apply after piece callback
+        for (let [piece, effects] of this.effects) {
+            effects.forEach(effect => effect?.onEndTurn?.())
+        }
+
         for (let piece of this.piecesOfPlayer(this.currentTurn)) {
             piece.onEndTurn()
         }
@@ -376,6 +381,10 @@ export class Board extends visualMixin {
             this.currentTurn = 0
         } else {
             throw new Error("how did we get here")
+        }
+
+        for (let [piece, effects] of this.effects) {
+            effects.forEach(effect => effect?.onStartTurn?.())
         }
 
         for (let piece of this.piecesOfPlayer(this.currentTurn)) {

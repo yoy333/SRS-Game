@@ -18,8 +18,8 @@ export abstract class Effect {
   // onPreDeath?: () => boolean
   onPostDeath?: () => void
   // TODO
-  // onEndTurn
-  // onStartTurn
+  onEndTurn?: () => void
+  onStartTurn?: () => void
 
   // effect only removes itself by default
   // but you may want to remove related effects
