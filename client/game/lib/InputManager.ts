@@ -50,6 +50,8 @@ export class InputManager extends visualMixin {
         } else if (this.selectionForAttack) {
             if (this.onAttack)
                 this.onAttack(this.selectionForAttack.coordX, this.selectionForAttack.coordY, x, y)
+            this.clearSelection()
+            return;
         } else {
             this.clearSelection()
         }

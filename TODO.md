@@ -3,7 +3,6 @@ matchmaking
 ! new tileset
 n ichorDisplay handles two digits
 n change how neutral objectives spawn
-o Death Animation
 Show effects
 
 # characters balanced
