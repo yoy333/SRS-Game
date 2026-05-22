@@ -1,5 +1,6 @@
 import { AnimationManager } from "../client/game/lib/AnimationManager.js";
-import { Rep, VisualConstructor } from "../client/game/lib/Visual.js";
+import { StyleGuide } from "../client/game/lib/StyleGuides.js";
+import { Rep, VisualConstructor, VisualMixin, visualPlugin } from "../client/game/lib/Visual.js";
 import { Board } from "./Board.mjs";
 import { GameObjects, Loader } from "phaser";
 
@@ -41,11 +42,25 @@ export type HCardStyle = {
     text: string
 }
 
+export class TeamRect implements Rep<GameObjects.Rectangle> {
+    createRep(plugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Rectangle {
+        let rect = plugin.rectangle(x, y, 72, 72)
+        // rect.setStrokeStyle(2, StyleGuide.myTeamHintColor)
+        return rect
+    }
+
+    loadRep(loadPlugin: Loader.LoaderPlugin): void {
+        // nothing
+    }
+}
+
 type pieceConstructor = new (...args: any[]) => Piece
 export type PieceType = pieceConstructor & PieceStatics & VisualConstructor
 
-export abstract class Piece {
+const visualMixin = VisualMixin(Object, [new TeamRect()])
+export abstract class Piece extends visualMixin {
     token?: sprite | image
+    teamRect?: GameObjects.Rectangle
     board: Board
 
     coordX: number
@@ -64,7 +79,7 @@ export abstract class Piece {
     relativeAttackingPattern: pattern = emptyPattern;
 
     constructor(addPlugin: GameObjects.GameObjectFactory | undefined, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {
-        // super()
+        super()
         if (addPlugin == undefined && isClientSide) {
             throw new Error("add plugin must be provided for client side pieces")
         }
@@ -94,13 +109,25 @@ export abstract class Piece {
         return [tile.getCenterX(), tile.getCenterY()]
     }
 
+    setTeamRectColor() {
+        const rectWeight = 2
+        if (this.playerOwner != this.board.playerNumber)
+            this.teamRect?.setStrokeStyle(rectWeight, StyleGuide.otherTeamHintColor)
+        else
+            this.teamRect?.setStrokeStyle(rectWeight, StyleGuide.myTeamHintColor)
+    }
+
     initReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): void {
         let [worldX, worldY] = this.getWorldXYFromPerspective(this.perspectiveX, this.perspectiveY) as [number, number]
 
         // this.initToken(addPlugin, worldX, worldY)
-        [this.token] = (this.constructor as VisualConstructor).createReps(addPlugin, worldX, worldY)
+        [this.teamRect, this.token] = (this.constructor as VisualConstructor).createReps(addPlugin, worldX, worldY)
+
         if (!this!.token)
             throw new Error("create reps failed")
+
+        this.setTeamRectColor()
+
         AnimationManager.addSpawnAnim(this!.token)
     }
 
@@ -143,11 +170,13 @@ export abstract class Piece {
         let tile = this.board.tilemap?.getTileAt(this.perspectiveX, this.perspectiveY)
         if (!tile)
             throw new Error(`no tile at (${this.coordX}, ${this.coordY})`)
+
         let worldX = tile.getCenterX()
         let worldY = tile.getCenterY()
-        if (!this.token)
+        if (!this.token || !this.teamRect)
             throw new Error("no token. Sadge")
         AnimationManager.addMoveAnim(this.token, worldX, worldY)
+        AnimationManager.addMoveAnim(this.teamRect, worldX, worldY)
     }
 
     canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber: number) {

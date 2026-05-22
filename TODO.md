@@ -2,9 +2,8 @@
 matchmaking
 ! new tileset
 n ichorDisplay handles two digits
-! tints for enemy pieces
-n Death Animation
 n change how neutral objectives spawn
+o Death Animation
 Show effects
 
 # characters balanced
@@ -30,6 +29,7 @@ refactor objects to take bounds as they are constructed or initReps
 refactor to use board json data
 refactor to use anim info in the animation manager
 refactor tryToKill method
+refactor Visual and Reps to take a Scale argument, and also use a Map instead of an array
 Add more UI
 Change font for help text
 make it so that moves and attacks just pass around references to the pieces themselves

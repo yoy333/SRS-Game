@@ -1,6 +1,6 @@
 import { GameObjects } from "phaser"
 
-type Ref = GameObjects.Sprite | GameObjects.Image
+type Ref = GameObjects.Sprite | GameObjects.Image | GameObjects.Rectangle
 type AnimationRef = [Ref, number]
 type size = [number, number]
 
