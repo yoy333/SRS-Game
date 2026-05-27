@@ -4,7 +4,6 @@ matchmaking
 n ichorDisplay handles two digits
 n change how neutral objectives spawn
 ! Show effects
-! Port forwarding
 ! turn display
 Discord
 
@@ -36,6 +35,7 @@ Add more UI
 Change font for help text
 make it so that moves and attacks just pass around references to the pieces themselves
 make Input Manager take in input bounds
+Split InputManager
 make Aries into Ares
 
 # Maybe
