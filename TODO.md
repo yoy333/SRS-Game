@@ -3,7 +3,10 @@ matchmaking
 ! new tileset
 n ichorDisplay handles two digits
 n change how neutral objectives spawn
-Show effects
+! Show effects
+! Port forwarding
+! turn display
+Discord
 
 # characters balanced
 Zeus
@@ -40,8 +43,6 @@ Map variations
 
 # Bugs
 ! Desynced callbacks
-! Don't show move hints on an attack
-! Artemis clipped attack hint
 
 # Extra
 Turn History

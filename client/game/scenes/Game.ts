@@ -3,7 +3,7 @@ import { InputManager } from '../lib/InputManager'
 import { Piece, PieceKey, PieceType } from '@common/Piece.mjs';
 import { Board } from '@common/Board.mjs';
 import { IchorDisplay } from '../lib/IchorDisplay';
-import { Client, Callbacks } from '@colyseus/sdk'
+import { Client, Callbacks, ColyseusSDK } from '@colyseus/sdk'
 import { pieceUtils } from '@common/pieceRegistery.mjs';
 import { GameRules } from '@common/GameRules.mjs';
 import { GameSounds } from '../lib/GameSounds';
@@ -34,6 +34,13 @@ export class Game extends Scene {
     ichorDisplay: IchorDisplay
     hand: PieceKey[] = []
 
+    connectToServer(): ColyseusSDK<any, any> {
+        const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+        const host = window.location.hostname;
+        const client = new Client(`${protocol}://${host}:2567`);
+        return client
+    }
+
     async create() {
         this.board.initReps(this.make, 400, 0)
 
@@ -48,7 +55,7 @@ export class Game extends Scene {
             this.inputManager.proccessClick(this.add, this.board, this.input.x, this.input.y)
         })
 
-        const client = new Client('http://localhost:2567');
+        const client = this.connectToServer()
 
         const room = await client.joinOrCreate('my_room', {
             /* custom join options */
