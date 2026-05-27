@@ -42,11 +42,11 @@ export class Game extends Scene {
     }
 
     async create() {
-        this.board.initReps(this.make, 400, 0)
+        this.board.initReps(this.make, 325, -50)
 
         this.inputManager.initReps(this.add)
 
-        this.ichorDisplay.initReps(this.add, 425, 675)
+        this.ichorDisplay.initReps(this.add, 325, this.cameras.default.height - 50)
         this.ichorDisplay.updateIchor(Board.maxIchorPerTurn)
 
         GameSounds.initSound(this.sound)

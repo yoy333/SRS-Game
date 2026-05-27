@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="8" height="8" tilewidth="128" tileheight="128" infinite="0" nextlayerid="2" nextobjectid="1">
+ <tileset firstgid="1" name="V3_tiles_interior" tilewidth="128" tileheight="128" tilecount="4" columns="2">
+  <image source="tiles_interior.png" width="256" height="256"/>
+ </tileset>
+ <tileset firstgid="5" name="V3_border_top_left" tilewidth="128" tileheight="128" tilecount="4" columns="2">
+  <image source="border_top_left.png" width="256" height="256"/>
+ </tileset>
+ <tileset firstgid="9" name="V3_border_top_right" tilewidth="128" tileheight="128" tilecount="4" columns="2">
+  <image source="border_top_right.png" width="256" height="256"/>
+ </tileset>
+ <tileset firstgid="13" name="V3_border_left" tilewidth="128" tileheight="128" tilecount="4" columns="2">
+  <image source="border_left.png" width="256" height="256"/>
+ </tileset>
+ <tileset firstgid="17" name="V3_border_bottom_left" tilewidth="128" tileheight="128" tilecount="4" columns="2">
+  <image source="border_bottom_left.png" width="256" height="256"/>
+ </tileset>
+ <tileset firstgid="21" name="V3_border_bottom_right" tilewidth="128" tileheight="128" tilecount="4" columns="2">
+  <image source="border_bottom_right.png" width="256" height="256"/>
+ </tileset>
+ <tileset firstgid="25" name="V3_border_bottom" tilewidth="128" tileheight="128" tilecount="4" columns="2">
+  <image source="border_bottom.png" width="256" height="256"/>
+ </tileset>
+ <tileset firstgid="29" name="V3_border_right" tilewidth="128" tileheight="128" tilecount="4" columns="2">
+  <image source="border_right.png" width="256" height="256"/>
+ </tileset>
+ <layer id="1" name="Tile Layer 1" width="8" height="8">
+  <data encoding="csv">
+8,1,2,1,2,1,2,11,
+16,2,1,2,1,2,1,29,
+14,1,2,1,2,1,2,31,
+16,2,1,2,1,2,1,29,
+14,1,2,1,2,1,2,31,
+16,2,1,2,1,2,1,29,
+14,1,2,1,2,1,2,31,
+21,25,26,25,26,25,26,18
+</data>
+ </layer>
+</map>

@@ -1,6 +1,6 @@
 import { GameObjects, Tilemaps } from "phaser"
 import { pattern as Pattern, Piece, PieceKey, PieceType } from "./Piece.mjs"
-import { Rep, VisualConstructor, VisualMixin } from "../client/game/lib/Visual.js"
+import { Rep, VisualConstructor, VisualMixin, visualPlugin } from "../client/game/lib/Visual.js"
 import { Loader } from "phaser"
 import { NeutralObjective } from './NeutralObjective.mjs'
 import { ConcreteConstructor } from "./utils.mjs"
@@ -8,32 +8,90 @@ import { GameSounds } from "../client/game/lib/GameSounds.js"
 import { Effect } from "./Effect.mjs"
 import { StyleGuide } from "../client/game/lib/StyleGuides.js"
 
+export const BOARDSCALINGFACTOR = 5 / 8
+const tilemapImageKeys = [
+    'V3_tiles_interior',
+    'V3_border_top_left',
+    'V3_border_top_right',
+    'V3_border_left',
+    'V3_border_bottom_left',
+    'V3_border_bottom_right',
+    'V3_border_bottom',
+    'V3_border_right',
+]
+
+const tilemapImagePaths = [
+    'tiles_interior.png',
+    'border_top_left.png',
+    'border_top_right.png',
+    'border_left.png',
+    'border_bottom_left.png',
+    'border_bottom_right.png',
+    'border_bottom.png',
+    'border_right.png',
+];
 class TilemapRep implements Rep<Tilemaps.Tilemap> {
     createRep(makePlugin: GameObjects.GameObjectCreator, x: number, y: number): Tilemaps.Tilemap {
         //Create the Tilemap
         let map = makePlugin.tilemap({ key: 'tilemap' })
 
         // add the tileset image we are using
-        const tiles = map.addTilesetImage('V2_Tiles')
-        const edges = map.addTilesetImage('V2_Edges')
+        let tilesetImages = tilemapImageKeys.map((key: string) => {
+            let image = map.addTilesetImage(key)
+            if (!image)
+                throw new Error(`tileset ${key} failed to load`)
+            return image
+        })
 
-        if (!tiles || !edges)
-            throw new Error("tileset failed to load")
 
-        let ground = map.createLayer(0, [tiles, edges], x, y)
-        ground!.setScale(5 / 8)
+        // assuming height and width are same here
+        let offset = map.tileHeight * BOARDSCALINGFACTOR
+
+        let ground = map.createLayer(0, tilesetImages, x + offset, y + offset)
+        ground!.setScale(BOARDSCALINGFACTOR)
 
         return map
     }
 
     loadRep(loadPlugin: Loader.LoaderPlugin): void {
-        loadPlugin.image('V2_Tiles', 'tilemap/V2_Tiles.png')
-        loadPlugin.image('V2_Edges', 'tilemap/V2_Edges.png')
-        loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/Board_V2.json')
+        for (let i = 0; i < tilemapImageKeys.length; i++) {
+            loadPlugin.image(tilemapImageKeys[i], 'tilemap/' + tilemapImagePaths[i]);
+        }
+        loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/V3_Board.json');
     }
 }
 
-const visualMixin = VisualMixin(Object, [new TilemapRep])
+class TilemapBorderRep implements Rep<Tilemaps.Tilemap> {
+    // exclude the first element which includes the interior tileset
+    exteriorKeys: string[] = tilemapImageKeys.slice(1)
+    exteriorPaths: string[] = tilemapImagePaths.slice(1)
+
+    createRep(makePlugin: GameObjects.GameObjectCreator, x: number, y: number): Tilemaps.Tilemap {
+        let border = makePlugin.tilemap({ key: 'tilemapBorder' })
+
+        // add the tileset image we are using
+        let tilesetImages = this.exteriorKeys.map((key: string) => {
+            let image = border.addTilesetImage(key)
+            if (!image)
+                throw new Error(`tileset ${key} failed to load`)
+            return image
+        })
+
+        let ground = border.createLayer(0, tilesetImages, x, y)
+        ground!.setScale(BOARDSCALINGFACTOR)
+
+        return border
+    }
+
+    loadRep(loadPlugin: Loader.LoaderPlugin): void {
+        for (let i = 0; i < this.exteriorKeys.length; i++) {
+            loadPlugin.image(this.exteriorKeys[i], 'tilemap/' + this.exteriorPaths[i]);
+        }
+        loadPlugin.tilemapTiledJSON('tilemapBorder', 'tilemap/V3_Board_Border.json');
+    }
+}
+
+const visualMixin = VisualMixin(Object, [new TilemapRep, new TilemapBorderRep])
 export class Board extends visualMixin {
     static rows = 8
     static columns = 8
