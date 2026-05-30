@@ -60,7 +60,7 @@ export type PieceType = pieceConstructor & PieceStatics & VisualConstructor
 const visualMixin = VisualMixin(Object, [new TeamRect()])
 export abstract class Piece extends visualMixin {
     token?: sprite | image
-    teamRect?: GameObjects.Rectangle
+    teamHint?: GameObjects.Rectangle
     board: Board
 
     coordX: number
@@ -113,16 +113,16 @@ export abstract class Piece extends visualMixin {
     setTeamRectColor() {
         const rectWeight = 2
         if (this.playerOwner != this.board.playerNumber)
-            this.teamRect?.setStrokeStyle(rectWeight, StyleGuide.otherTeamHintColor)
+            this.teamHint?.setStrokeStyle(rectWeight, StyleGuide.otherTeamHintColor)
         else
-            this.teamRect?.setStrokeStyle(rectWeight, StyleGuide.myTeamHintColor)
+            this.teamHint?.setStrokeStyle(rectWeight, StyleGuide.myTeamHintColor)
     }
 
     initReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): void {
         let [worldX, worldY] = this.getWorldXYFromPerspective(this.perspectiveX, this.perspectiveY) as [number, number]
 
         // this.initToken(addPlugin, worldX, worldY)
-        [this.teamRect, this.token] = (this.constructor as VisualConstructor).createReps(addPlugin, worldX, worldY)
+        [this.teamHint, this.token] = (this.constructor as VisualConstructor).createReps(addPlugin, worldX, worldY)
 
         if (!this!.token)
             throw new Error("create reps failed")
@@ -174,10 +174,12 @@ export abstract class Piece extends visualMixin {
 
         let worldX = tile.getCenterX()
         let worldY = tile.getCenterY()
-        if (!this.token || !this.teamRect)
+        if (!this.token || !this.teamHint)
             throw new Error("no token. Sadge")
+        console.log("token")
         AnimationManager.addMoveAnim(this.token, worldX, worldY)
-        AnimationManager.addMoveAnim(this.teamRect, worldX, worldY)
+        console.log("hint")
+        AnimationManager.addMoveAnim(this.teamHint, worldX, worldY)
     }
 
     canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber: number) {
@@ -252,6 +254,7 @@ export abstract class Piece extends visualMixin {
 
     die() {
         this.token?.destroy(true)
+        this.teamHint?.destroy(true)
         this.board.killPiece(this.coordX, this.coordY)
     }
 }

@@ -547,6 +547,7 @@ export class Board extends visualMixin {
     }
 
     attackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number) {
+        console.log("attack called")
         let attackingPiece = this.getPiece(attackerX, attackerY)
         let defendingPiece = this.getPiece(defenderX, defenderY)
         if (!attackingPiece)
