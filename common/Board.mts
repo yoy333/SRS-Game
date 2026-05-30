@@ -326,10 +326,6 @@ export class Board extends visualMixin {
         })
 
         piece.pushPiece(endX, endY)
-
-        if (this.hasWon(piece.playerOwner) != -1) {
-            console.log("this is where the win screen would go, be we haven't made that yet")
-        }
     }
 
     canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber?: number): boolean {
@@ -441,10 +437,19 @@ export class Board extends visualMixin {
             throw new Error("how did we get here")
         }
 
+        this.startTurn()
+    }
+
+    startTurn() {
+        // check for a win
+        if (this.hasWon(this.currentTurn) != -1) {
+            console.log("this is where the win screen would go, be we haven't made that yet")
+        }
+
+        // apply callbacks
         for (let [piece, effects] of this.effects) {
             effects.forEach(effect => effect?.onStartTurn?.())
         }
-
         for (let piece of this.piecesOfPlayer(this.currentTurn)) {
             piece.onStartTurn()
         }

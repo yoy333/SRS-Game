@@ -107,7 +107,6 @@ export abstract class Piece extends visualMixin {
         if (!tile)
             throw new Error(`no tile at (${x}, ${y})`)
         const ans: [number, number] = [tile.getCenterX(), tile.getCenterY()]
-        console.log(ans)
         return ans
     }
 
@@ -234,13 +233,11 @@ export abstract class Piece extends visualMixin {
             if (!this.token)
                 throw new Error("no token when trying to kill")
 
-            console.log("death anim starting")
             let promise = AnimationManager.addDeathAnim(this.token)
             promise.then(() => {
                 if (!attackingPiece.token)
                     throw new Error("this should never happen")
 
-                console.log("move anim starting")
                 attackingPiece.updateRep()
                 this.die()
             })

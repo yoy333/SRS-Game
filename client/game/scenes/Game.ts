@@ -9,6 +9,7 @@ import { GameRules } from '@common/GameRules.mjs';
 import { GameSounds } from '../lib/GameSounds';
 import { AnimationManager } from '../lib/AnimationManager';
 import { HCard } from '@common/HCard';
+import { attackMessage, moveMessage, spawnMessage } from '@common/NeutralObjectives/CommunicationTypes.mjs';
 
 export class Game extends Scene {
 
@@ -39,6 +40,21 @@ export class Game extends Scene {
         const host = window.location.hostname;
         const client = new Client(`${protocol}://${host}:2567`);
         return client
+    }
+
+    // use arrow functions to preserve scope and preseerve the value of this
+    proccessSpawn = (message: spawnMessage) => {
+        let [pieceTypeKey, x, y] = message;
+        let pieceType = pieceUtils.classFromKey(pieceTypeKey)
+        this.board.spawnPiece(pieceType, this.add, x, y, this.board.otherPlayerNumber)
+    }
+    proccessMove = (message: moveMessage) => {
+        let [startX, startY, endX, endY] = message;
+        this.board.movePiece(startX, startY, endX, endY, this.board.otherPlayerNumber)
+    }
+    proccessAttack = (message: attackMessage) => {
+        let [attackerX, attackerY, defenderX, defenderY] = message;
+        this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
     }
 
     async create() {
@@ -83,25 +99,43 @@ export class Game extends Scene {
             this.inputManager.updateHand(this.add, this.hand)
         })
 
-        room.onMessage('otherSpawn', (message: any[]) => {
-            let [pieceTypeKey, x, y] = message;
-            let pieceType = pieceUtils.classFromKey(pieceTypeKey)
-            this.board.spawnPiece(pieceType, this.add, x, y, this.board.otherPlayerNumber)
-        })
-
-        room.onMessage('otherMove', (message: any[]) => {
-            let [startX, startY, endX, endY] = message;
-            this.board.movePiece(startX, startY, endX, endY, this.board.otherPlayerNumber)
-        })
-
-        room.onMessage('otherAttack', (message: any[]) => {
-            let [attackerX, attackerY, defenderX, defenderY] = message;
-            this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
-        })
+        // room.onMessage('otherSpawn', this.proccessSpawn)
+        //
+        // room.onMessage('otherMove', this.proccessMove)
+        //
+        // room.onMessage('otherAttack', this.proccessAttack)
 
         room.onMessage('otherEndTurn', () => {
             this.board.endTurn()
             this.ichorDisplay.updateIchor(this.board.myIchor)
+        })
+
+        // IDK what a ValueKeyCallback is but its just a callback to me
+        // @ts-ignore
+        callbacks.onAdd("turnHistory", (turn: string, sessionId: number) => {
+            // console.log(turn)
+            // this function is only for proccessing enemy turns
+            if (this.board.isMyTurn())
+                return;
+            let [action, ...args] = turn.split('-')
+            if (action == "spawn") {
+                let key = args[0]
+                let x = parseInt(args[1])
+                let y = parseInt(args[2])
+                this.proccessSpawn([key, x, y])
+            } else if (action == "move") {
+                let message = args.map((arg => {
+                    return parseInt(arg)
+                })) as moveMessage
+
+                this.proccessMove(message)
+            } else if (action == "attack") {
+                let message = args.map((arg => {
+                    return parseInt(arg)
+                })) as attackMessage
+
+                this.proccessAttack(message)
+            }
         })
 
         this.inputManager.onMove = (startX: number, startY: number, endX: number, endY: number) => {
@@ -123,7 +157,8 @@ export class Game extends Scene {
                 this.board.spawnPiece(pieceType, this.add, x, y)
                 this.ichorDisplay.updateIchor(this.board.myIchor)
                 // this.socket.emit('spawn', [DefaultPiece.key, x, y])
-                room.send('spawn', [pieceType.key, x, y])
+                let message: spawnMessage = [pieceType.key, x, y]
+                room.send('spawn', message)
 
                 let buttonIndex = this.inputManager.selectionIndex
                 if (buttonIndex != undefined) {
