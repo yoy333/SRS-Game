@@ -1,10 +1,11 @@
 # Features
 matchmaking
-! new tileset
 n ichorDisplay handles two digits
 n change how neutral objectives spawn
 ! Show effects
 ! turn display
+start screen
+win screen
 Discord
 
 # characters balanced
