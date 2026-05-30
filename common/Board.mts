@@ -617,7 +617,7 @@ export class Board extends visualMixin {
             const absY = piece.perspectiveY + relY
 
             if (!this.isInBounds(absX, absY))
-                break;
+                continue;
 
             let tile = this.tilemap?.getTileAt(absX, absY)
             if (!tile)
