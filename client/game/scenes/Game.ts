@@ -22,7 +22,7 @@ export class Game extends Scene {
         this.board = new Board(true)
         this.ichorDisplay = new IchorDisplay()
         this.gameRules = new GameRules(this.board)
-        this.hCard = new HCard(10, 375, 10, 1000)
+        this.hCard = new HCard(10, 360, 10, 1000)
     }
 
     preload() {
