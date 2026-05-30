@@ -9,7 +9,7 @@ import { GameRules } from '@common/GameRules.mjs';
 import { GameSounds } from '../lib/GameSounds';
 import { AnimationManager } from '../lib/AnimationManager';
 import { HCard } from '@common/HCard';
-import { attackMessage, moveMessage, spawnMessage } from '@common/NeutralObjectives/CommunicationTypes.mjs';
+import { attackMessage, moveMessage, spawnMessage } from '@common/CommunicationTypes.mjs';
 
 export class Game extends Scene {
 

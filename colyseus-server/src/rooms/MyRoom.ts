@@ -5,7 +5,7 @@ import { Deck } from "../lib/Deck.js";
 import { Hand } from "@common/Hand.mjs";
 import { pieceUtils } from "@common/pieceRegistery.mjs";
 import { GameRules } from "@common/GameRules.mjs";
-import { attackMessage, moveMessage, spawnMessage } from "@common/NeutralObjectives/CommunicationTypes.mjs";
+import { attackMessage, moveMessage, spawnMessage } from "@common/CommunicationTypes.mjs";
 
 export class MyRoom extends Room {
   maxClients = 4;
