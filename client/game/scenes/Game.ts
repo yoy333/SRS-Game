@@ -65,7 +65,7 @@ export class Game extends Scene {
         this.ichorDisplay.initReps(this.add, 325, this.cameras.default.height - 50)
         this.ichorDisplay.updateIchor(Board.maxIchorPerTurn)
 
-        GameSounds.initSound(this.sound)
+        GameSounds.initSound(this)
 
         this.input.on('pointerdown', () => {
             this.inputManager.proccessClick(this.add, this.board, this.input.x, this.input.y)
@@ -113,6 +113,9 @@ export class Game extends Scene {
         // IDK what a ValueKeyCallback is but its just a callback to me
         // @ts-ignore
         callbacks.onAdd("turnHistory", (turn: string, sessionId: number) => {
+            let turnHistory: string[] = room.state.turnHistory as string[]
+            let turnNumber = turnHistory.indexOf(turn)
+            console.log(turnNumber)
             // console.log(turn)
             // this function is only for proccessing enemy turns
             if (this.board.isMyTurn())
@@ -136,6 +139,8 @@ export class Game extends Scene {
 
                 this.proccessAttack(message)
             }
+
+            console.log("end of: " + turnNumber)
         })
 
         this.inputManager.onMove = (startX: number, startY: number, endX: number, endY: number) => {
@@ -203,7 +208,8 @@ export class Game extends Scene {
         }
     }
 
-    update() {
+
+    update(time: number, delta: number) {
         AnimationManager.update()
     }
 }

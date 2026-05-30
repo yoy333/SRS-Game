@@ -3,7 +3,7 @@ matchmaking
 n ichorDisplay handles two digits
 n change how neutral objectives spawn
 ! Show effects
-! turn display
+! turn display on button
 start screen
 win screen
 Discord
@@ -12,7 +12,7 @@ Discord
 Zeus
 Artemis
 Hades
-Hermes D
+Hermes
 Nike 
 Aphrodite
 Apollo
@@ -43,7 +43,7 @@ make Aries into Ares
 Map variations
 
 # Bugs
-! Desynced callbacks
+artmeis side hint bug
 
 # Extra
 Turn History

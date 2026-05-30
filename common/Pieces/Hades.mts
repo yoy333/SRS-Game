@@ -21,7 +21,6 @@ class RecyleDeath extends Effect {
   // technically to do optional methods instead of having empty function bodies
   // I use a property that is a method
   onPostDeath = () => {
-    console.log("applying effect")
     this.actionSpace.addIchorToNextTurn(3, this.originatingPiece.playerOwner)
   }
 }

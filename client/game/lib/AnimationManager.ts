@@ -25,6 +25,35 @@ abstract class AnimationLoop {
     return promise
   }
 
+  removePiece(ref: Ref, resolvePromise: boolean = true) {
+    let index = this.animationRefs.findIndex(animationRef => {
+      return animationRef[0] == ref
+    })
+    if (index == -1) {
+      return;
+    }
+
+    if (resolvePromise)
+      this.animationPromises[index].resolve()
+    else
+      1;
+    // this.animationPromises[index].reject()
+    this.animationRefs.splice(index, 1)
+    this.animationPromises.splice(index, 1)
+  }
+
+  endAnim(ref: Ref) {
+    let index = this.animationRefs.findIndex(animationRef => {
+      return animationRef[0] == ref
+    })
+    if (index == -1) {
+      return;
+    }
+
+    this.lastLoop(ref, index)
+    this.removePiece(ref, false)
+  }
+
   abstract totalFrames: number
   abstract firstLoop(ref: Ref, index: number): void
   abstract loop(ref: Ref, index: number, frame: number): void
@@ -41,9 +70,7 @@ abstract class AnimationLoop {
 
       if (frame == this.totalFrames) {
         this.lastLoop(ref, index)
-        this.animationPromises[index].resolve()
-        this.animationRefs.splice(index, 1)
-        this.animationPromises.splice(index, 1)
+        this.removePiece(ref, true)
       } else
         this.animationRefs[index][1]++
     })
@@ -106,6 +133,7 @@ class MoveAnimationLoop extends AnimationLoop {
   endCoords: coords[] = []
 
   addPiece(ref: Ref, endX: number, endY: number): Promise<void> {
+    console.log("new animation")
     let promise = super.addPiece(ref)
     this.endCoords.push([endX, endY])
     return promise
@@ -150,21 +178,36 @@ class AM {
   }
 
   addSpawnAnim(piece: Ref) {
+    this.clearPreviousAnims(piece)
     return this.spawnAnimationLoop.addPiece(piece)
   }
 
   addMoveAnim(piece: Ref, endX: number, endY: number) {
+    this.clearPreviousAnims(piece)
     return this.moveAnimationLoop.addPiece(piece, endX, endY)
   }
 
   addDeathAnim(piece: Ref) {
+    this.clearPreviousAnims(piece)
     return this.deathAnimationLoop.addPiece(piece)
   }
 
+  clearPreviousAnims(piece: Ref) {
+    for (let loop of this.allLoops()) {
+      loop.endAnim(piece)
+    }
+  }
+
+  *allLoops() {
+    yield this.spawnAnimationLoop
+    yield this.moveAnimationLoop
+    yield this.deathAnimationLoop
+  }
+
   update() {
-    this.spawnAnimationLoop.update()
-    this.moveAnimationLoop.update()
-    this.deathAnimationLoop.update()
+    for (let loop of this.allLoops()) {
+      loop.update()
+    }
   }
 }
 

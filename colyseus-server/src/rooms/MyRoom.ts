@@ -79,7 +79,7 @@ export class MyRoom extends Room {
         this.broadcast('otherAttack', message, {
           except: client
         })
-        this.state.turnHistory.push(`move-${message.join('-')}`)
+        this.state.turnHistory.push(`attack-${message.join('-')}`)
       } else {
         console.log("hijacked attack call")
       }
