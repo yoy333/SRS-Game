@@ -527,13 +527,15 @@ export class Board extends visualMixin {
         // if no target coords are specified the piece is assumed to be targeting itself
 
         let effects = this.effects.get(targetedPiece)
-        if (!effects)
+        if (!effects) {
             effects = []
+            targetedPiece.linkEffects(effects)
+        }
         effects.push(effect)
         this.effects.set(targetedPiece, effects)
 
         // console.log(targetedPiece)
-        targetedPiece.showEffectHint()
+        targetedPiece.updateEffectHint()
 
         return effect
     }
@@ -550,9 +552,19 @@ export class Board extends visualMixin {
         }
         effects.splice(index, 1)
 
-        if (effects.length == 0) {
-            piece.hideEffectHint()
-        }
+        piece.updateEffectHint()
+    }
+
+    getShownEffect(piece: Piece): Effect | undefined {
+        let effectsArr = this.effects.get(piece)
+        if (!effectsArr)
+            return undefined
+        let shownEffect = effectsArr.find(effect => {
+            if (effect.effectHint)
+                return effect
+        })
+
+        return shownEffect
     }
 
     attackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number) {

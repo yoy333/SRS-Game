@@ -2,7 +2,7 @@ import { Piece, pattern, forward_1, square_1 } from "../Piece.mjs";
 import { Board } from "../Board.mjs";
 import { GameObjects, Loader } from "phaser";
 import { Rep, VisualMixin } from "../../client/game/lib/Visual.js";
-import { Effect } from "@common/Effect.mjs";
+import { Effect, EffectHint } from "@common/Effect.mjs";
 
 class AphroditeToken implements Rep<GameObjects.Image> {
   createRep(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Image {
@@ -16,7 +16,13 @@ class AphroditeToken implements Rep<GameObjects.Image> {
   }
 }
 
+let CharmedEffectHint: EffectHint = {
+  text: "This character cannot attack this turn"
+}
+
 class CharmedEffect extends Effect {
+  effectHint = CharmedEffectHint
+
   onPreAttack = (defendingPiece: Piece) => {
     return false
   };

@@ -3,6 +3,7 @@ import { StyleGuide } from "../client/game/lib/StyleGuides.js";
 import { Rep, VisualConstructor, VisualMixin, visualPlugin } from "../client/game/lib/Visual.js";
 import { Board } from "./Board.mjs";
 import { GameObjects, Loader } from "phaser";
+import { Effect } from "./Effect.mjs";
 
 type sprite = GameObjects.Sprite
 type image = GameObjects.Image
@@ -59,6 +60,7 @@ export class EffectHint implements Rep<GameObjects.Image> {
         let star = plugin.image(x, y, 'star')
         star.setOrigin(-0.25, 1.25)
         star.setScale(1 / 150)
+        star.setAlpha(0)
         return star
     }
 
@@ -92,7 +94,7 @@ export abstract class Piece extends visualMixin {
     relativeMovementPattern: pattern = emptyPattern;
     relativeAttackingPattern: pattern = emptyPattern;
 
-    hasEffectActive: boolean = false
+    activeEffects: Effect[] = []
 
     constructor(addPlugin: GameObjects.GameObjectFactory | undefined, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {
         super()
@@ -134,15 +136,14 @@ export abstract class Piece extends visualMixin {
             this.teamHint?.setStrokeStyle(rectWeight, StyleGuide.myTeamHintColor)
     }
 
-    showEffectHint() {
-        this.hasEffectActive = true
-        this.effectHint?.setAlpha(1)
+    linkEffects(effects: Effect[]) {
+        this.activeEffects = effects
     }
 
-    hideEffectHint() {
-        console.log('hiding effect hint')
-        this.hasEffectActive = false
-        this.effectHint?.setAlpha(0)
+    updateEffectHint() {
+        let shownEffect = this.board.getShownEffect(this)
+        if (shownEffect)
+            this.effectHint?.setAlpha(1)
     }
 
     initReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): void {
@@ -155,8 +156,7 @@ export abstract class Piece extends visualMixin {
             throw new Error("create reps failed")
 
         this.setTeamRectColor()
-        if (!this.hasEffectActive)
-            this.hideEffectHint()
+        this.updateEffectHint()
 
         AnimationManager.addSpawnAnim(this!.token)
     }

@@ -1,7 +1,13 @@
 import { Board } from "./Board.mjs";
 import { Piece } from "./Piece.mjs";
 
+export interface EffectHint {
+  text?: string
+}
+
 export abstract class Effect {
+  effectHint?: EffectHint
+
   actionSpace: Board
   originatingPiece: Piece
   targetedPiece: Piece
