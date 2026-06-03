@@ -4,8 +4,8 @@ n ichorDisplay handles two digits
 n change how neutral objectives spawn
 ! Show effects
 ! turn display on button
-start screen
-win screen
+! start screen
+! win screen
 Discord
 
 # characters balanced
@@ -43,7 +43,6 @@ make Aries into Ares
 Map variations
 
 # Bugs
-artmeis side hint bug
 
 # Extra
 Turn History

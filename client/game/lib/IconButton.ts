@@ -66,7 +66,8 @@ export class IconButton extends visualMixin {
         if (icon)
             icon.setScale(IconButtonScale)
         if (!icon) {
-            icon = pieceClass.reps[1].createRep(addPlugin, x, y)
+            const lastIndex = pieceClass.reps.length - 1
+            icon = pieceClass.reps[lastIndex].createRep(addPlugin, x, y)
         }
         return icon
     }

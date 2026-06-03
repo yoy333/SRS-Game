@@ -531,10 +531,15 @@ export class Board extends visualMixin {
             effects = []
         effects.push(effect)
         this.effects.set(targetedPiece, effects)
+
+        // console.log(targetedPiece)
+        targetedPiece.showEffectHint()
+
         return effect
     }
 
     removeEffect(piece: Piece, effect: Effect) {
+        console.log('removing effect')
         let effects = this.effects.get(piece)
         if (!effects)
             throw new Error("no effects on that piece")
@@ -544,6 +549,10 @@ export class Board extends visualMixin {
             throw new Error("no element at that index")
         }
         effects.splice(index, 1)
+
+        if (effects.length == 0) {
+            piece.hideEffectHint()
+        }
     }
 
     attackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number) {
@@ -599,15 +608,15 @@ export class Board extends visualMixin {
     }
 
     hintMoves(addPlugin: GameObjects.GameObjectFactory, piece: Piece) {
-        this.hint(addPlugin, piece, piece.relativeMovementPattern, StyleGuide.moveHintColor)
+        this.hintSquares(addPlugin, piece, piece.relativeMovementPattern, StyleGuide.moveHintColor)
     }
 
     hintAttacks(addPlugin: GameObjects.GameObjectFactory, piece: Piece) {
-        this.hint(addPlugin, piece, piece.relativeAttackingPattern, StyleGuide.attackHintColor)
+        this.hintSquares(addPlugin, piece, piece.relativeAttackingPattern, StyleGuide.attackHintColor)
     }
 
     hints: GameObjects.Rectangle[] = []
-    private hint(addPlugin: GameObjects.GameObjectFactory, piece: Piece, pattern: Pattern, color: number = 0x000000) {
+    private hintSquares(addPlugin: GameObjects.GameObjectFactory, piece: Piece, pattern: Pattern, color: number = 0x000000) {
         this.clearHints()
         for (const relCoord of pattern) {
             let [relX, relY] = relCoord

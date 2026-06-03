@@ -54,13 +54,27 @@ export class TeamRect implements Rep<GameObjects.Rectangle> {
     }
 }
 
+export class EffectHint implements Rep<GameObjects.Image> {
+    createRep(plugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Image {
+        let star = plugin.image(x, y, 'star')
+        star.setOrigin(-0.25, 1.25)
+        star.setScale(1 / 150)
+        return star
+    }
+
+    loadRep(loadPlugin: Loader.LoaderPlugin): void {
+        loadPlugin.image('star', 'star.png')
+    }
+}
+
 type pieceConstructor = new (...args: any[]) => Piece
 export type PieceType = pieceConstructor & PieceStatics & VisualConstructor
 
-const visualMixin = VisualMixin(Object, [new TeamRect()])
+const visualMixin = VisualMixin(Object, [new TeamRect(), new EffectHint()])
 export abstract class Piece extends visualMixin {
     token?: sprite | image
     teamHint?: GameObjects.Rectangle
+    effectHint?: GameObjects.Image
     board: Board
 
     coordX: number
@@ -77,6 +91,8 @@ export abstract class Piece extends visualMixin {
 
     relativeMovementPattern: pattern = emptyPattern;
     relativeAttackingPattern: pattern = emptyPattern;
+
+    hasEffectActive: boolean = false
 
     constructor(addPlugin: GameObjects.GameObjectFactory | undefined, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {
         super()
@@ -118,16 +134,29 @@ export abstract class Piece extends visualMixin {
             this.teamHint?.setStrokeStyle(rectWeight, StyleGuide.myTeamHintColor)
     }
 
+    showEffectHint() {
+        this.hasEffectActive = true
+        this.effectHint?.setAlpha(1)
+    }
+
+    hideEffectHint() {
+        console.log('hiding effect hint')
+        this.hasEffectActive = false
+        this.effectHint?.setAlpha(0)
+    }
+
     initReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): void {
         let [worldX, worldY] = this.getWorldXYFromPerspective(this.perspectiveX, this.perspectiveY) as [number, number]
 
         // this.initToken(addPlugin, worldX, worldY)
-        [this.teamHint, this.token] = (this.constructor as VisualConstructor).createReps(addPlugin, worldX, worldY)
+        [this.teamHint, this.effectHint, this.token] = (this.constructor as VisualConstructor).createReps(addPlugin, worldX, worldY)
 
         if (!this!.token)
             throw new Error("create reps failed")
 
         this.setTeamRectColor()
+        if (!this.hasEffectActive)
+            this.hideEffectHint()
 
         AnimationManager.addSpawnAnim(this!.token)
     }
@@ -164,6 +193,7 @@ export abstract class Piece extends visualMixin {
         return dynamicCost ?? staticCost;
     }
 
+
     updateRep() {
         if (!this.isClientSide)
             return;
@@ -174,11 +204,10 @@ export abstract class Piece extends visualMixin {
 
         let worldX = tile.getCenterX()
         let worldY = tile.getCenterY()
-        if (!this.token || !this.teamHint)
+        if (!this.token || !this.teamHint || !this.effectHint)
             throw new Error("no token. Sadge")
-        console.log("token")
         AnimationManager.addMoveAnim(this.token, worldX, worldY)
-        console.log("hint")
+        AnimationManager.addMoveAnim(this.effectHint, worldX, worldY)
         AnimationManager.addMoveAnim(this.teamHint, worldX, worldY)
     }
 
