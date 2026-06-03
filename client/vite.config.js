@@ -8,10 +8,16 @@ export default ({ mode }) => {
     server: {
       proxy: {
         '/phaserAssets': 'http://localhost:8080',
-        '/http': 'https://localhost:8080'
+        '/server': {
+          target: 'http://localhost:2567',
+          changeOrigin: true,
+          ws: true,
+          rewrite: (path) => path.replace(/^\/server/, '')
+        }
       },
       hmr: {
-        clientPort: 5173,
+        clientPort: 443,
+        protocol: 'wss'
       },
       allowedHosts: true
     },

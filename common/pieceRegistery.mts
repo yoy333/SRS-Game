@@ -31,7 +31,7 @@ export const pieceUtils = {
   }
 }
 
-pieceTypeRegistery.set(DefaultPiece.key, DefaultPiece)
+// pieceTypeRegistery.set(DefaultPiece.key, DefaultPiece)
 pieceTypeRegistery.set(Zeus.key, Zeus)
 pieceTypeRegistery.set(Artemis.key, Artemis)
 pieceTypeRegistery.set(Aries.key, Aries)

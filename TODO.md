@@ -2,7 +2,7 @@
 matchmaking
 n ichorDisplay handles two digits
 n change how neutral objectives spawn
-! Show effects
+! help text for all other characters
 ! turn display on button
 ! start screen
 ! win screen

@@ -8,6 +8,7 @@ import { Hand } from '@common/Hand.mjs';
 import { VisualMixin } from "./Visual";
 import { GameSounds } from "./GameSounds";
 import { pieceUtils } from "@common/pieceRegistery.mjs";
+import { Zeus } from "@common/Pieces/Zeus.mjs";
 
 
 const visualMixin = VisualMixin(Object, [])
@@ -58,6 +59,7 @@ export class InputManager extends visualMixin {
 
         // if you click on a piece, select it for movement
         let selectedPiece = board.getPiece(x, y)
+        console.log(selectedPiece)
         if (selectedPiece != null) {
             this.selectForMove(selectedPiece)
             return;
@@ -125,7 +127,7 @@ export class InputManager extends visualMixin {
             let xPos = startX + xGrid * cellWidth;
             let yPos = startY + yGrid * cellHeight;
 
-            let button = new IconButton(this, DefaultPiece.key)
+            let button = new IconButton(this, Zeus.key)
             button.initReps(addPlugin, xPos, yPos)
 
             button.onClick = () => {

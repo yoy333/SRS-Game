@@ -36,10 +36,17 @@ export class Game extends Scene {
     hand: PieceKey[] = []
 
     connectToServer(): ColyseusSDK<any, any> {
+        // 1. Determine if we need secure WebSockets (wss) for ngrok or standard (ws) for local
         const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-        const host = window.location.hostname;
-        const client = new Client(`${protocol}://${host}:2567`);
-        return client
+
+        // 2. Get the current host (e.g., 'localhost:5173' or 'my-app.ngrok-free.app')
+        const host = window.location.host;
+
+        // 3. Build the dynamic URL
+        const url = `${protocol}://${host}/server`;
+
+        const client = new Client(url);
+        return client;
     }
 
     // use arrow functions to preserve scope and preseerve the value of this
@@ -63,7 +70,7 @@ export class Game extends Scene {
         this.inputManager.initReps(this.add)
 
         this.ichorDisplay.initReps(this.add, 325, this.cameras.default.height - 50)
-        this.ichorDisplay.updateIchor(Board.maxIchorPerTurn)
+        this.ichorDisplay.updateIchor(this.board.myIchor)
 
         GameSounds.initSound(this)
 
