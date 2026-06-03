@@ -1,8 +1,13 @@
 import { Board } from "./Board.mjs";
 import { Piece } from "./Piece.mjs";
 
-export interface EffectHint {
-  text?: string
+export abstract class EffectHint {
+  effect: Effect
+  abstract text: string
+
+  constructor(effect: Effect) {
+    this.effect = effect
+  }
 }
 
 export abstract class Effect {

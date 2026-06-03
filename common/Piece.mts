@@ -144,6 +144,8 @@ export abstract class Piece extends visualMixin {
         let shownEffect = this.board.getShownEffect(this)
         if (shownEffect)
             this.effectHint?.setAlpha(1)
+        else
+            this.effectHint?.setAlpha(0)
     }
 
     initReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): void {

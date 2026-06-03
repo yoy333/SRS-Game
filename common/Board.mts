@@ -103,7 +103,8 @@ export class Board extends visualMixin {
     tilemap?: Tilemaps.Tilemap
 
     static maxIchorPerTurn: number = 5;
-    private ichor: [number, number] = [Board.maxIchorPerTurn, Board.maxIchorPerTurn];
+    static startingIchorHandicap: number = 2
+    private ichor: [number, number] = [Board.maxIchorPerTurn - Board.startingIchorHandicap, Board.maxIchorPerTurn];
     private ichorForNextTurn: [number, number] = [0, 0]
     static maxSpawnsPerTurn: number = 1;
     private spawnCreditsThisTurn: [number, number] = [Board.maxSpawnsPerTurn, Board.maxSpawnsPerTurn]
@@ -541,7 +542,6 @@ export class Board extends visualMixin {
     }
 
     removeEffect(piece: Piece, effect: Effect) {
-        console.log('removing effect')
         let effects = this.effects.get(piece)
         if (!effects)
             throw new Error("no effects on that piece")
@@ -568,7 +568,6 @@ export class Board extends visualMixin {
     }
 
     attackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number) {
-        console.log("attack called")
         let attackingPiece = this.getPiece(attackerX, attackerY)
         let defendingPiece = this.getPiece(defenderX, defenderY)
         if (!attackingPiece)

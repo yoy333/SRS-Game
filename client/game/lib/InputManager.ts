@@ -77,7 +77,7 @@ export class InputManager extends visualMixin {
 
     onSelectionForMove?: (piece: Piece) => void
     onSelectionForAttack?: (piece: Piece) => void
-    onSelection?: (pieceType: PieceType) => void
+    onSelection?: (pieceType: PieceType, piece?: Piece) => void
     onUnselection?: () => void
 
     selectionIndex: number = 0
@@ -92,7 +92,7 @@ export class InputManager extends visualMixin {
     selectForMove(piece: Piece) {
         this.selectionForSpawn = undefined;
         this.selectionForMove = piece;
-        this?.onSelection?.(piece.constructor as PieceType)
+        this?.onSelection?.(piece.constructor as PieceType, piece)
         this?.onSelectionForMove?.(piece)
         GameSounds.click()
     }
@@ -101,7 +101,7 @@ export class InputManager extends visualMixin {
         this.selectionForAttack = piece;
         this.selectionForSpawn = undefined;
         this.selectionForMove = undefined
-        this?.onSelection?.(piece.constructor as PieceType)
+        this?.onSelection?.(piece.constructor as PieceType, piece)
         this?.onSelectionForAttack?.(piece)
         GameSounds.doubleClick()
     }

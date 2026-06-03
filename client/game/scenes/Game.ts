@@ -184,8 +184,8 @@ export class Game extends Scene {
             }
         }
 
-        this.inputManager.onSelection = (pieceType: PieceType) => {
-            this.hCard.updateCard(this.add, pieceType)
+        this.inputManager.onSelection = (pieceType: PieceType, piece?: Piece) => {
+            this.hCard.updateCard(this.add, pieceType, piece)
         }
 
         this.inputManager.onSelectionForMove = (piece: Piece) => {

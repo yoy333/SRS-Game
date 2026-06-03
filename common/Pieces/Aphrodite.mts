@@ -16,12 +16,19 @@ class AphroditeToken implements Rep<GameObjects.Image> {
   }
 }
 
-let CharmedEffectHint: EffectHint = {
-  text: "This character cannot attack this turn"
+class CharmedEffectHint extends EffectHint {
+  constructor(effect: Effect) {
+    super(effect)
+  }
+
+  text = "This character cannot attack this turn"
 }
 
 class CharmedEffect extends Effect {
-  effectHint = CharmedEffectHint
+  constructor(actionSpace: Board, originatingPiece: Piece, targetedPiece: Piece) {
+    super(actionSpace, originatingPiece, targetedPiece)
+    this.effectHint = new CharmedEffectHint(this)
+  }
 
   onPreAttack = (defendingPiece: Piece) => {
     return false

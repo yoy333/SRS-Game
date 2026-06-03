@@ -43,6 +43,7 @@ make Aries into Ares
 Map variations
 
 # Bugs
+Offscreen Animation rendering
 
 # Extra
 Turn History
