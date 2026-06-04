@@ -15,10 +15,14 @@ export default ({ mode }) => {
           rewrite: (path) => path.replace(/^\/server/, '')
         }
       },
-      hmr: {
-        clientPort: 443,
-        protocol: 'wss'
-      },
+      // check env variable USE_FORWARD to see if we should connect to vite via https (port 443)
+      // otherwise use default config
+      hmr: process.env.USE_FORWARD
+        ? {
+          host: 'localhost',
+          clientPort: 443,
+          protocol: 'wss'
+        } : undefined,
       allowedHosts: true
     },
     publicDir: 'game/assets',
