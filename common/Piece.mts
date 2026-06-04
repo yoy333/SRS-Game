@@ -225,6 +225,8 @@ export abstract class Piece extends visualMixin {
         if (!this.isClientSide)
             return;
 
+        this.updateRep()
+
         if (!this.token)
             throw new Error("no token when trying to move")
     }

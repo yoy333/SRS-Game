@@ -54,7 +54,7 @@ export class Poseidon extends visualMixin {
 
   getBackY(y: number): number {
     const push = 2;
-    return y + (y === 0 ? -push : push)
+    return y + (this.playerOwner === 0 ? -push : push)
   }
 
   canAttackPiece(defenderX: number, defenderY: number, playerNumber: number): boolean {

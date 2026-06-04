@@ -497,8 +497,8 @@ export class Board extends visualMixin {
 
         // console.log(this.isMyTurn(playerNumber))
         // console.log(this.doesHaveEnoughIchor(cost, playerNumber))
-        // console.log(attackingPiece.canAttackPiece(attackerX, attackerY, defenderX, defenderY, playerNumber))
-        // console.log(defendingPiece.canBeAttacked(attackerX, attackerY, playerNumber))
+        // console.log(attackingPiece.canAttackPiece(defenderX, defenderY, playerNumber))
+        // console.log(defendingPiece.canBeAttacked(attackingPiece, override))
         // console.log(effectAllowsAttack)
 
         return (
