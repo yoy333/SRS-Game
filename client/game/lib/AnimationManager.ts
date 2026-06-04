@@ -42,6 +42,7 @@ abstract class AnimationLoop {
     this.animationPromises.splice(index, 1)
   }
 
+  // if an animation gets cancled use this method to resolve it immediately
   endAnim(ref: Ref) {
     let index = this.animationRefs.findIndex(animationRef => {
       return animationRef[0] == ref
@@ -50,6 +51,7 @@ abstract class AnimationLoop {
       return;
     }
 
+    this.firstLoop(ref, index)
     this.lastLoop(ref, index)
     this.removePiece(ref, false)
   }

@@ -53,7 +53,7 @@ const ariesHCard: HCardStyle = {
   fg: new ariesHCard_fg(),
   bg: new ariesHCard_bg(),
   colorPallete: ariesPallete,
-  text: "Aries is capable of killing any piece. " +
+  text: "Ares is capable of killing through protections (not Aphrodite). " +
     "When Aries kills a piece, aries has no attack cost for that turn",
 }
 
@@ -84,6 +84,11 @@ export class Aries extends visualMixin {
 
   relativeMovementPattern: pattern = forward_1
   relativeAttackingPattern: pattern = square_1;
+
+  doesOverrideDefense(): boolean {
+    return true
+  }
+
 
   attackedPieceThisTurn: boolean = false
   attackPiece(defendingPiece: Piece): void {

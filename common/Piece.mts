@@ -259,6 +259,10 @@ export abstract class Piece extends visualMixin {
         return true;
     }
 
+    doesOverrideDefense(): boolean {
+        return false
+    }
+
     tryToKill(attackingPiece: Piece, override: boolean = false): boolean {
         if (this.canBeAttacked(attackingPiece, override)) {
             if (!this.isClientSide) {

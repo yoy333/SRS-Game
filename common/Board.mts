@@ -471,7 +471,7 @@ export class Board extends visualMixin {
 
     //move to Game Rules
     canAttackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number,
-        playerNumber?: number, override: boolean = false) {
+        playerNumber?: number) {
 
         if (!playerNumber)
             playerNumber = this.playerNumber
@@ -500,6 +500,8 @@ export class Board extends visualMixin {
         // console.log(attackingPiece.canAttackPiece(defenderX, defenderY, playerNumber))
         // console.log(defendingPiece.canBeAttacked(attackingPiece, override))
         // console.log(effectAllowsAttack)
+
+        let override = attackingPiece.doesOverrideDefense()
 
         return (
             this.isMyTurn(playerNumber) &&
