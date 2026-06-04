@@ -64,7 +64,7 @@ export class Poseidon extends visualMixin {
 
     const backY = this.getBackY(defenderY)
     return (
-      super.canAttackPiece(defenderX, defenderY, playerNumber) &&
+      this.withinPattern(this.relativeAttackingPattern, defenderX, defenderY) &&
       this.board.isInBounds(defendingPiece.coordX, backY) &&
       this.board.isSpaceEmpty(defendingPiece.coordX, backY)
     )

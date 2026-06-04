@@ -32,6 +32,8 @@ refactor to use board json data
 refactor to use anim info in the animation manager
 refactor tryToKill method
 refactor Visual and Reps to take a Scale argument, and also use a Map instead of an array
+refactor better client and server side
+refactor the way UI works
 Add more UI
 Change font for help text
 make it so that moves and attacks just pass around references to the pieces themselves
@@ -44,6 +46,7 @@ Map variations
 
 # Bugs
 Offscreen Animation rendering
+Ichor Bug
 
 # Extra
 Turn History

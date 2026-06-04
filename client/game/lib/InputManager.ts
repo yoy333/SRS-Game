@@ -59,7 +59,7 @@ export class InputManager extends visualMixin {
 
         // if you click on a piece, select it for movement
         let selectedPiece = board.getPiece(x, y)
-        console.log(selectedPiece)
+        // console.log(selectedPiece)
         if (selectedPiece != null) {
             this.selectForMove(selectedPiece)
             return;

@@ -260,6 +260,7 @@ export abstract class Piece extends visualMixin {
     tryToKill(attackingPiece: Piece, override: boolean = false): boolean {
         if (this.canBeAttacked(attackingPiece, override)) {
             if (!this.isClientSide) {
+                this.die()
                 return true;
             }
 
@@ -267,12 +268,12 @@ export abstract class Piece extends visualMixin {
                 throw new Error("no token when trying to kill")
 
             let promise = AnimationManager.addDeathAnim(this.token)
+            this.die()
             promise.then(() => {
                 if (!attackingPiece.token)
                     throw new Error("this should never happen")
 
                 attackingPiece.updateRep()
-                this.die()
             })
             return true
         }
