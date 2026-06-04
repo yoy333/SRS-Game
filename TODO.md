@@ -45,8 +45,13 @@ make Aries into Ares
 Map variations
 
 # Bugs
+<<<<<<< HEAD
 Offscreen Animation rendering
 Ichor Bug
+=======
+! desynced resps
+artmeis side hint bug
+>>>>>>> b90efd4f4bb2f99a4a698e4531d9b2f5c2cea719
 
 # Extra
 Turn History

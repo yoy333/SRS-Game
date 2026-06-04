@@ -208,6 +208,7 @@ export abstract class Piece extends visualMixin {
         let worldY = tile.getCenterY()
         if (!this.token || !this.teamHint || !this.effectHint)
             throw new Error("no token. Sadge")
+        console.log("token")
         AnimationManager.addMoveAnim(this.token, worldX, worldY)
         AnimationManager.addMoveAnim(this.effectHint, worldX, worldY)
         AnimationManager.addMoveAnim(this.teamHint, worldX, worldY)

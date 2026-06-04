@@ -122,6 +122,7 @@ export class Game extends Scene {
         callbacks.onAdd("turnHistory", (turn: string, sessionId: number) => {
             let turnHistory: string[] = room.state.turnHistory as string[]
             let turnNumber = turnHistory.indexOf(turn)
+
             // console.log(turn)
             // this function is only for proccessing enemy turns
             if (this.board.isMyTurn())
@@ -145,6 +146,8 @@ export class Game extends Scene {
 
                 this.proccessAttack(message)
             }
+
+            console.log("end of: " + turnNumber)
         })
 
         this.inputManager.onMove = (startX: number, startY: number, endX: number, endY: number) => {
