@@ -42,7 +42,7 @@ abstract class AnimationLoop {
     this.animationPromises.splice(index, 1)
   }
 
-  // if an animation gets cancled use this method to resolve it immediately
+  // if an animation gets canceled use this method to resolve it immediately
   endAnim(ref: Ref) {
     let index = this.animationRefs.findIndex(animationRef => {
       return animationRef[0] == ref
@@ -51,7 +51,9 @@ abstract class AnimationLoop {
       return;
     }
 
-    this.firstLoop(ref, index)
+    let frame = this.animationRefs[index][1]
+    if (frame == 0)
+      this.firstLoop(ref, index)
     this.lastLoop(ref, index)
     this.removePiece(ref, false)
   }
@@ -84,10 +86,12 @@ class SpawnAnimationLoop extends AnimationLoop {
 
   private originalScalesSpawning: size[] = []
   firstLoop(ref: Ref, index: number): void {
+    console.log("first loop")
     this.originalScalesSpawning[index] = [ref.scaleX, ref.scaleY]
   }
 
   loop(ref: Ref, index: number, frame: number): void {
+    console.log("loop")
     let ogScaleX = this.originalScalesSpawning[index][0]
     let ogScaleY = this.originalScalesSpawning[index][1]
 
@@ -96,8 +100,10 @@ class SpawnAnimationLoop extends AnimationLoop {
   }
 
   lastLoop(ref: Ref, index: number): void {
+    console.log("calling lastLoop")
     let ogScaleX = this.originalScalesSpawning[index][0]
     let ogScaleY = this.originalScalesSpawning[index][1]
+    console.log(ogScaleX, ogScaleY)
 
     ref.setScale(ogScaleX, ogScaleY)
     this.originalScalesSpawning.splice(index, 1)
