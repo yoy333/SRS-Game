@@ -135,7 +135,6 @@ class MoveAnimationLoop extends AnimationLoop {
   endCoords: coords[] = []
 
   addPiece(ref: Ref, endX: number, endY: number): Promise<void> {
-    console.log("new animation")
     let promise = super.addPiece(ref)
     this.endCoords.push([endX, endY])
     return promise

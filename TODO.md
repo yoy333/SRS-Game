@@ -7,6 +7,8 @@ n change how neutral objectives spawn
 ! start screen
 ! win screen
 Discord
+remove effect text
+animation bug
 
 # characters balanced
 Zeus

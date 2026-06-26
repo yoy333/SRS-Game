@@ -146,8 +146,6 @@ export class Game extends Scene {
 
                 this.proccessAttack(message)
             }
-
-            console.log("end of: " + turnNumber)
         })
 
         this.inputManager.onMove = (startX: number, startY: number, endX: number, endY: number) => {

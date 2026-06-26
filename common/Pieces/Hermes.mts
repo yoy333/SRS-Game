@@ -54,8 +54,8 @@ export class Hermes extends visualMixin {
   }
 
   movedThisTurn = false
-  movePiece(endX: number, endY: number) {
-    super.movePiece(endX, endY)
+  onMovePiece(endX: number, endY: number) {
+    super.onMovePiece(endX, endY)
     this.movedThisTurn = true
   }
 

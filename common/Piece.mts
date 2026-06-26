@@ -208,7 +208,6 @@ export abstract class Piece extends visualMixin {
         let worldY = tile.getCenterY()
         if (!this.token || !this.teamHint || !this.effectHint)
             throw new Error("no token. Sadge")
-        console.log("token")
         AnimationManager.addMoveAnim(this.token, worldX, worldY)
         AnimationManager.addMoveAnim(this.effectHint, worldX, worldY)
         AnimationManager.addMoveAnim(this.teamHint, worldX, worldY)
@@ -232,9 +231,8 @@ export abstract class Piece extends visualMixin {
             throw new Error("no token when trying to move")
     }
 
-    movePiece(endX: number, endY: number) {
-        this.pushPiece(endX, endY)
-        this.updateRep()
+    onMovePiece(endX: number, endY: number) {
+
     }
 
     canAttackPiece(defenderX: number, defenderY: number, playerNumber: number) {

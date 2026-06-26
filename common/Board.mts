@@ -387,7 +387,7 @@ export class Board extends visualMixin {
         this.ichor[playerOwner] -= cost
 
         this.pushPiece(piece, endX, endY)
-        piece.movePiece(endX, endY)
+        piece.onMovePiece(endX, endY)
 
         this.effects.get(piece)?.forEach((effect: Effect) => {
             effect.onPostMove?.(endX, endY)
