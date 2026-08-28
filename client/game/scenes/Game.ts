@@ -1,14 +1,15 @@
 import { Scene } from 'phaser';
 import { InputManager } from '../lib/InputManager'
-import { PieceKey, PieceType } from '@common/Piece.mjs';
+import { Piece, PieceKey, PieceType } from '@common/Piece.mjs';
 import { Board } from '@common/Board.mjs';
 import { IchorDisplay } from '../lib/IchorDisplay';
-import { Client, Callbacks } from '@colyseus/sdk'
+import { Client, Callbacks, ColyseusSDK } from '@colyseus/sdk'
 import { pieceUtils } from '@common/pieceRegistery.mjs';
 import { GameRules } from '@common/GameRules.mjs';
 import { GameSounds } from '../lib/GameSounds';
 import { AnimationManager } from '../lib/AnimationManager';
 import { HCard } from '@common/HCard';
+import { attackMessage, moveMessage, spawnMessage } from '@common/CommunicationTypes.mjs';
 
 export class Game extends Scene {
 
@@ -22,7 +23,7 @@ export class Game extends Scene {
         this.board = new Board(true)
         this.ichorDisplay = new IchorDisplay()
         this.gameRules = new GameRules(this.board)
-        this.hCard = new HCard(0, 300, 0, 1000)
+        this.hCard = new HCard(10, 360, 10, 1000)
     }
 
     preload() {
@@ -34,21 +35,50 @@ export class Game extends Scene {
     ichorDisplay: IchorDisplay
     hand: PieceKey[] = []
 
+    connectToServer(): ColyseusSDK<any, any> {
+        // 1. Determine if we need secure WebSockets (wss) for ngrok or standard (ws) for local
+        const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+
+        // 2. Get the current host (e.g., 'localhost:5173' or 'my-app.ngrok-free.app')
+        const host = window.location.host;
+
+        // 3. Build the dynamic URL
+        const url = `${protocol}://${host}/server`;
+
+        const client = new Client(url);
+        return client;
+    }
+
+    // use arrow functions to preserve scope and preseerve the value of this
+    proccessSpawn = (message: spawnMessage) => {
+        let [pieceTypeKey, x, y] = message;
+        let pieceType = pieceUtils.classFromKey(pieceTypeKey)
+        this.board.spawnPiece(pieceType, this.add, x, y, this.board.otherPlayerNumber)
+    }
+    proccessMove = (message: moveMessage) => {
+        let [startX, startY, endX, endY] = message;
+        this.board.movePiece(startX, startY, endX, endY, this.board.otherPlayerNumber)
+    }
+    proccessAttack = (message: attackMessage) => {
+        let [attackerX, attackerY, defenderX, defenderY] = message;
+        this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
+    }
+
     async create() {
-        this.board.initReps(this.make, 300, 0)
+        this.board.initReps(this.make, 325, -50)
 
         this.inputManager.initReps(this.add)
 
-        this.ichorDisplay.initReps(this.add, 250, 675)
-        this.ichorDisplay.updateIchor(Board.maxIchorPerTurn)
+        this.ichorDisplay.initReps(this.add, 325, this.cameras.default.height - 50)
+        this.ichorDisplay.updateIchor(this.board.myIchor)
 
-        GameSounds.initSound(this.sound)
+        GameSounds.initSound(this)
 
         this.input.on('pointerdown', () => {
             this.inputManager.proccessClick(this.add, this.board, this.input.x, this.input.y)
         })
 
-        const client = new Client('http://localhost:2567');
+        const client = this.connectToServer()
 
         const room = await client.joinOrCreate('my_room', {
             /* custom join options */
@@ -76,25 +106,46 @@ export class Game extends Scene {
             this.inputManager.updateHand(this.add, this.hand)
         })
 
-        room.onMessage('otherSpawn', (message: any[]) => {
-            let [pieceTypeKey, x, y] = message;
-            let pieceType = pieceUtils.classFromKey(pieceTypeKey)
-            this.board.spawnPiece(pieceType, this.add, x, y, this.board.otherPlayerNumber)
-        })
-
-        room.onMessage('otherMove', (message: any[]) => {
-            let [startX, startY, endX, endY] = message;
-            this.board.movePiece(startX, startY, endX, endY, this.board.otherPlayerNumber)
-        })
-
-        room.onMessage('otherAttack', (message: any[]) => {
-            let [attackerX, attackerY, defenderX, defenderY] = message;
-            this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
-        })
+        // room.onMessage('otherSpawn', this.proccessSpawn)
+        //
+        // room.onMessage('otherMove', this.proccessMove)
+        //
+        // room.onMessage('otherAttack', this.proccessAttack)
 
         room.onMessage('otherEndTurn', () => {
             this.board.endTurn()
             this.ichorDisplay.updateIchor(this.board.myIchor)
+        })
+
+        // IDK what a ValueKeyCallback is but its just a callback to me
+        // @ts-ignore
+        callbacks.onAdd("turnHistory", (turn: string, sessionId: number) => {
+            let turnHistory: string[] = room.state.turnHistory as string[]
+            let turnNumber = turnHistory.indexOf(turn)
+
+            // console.log(turn)
+            // this function is only for proccessing enemy turns
+            if (this.board.isMyTurn())
+                return;
+            let [action, ...args] = turn.split('-')
+            if (action == "spawn") {
+                let key = args[0]
+                let x = parseInt(args[1])
+                let y = parseInt(args[2])
+                this.proccessSpawn([key, x, y])
+            } else if (action == "move") {
+                let message = args.map((arg => {
+                    return parseInt(arg)
+                })) as moveMessage
+
+                this.proccessMove(message)
+            } else if (action == "attack") {
+                let message = args.map((arg => {
+                    return parseInt(arg)
+                })) as attackMessage
+
+                this.proccessAttack(message)
+            }
         })
 
         this.inputManager.onMove = (startX: number, startY: number, endX: number, endY: number) => {
@@ -116,7 +167,8 @@ export class Game extends Scene {
                 this.board.spawnPiece(pieceType, this.add, x, y)
                 this.ichorDisplay.updateIchor(this.board.myIchor)
                 // this.socket.emit('spawn', [DefaultPiece.key, x, y])
-                room.send('spawn', [pieceType.key, x, y])
+                let message: spawnMessage = [pieceType.key, x, y]
+                room.send('spawn', message)
 
                 let buttonIndex = this.inputManager.selectionIndex
                 if (buttonIndex != undefined) {
@@ -140,8 +192,16 @@ export class Game extends Scene {
             }
         }
 
-        this.inputManager.onSelection = (pieceType: PieceType) => {
-            this.hCard.updateCard(this.add, pieceType)
+        this.inputManager.onSelection = (pieceType: PieceType, piece?: Piece) => {
+            this.hCard.updateCard(this.add, pieceType, piece)
+        }
+
+        this.inputManager.onSelectionForMove = (piece: Piece) => {
+            this.board.hintMoves(this.add, piece)
+        }
+
+        this.inputManager.onSelectionForAttack = (piece: Piece) => {
+            this.board.hintAttacks(this.add, piece)
         }
 
         this.inputManager.onEndTurn = () => {
@@ -153,7 +213,8 @@ export class Game extends Scene {
         }
     }
 
-    update() {
+
+    update(time: number, delta: number) {
         AnimationManager.update()
     }
 }

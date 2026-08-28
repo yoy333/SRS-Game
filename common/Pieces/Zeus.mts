@@ -53,7 +53,6 @@ export class Zeus extends visualMixin {
   relativeAttackingPattern: pattern = square_1;
 
   canBeAttacked(attackingPiece: Piece, override: boolean = false): boolean {
-    console.log("override: " + override)
     let attackerY = attackingPiece.coordY
     let defenderY = this.coordY
     if (this.playerOwner == 1) {

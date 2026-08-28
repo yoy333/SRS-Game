@@ -6,16 +6,26 @@ export type Rep<T> = {
     loadRep(loadPlugin: Loader.LoaderPlugin): void
 }
 
+function isRep(item: Object): item is Rep<any> {
+    return ("createRep" in item && "loadRep" in item)
+}
 
 type Constructor = new (...args: any[]) => {};
 type AbstractConstructor = abstract new (...args: any[]) => {};
 export function VisualMixin<TBase extends Constructor | AbstractConstructor>(Base: TBase, reps: Rep<any>[]) {
+    let fullReps: Rep<any>[] = reps
+    if ("reps" in Base && Array.isArray(Base.reps)) {
+        if (Base.reps.every(item => isRep(item))) {
+            fullReps = [...Base.reps, ...reps]
+        }
+    }
+
     abstract class Visual extends Base {
         constructor(...args: any[]) {
             super(...args)
         }
 
-        static reps: Rep<any>[] = reps
+        static reps: Rep<any>[] = fullReps
 
         static createReps(plugin: visualPlugin, x: number, y: number): any[] {
             return Visual.reps.map((rep: Rep<any>) => {
@@ -31,6 +41,7 @@ export function VisualMixin<TBase extends Constructor | AbstractConstructor>(Bas
 
         abstract initReps(plugin: visualPlugin, x: number, y: number): void
     }
+
     return Visual
 }
 

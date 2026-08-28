@@ -1,39 +1,97 @@
 import { GameObjects, Tilemaps } from "phaser"
-import { Piece, PieceKey, PieceType } from "./Piece.mjs"
-import { Rep, VisualConstructor, VisualMixin } from "../client/game/lib/Visual.js"
+import { pattern as Pattern, Piece, PieceKey, PieceType } from "./Piece.mjs"
+import { Rep, VisualConstructor, VisualMixin, visualPlugin } from "../client/game/lib/Visual.js"
 import { Loader } from "phaser"
 import { NeutralObjective } from './NeutralObjective.mjs'
 import { ConcreteConstructor } from "./utils.mjs"
 import { GameSounds } from "../client/game/lib/GameSounds.js"
-import { AnimationManager } from "../client/game/lib/AnimationManager.js"
 import { Effect } from "./Effect.mjs"
+import { StyleGuide } from "../client/game/lib/StyleGuides.js"
 
+export const BOARDSCALINGFACTOR = 5 / 8
+const tilemapImageKeys = [
+    'V3_tiles_interior',
+    'V3_border_top_left',
+    'V3_border_top_right',
+    'V3_border_left',
+    'V3_border_bottom_left',
+    'V3_border_bottom_right',
+    'V3_border_bottom',
+    'V3_border_right',
+]
+
+const tilemapImagePaths = [
+    'tiles_interior.png',
+    'border_top_left.png',
+    'border_top_right.png',
+    'border_left.png',
+    'border_bottom_left.png',
+    'border_bottom_right.png',
+    'border_bottom.png',
+    'border_right.png',
+];
 class TilemapRep implements Rep<Tilemaps.Tilemap> {
     createRep(makePlugin: GameObjects.GameObjectCreator, x: number, y: number): Tilemaps.Tilemap {
         //Create the Tilemap
         let map = makePlugin.tilemap({ key: 'tilemap' })
 
         // add the tileset image we are using
-        const tiles = map.addTilesetImage('V2_Tiles')
-        const edges = map.addTilesetImage('V2_Edges')
+        let tilesetImages = tilemapImageKeys.map((key: string) => {
+            let image = map.addTilesetImage(key)
+            if (!image)
+                throw new Error(`tileset ${key} failed to load`)
+            return image
+        })
 
-        if (!tiles || !edges)
-            throw new Error("tileset failed to load")
 
-        let ground = map.createLayer(0, [tiles, edges], x, y)
-        ground!.setScale(5 / 8)
+        // assuming height and width are same here
+        let offset = map.tileHeight * BOARDSCALINGFACTOR
+
+        let ground = map.createLayer(0, tilesetImages, x + offset, y + offset)
+        ground!.setScale(BOARDSCALINGFACTOR)
 
         return map
     }
 
     loadRep(loadPlugin: Loader.LoaderPlugin): void {
-        loadPlugin.image('V2_Tiles', 'tilemap/V2_Tiles.png')
-        loadPlugin.image('V2_Edges', 'tilemap/V2_Edges.png')
-        loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/Board_V2.json')
+        for (let i = 0; i < tilemapImageKeys.length; i++) {
+            loadPlugin.image(tilemapImageKeys[i], 'tilemap/' + tilemapImagePaths[i]);
+        }
+        loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/V3_Board.json');
     }
 }
 
-const visualMixin = VisualMixin(Object, [new TilemapRep])
+class TilemapBorderRep implements Rep<Tilemaps.Tilemap> {
+    // exclude the first element which includes the interior tileset
+    exteriorKeys: string[] = tilemapImageKeys.slice(1)
+    exteriorPaths: string[] = tilemapImagePaths.slice(1)
+
+    createRep(makePlugin: GameObjects.GameObjectCreator, x: number, y: number): Tilemaps.Tilemap {
+        let border = makePlugin.tilemap({ key: 'tilemapBorder' })
+
+        // add the tileset image we are using
+        let tilesetImages = this.exteriorKeys.map((key: string) => {
+            let image = border.addTilesetImage(key)
+            if (!image)
+                throw new Error(`tileset ${key} failed to load`)
+            return image
+        })
+
+        let ground = border.createLayer(0, tilesetImages, x, y)
+        ground!.setScale(BOARDSCALINGFACTOR)
+
+        return border
+    }
+
+    loadRep(loadPlugin: Loader.LoaderPlugin): void {
+        for (let i = 0; i < this.exteriorKeys.length; i++) {
+            loadPlugin.image(this.exteriorKeys[i], 'tilemap/' + this.exteriorPaths[i]);
+        }
+        loadPlugin.tilemapTiledJSON('tilemapBorder', 'tilemap/V3_Board_Border.json');
+    }
+}
+
+const visualMixin = VisualMixin(Object, [new TilemapRep, new TilemapBorderRep])
 export class Board extends visualMixin {
     static rows = 8
     static columns = 8
@@ -45,7 +103,8 @@ export class Board extends visualMixin {
     tilemap?: Tilemaps.Tilemap
 
     static maxIchorPerTurn: number = 5;
-    private ichor: [number, number] = [Board.maxIchorPerTurn, Board.maxIchorPerTurn];
+    static startingIchorHandicap: number = 2
+    private ichor: [number, number] = [Board.maxIchorPerTurn - Board.startingIchorHandicap, Board.maxIchorPerTurn];
     private ichorForNextTurn: [number, number] = [0, 0]
     static maxSpawnsPerTurn: number = 1;
     private spawnCreditsThisTurn: [number, number] = [Board.maxSpawnsPerTurn, Board.maxSpawnsPerTurn]
@@ -256,12 +315,9 @@ export class Board extends visualMixin {
         return -1
     }
 
-    // returns -1 if no one won
     pushPiece(piece: Piece, endX: number, endY: number) {
         let startX = piece.coordX
         let startY = piece.coordY
-
-        piece.movePiece(startX, startY, endX, endY)
 
         this.setPiece(endX, endY, piece)
         this.setPiece(startX, startY, null)
@@ -270,9 +326,7 @@ export class Board extends visualMixin {
             objective.onCollision(piece)
         })
 
-        if (this.hasWon(piece.playerOwner) != -1) {
-            console.log("this is where the win screen would go, be we haven't made that yet")
-        }
+        piece.pushPiece(endX, endY)
     }
 
     canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber?: number): boolean {
@@ -333,6 +387,7 @@ export class Board extends visualMixin {
         this.ichor[playerOwner] -= cost
 
         this.pushPiece(piece, endX, endY)
+        piece.onMovePiece(endX, endY)
 
         this.effects.get(piece)?.forEach((effect: Effect) => {
             effect.onPostMove?.(endX, endY)
@@ -364,6 +419,11 @@ export class Board extends visualMixin {
         this.ichor[this.currentTurn] = Board.maxIchorPerTurn + this.ichorForNextTurn[this.playerNumber]
         this.ichorForNextTurn[this.currentTurn] = 0
 
+        // posible to make effects apply after piece callback
+        for (let [piece, effects] of this.effects) {
+            effects.forEach(effect => effect?.onEndTurn?.())
+        }
+
         for (let piece of this.piecesOfPlayer(this.currentTurn)) {
             piece.onEndTurn()
         }
@@ -378,6 +438,19 @@ export class Board extends visualMixin {
             throw new Error("how did we get here")
         }
 
+        this.startTurn()
+    }
+
+    startTurn() {
+        // check for a win
+        if (this.hasWon(this.currentTurn) != -1) {
+            console.log("this is where the win screen would go, be we haven't made that yet")
+        }
+
+        // apply callbacks
+        for (let [piece, effects] of this.effects) {
+            effects.forEach(effect => effect?.onStartTurn?.())
+        }
         for (let piece of this.piecesOfPlayer(this.currentTurn)) {
             piece.onStartTurn()
         }
@@ -398,7 +471,7 @@ export class Board extends visualMixin {
 
     //move to Game Rules
     canAttackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number,
-        playerNumber?: number, override: boolean = false) {
+        playerNumber?: number) {
 
         if (!playerNumber)
             playerNumber = this.playerNumber
@@ -421,13 +494,14 @@ export class Board extends visualMixin {
         }
 
         let cost = attackingPiece.getAttackCost()
-        console.log("cost: " + cost)
 
         // console.log(this.isMyTurn(playerNumber))
         // console.log(this.doesHaveEnoughIchor(cost, playerNumber))
-        // console.log(attackingPiece.canAttackPiece(attackerX, attackerY, defenderX, defenderY, playerNumber))
-        // console.log(defendingPiece.canBeAttacked(attackerX, attackerY, playerNumber))
+        // console.log(attackingPiece.canAttackPiece(defenderX, defenderY, playerNumber))
+        // console.log(defendingPiece.canBeAttacked(attackingPiece, override))
         // console.log(effectAllowsAttack)
+
+        let override = attackingPiece.doesOverrideDefense()
 
         return (
             this.isMyTurn(playerNumber) &&
@@ -456,10 +530,16 @@ export class Board extends visualMixin {
         // if no target coords are specified the piece is assumed to be targeting itself
 
         let effects = this.effects.get(targetedPiece)
-        if (!effects)
+        if (!effects) {
             effects = []
+            targetedPiece.linkEffects(effects)
+        }
         effects.push(effect)
         this.effects.set(targetedPiece, effects)
+
+        // console.log(targetedPiece)
+        targetedPiece.updateEffectHint()
+
         return effect
     }
 
@@ -473,9 +553,24 @@ export class Board extends visualMixin {
             throw new Error("no element at that index")
         }
         effects.splice(index, 1)
+
+        piece.updateEffectHint()
+    }
+
+    getShownEffect(piece: Piece): Effect | undefined {
+        let effectsArr = this.effects.get(piece)
+        if (!effectsArr)
+            return undefined
+        let shownEffect = effectsArr.find(effect => {
+            if (effect.effectHint)
+                return effect
+        })
+
+        return shownEffect
     }
 
     attackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number) {
+        console.log("attack called")
         let attackingPiece = this.getPiece(attackerX, attackerY)
         let defendingPiece = this.getPiece(defenderX, defenderY)
         if (!attackingPiece)
@@ -524,6 +619,50 @@ export class Board extends visualMixin {
         let i = this.getIndexFromXY(x, y);
 
         this.lookup[i] = p
+    }
+
+    hintMoves(addPlugin: GameObjects.GameObjectFactory, piece: Piece) {
+        this.hintSquares(addPlugin, piece, piece.relativeMovementPattern, StyleGuide.moveHintColor)
+    }
+
+    hintAttacks(addPlugin: GameObjects.GameObjectFactory, piece: Piece) {
+        this.hintSquares(addPlugin, piece, piece.relativeAttackingPattern, StyleGuide.attackHintColor)
+    }
+
+    hints: GameObjects.Rectangle[] = []
+    private hintSquares(addPlugin: GameObjects.GameObjectFactory, piece: Piece, pattern: Pattern, color: number = 0x000000) {
+        this.clearHints()
+        for (const relCoord of pattern) {
+            let [relX, relY] = relCoord
+            if (piece.playerOwner != this.playerNumber)
+                relY *= -1
+            const absX = piece.perspectiveX + relX
+            const absY = piece.perspectiveY + relY
+
+            if (!this.isInBounds(absX, absY))
+                continue;
+
+            let tile = this.tilemap?.getTileAt(absX, absY)
+            if (!tile)
+                throw new Error("no tilemap. me sad")
+
+            // tile.setAlpha(0)
+
+            let hint = addPlugin.rectangle(
+                // tile.getCenterX(), tile.getCenterX(),
+                tile.getCenterX(), tile.getCenterY(),
+                tile.getRight() - tile.getLeft(), tile.getBottom() - tile.getTop()
+            )
+            hint.setStrokeStyle(2, color)
+            this.hints.push(hint)
+        }
+    }
+
+    clearHints() {
+        for (let hint of this.hints) {
+            hint.destroy(true)
+        }
+        this.hints = []
     }
 
     printBoardState() {

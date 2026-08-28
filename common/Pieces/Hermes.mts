@@ -12,7 +12,7 @@ class HermesToken implements Rep<GameObjects.Image> {
   }
 
   loadRep(loadPlugin: Loader.LoaderPlugin): void {
-    loadPlugin.image(Hermes.key, 'hermes_v01.png')
+    loadPlugin.image(Hermes.key, 'hermes_v02.png')
   }
 }
 
@@ -49,9 +49,23 @@ export class Hermes extends visualMixin {
   relativeMovementPattern: pattern = diamond_2_1;
   relativeAttackingPattern: pattern = square_1;
 
+  canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber: number): boolean {
+    return !this.movedThisTurn
+  }
+
+  movedThisTurn = false
+  onMovePiece(endX: number, endY: number) {
+    super.onMovePiece(endX, endY)
+    this.movedThisTurn = true
+  }
+
   attackPiece(defendingPiece: Piece): void {
     if (defendingPiece.tryToKill(this)) {
       this.board.pushPiece(this, defendingPiece.coordX, defendingPiece.coordY)
     }
+  }
+
+  onEndTurn(): void {
+    this.movedThisTurn = false
   }
 }

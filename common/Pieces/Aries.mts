@@ -1,4 +1,4 @@
-import { Piece, pattern, forward_1, square_1 } from "../Piece.mjs";
+import { Piece, pattern, forward_1, square_1, ColorPallete, HCardStyle } from "../Piece.mjs";
 import { Board } from "../Board.mjs";
 import { GameObjects, Loader } from "phaser";
 import { Rep, VisualMixin } from "../../client/game/lib/Visual.js";
@@ -11,14 +11,58 @@ class AriesToken implements Rep<GameObjects.Image> {
   }
 
   loadRep(loadPlugin: Loader.LoaderPlugin): void {
-    loadPlugin.image(Aries.key, 'aries_v01.png')
+    loadPlugin.image(Aries.key, 'aries_v02.png')
   }
+}
+
+class ariesHCard_fg implements Rep<GameObjects.Image> {
+  createRep(plugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Image {
+    let fg = plugin.image(x, y, 'aries_hcard_fg')
+    return fg
+  }
+
+  loadRep(loadPlugin: Loader.LoaderPlugin): void {
+    loadPlugin.image('aries_hcard_fg', 'hCard_aries_fg.png')
+  }
+}
+
+class ariesHCard_bg implements Rep<GameObjects.Image> {
+  createRep(plugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Image {
+    let bg = plugin.image(x, y, 'aries_hcard_bg')
+    return bg
+  }
+
+  loadRep(loadPlugin: Loader.LoaderPlugin): void {
+    loadPlugin.image('aries_hcard_bg', 'hCard_aries_bg.png')
+  }
+}
+
+const ariesPallete: ColorPallete = {
+  fg_1: 0xEBBBA4,
+  fg_2: 0xE48278,
+  muted: 0xA86F68,
+  text: 0xF1E7C6,
+  accent: 0xDB3C42,
+  bg_1: 0x61617f,
+  bg_2: 0x564c63,
+  bg_3: 0x8B8298,
+  bg_4: 0xD5D1D9
+}
+
+const ariesHCard: HCardStyle = {
+  fg: new ariesHCard_fg(),
+  bg: new ariesHCard_bg(),
+  colorPallete: ariesPallete,
+  text: "Ares is capable of killing through protections (not Aphrodite). " +
+    "When Aries kills a piece, aries has no attack cost for that turn",
 }
 
 const visualMixin = VisualMixin(Piece, [new AriesToken()])
 export class Aries extends visualMixin {
   static key = 'aries'
   key = 'aries'
+
+  static hCard = ariesHCard
 
   static spawnCost = 1;
   static moveCost = 1;
@@ -40,6 +84,11 @@ export class Aries extends visualMixin {
 
   relativeMovementPattern: pattern = forward_1
   relativeAttackingPattern: pattern = square_1;
+
+  doesOverrideDefense(): boolean {
+    return true
+  }
+
 
   attackedPieceThisTurn: boolean = false
   attackPiece(defendingPiece: Piece): void {

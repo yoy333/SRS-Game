@@ -10,7 +10,7 @@ class EndTurnButtonRep implements Rep<GameObjects.Image> {
 
     createRep(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Image {
         let rep = addPlugin.image(x, y, EndTurnButtonRep.key)
-        rep.setScale(1 / 12, 1 / 12)
+        rep.setScale(1 / 10, 1 / 10)
         return rep
     }
 

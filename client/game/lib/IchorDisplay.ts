@@ -1,7 +1,6 @@
 import { GameObjects, Loader } from "phaser";
 import { Rep, VisualMixin } from "./Visual";
 
-// TODO turn into object literals
 export class Drop implements Rep<GameObjects.Image> {
     createRep(plugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Image {
         let drop = plugin.image(x, y, 'ichor_drop')

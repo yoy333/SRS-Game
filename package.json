@@ -1,0 +1,14 @@
+{
+  "name": "SRS-Game",
+  "private": true,
+  "workspaces": [
+    "client",
+    "colyseus-server"
+  ],
+  "scripts": {
+    "server": "npm run start --workspace=colyseus-server",
+    "ngrok": "ngrok start --all",
+    "test:local": "npm run test --workspace=client & npm run server",
+    "test:forward": "USE_FORWARD=true npm run test --workspace=client & npm run server & npm run ngrok"
+  }
+}
