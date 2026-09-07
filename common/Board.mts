@@ -93,6 +93,7 @@ class TilemapBorderRep implements Rep<Tilemaps.Tilemap> {
 }
 
 const visualMixin = VisualMixin(Object, [new TilemapRep, new TilemapBorderRep])
+
 export class Board extends visualMixin {
     static rows = 8
     static columns = 8
@@ -445,12 +446,13 @@ export class Board extends visualMixin {
         this.startTurn()
     }
 
+    onWin?: (...args: any[]) => any
+
     startTurn() {
         // check for a win
-        if (this.hasWon(this.currentTurn) != -1 || true) {
-            console.log("this is where the win screen would go, be we haven't made that yet")
+        if (this.hasWon(this.currentTurn) != -1) {
             if (this.isClientSide) {
-                let winScreen = new WinScreen(this.addPlugin, 640, 360)
+                this?.onWin?.()
             }
         }
 

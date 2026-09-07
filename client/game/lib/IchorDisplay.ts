@@ -29,7 +29,7 @@ class Text implements Rep<GameObjects.Sprite> {
     }
 }
 
-const visualMixin = VisualMixin(Object, [new Drop(), new Text])
+const visualMixin = VisualMixin(Object, [new Drop, new Text])
 export class IchorDisplay extends visualMixin {
     drop?: GameObjects.Image
     text?: GameObjects.Sprite

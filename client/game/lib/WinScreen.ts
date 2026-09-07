@@ -1,8 +1,7 @@
 import { GameObjects, Loader } from "phaser";
 import { Button } from "./Button";
 import { Rep, VisualMixin, visualPlugin } from "./Visual";
-
-type spriteOrImage = GameObjects.Sprite | GameObjects.Image
+import { ConcreteConstructor } from "@common/utils.mjs";
 
 class WinScreenFrameRep implements Rep<GameObjects.Image> {
   static key = 'winScreenFrame'
@@ -52,8 +51,8 @@ class WinScreenHomeRep implements Rep<GameObjects.Image> {
   }
 }
 
-class WinScreenMaskRep implements Rep<GameObjects.GameObject> {
-  createRep(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.GameObject {
+class WinScreenMaskRep implements Rep<GameObjects.Rectangle> {
+  createRep(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Rectangle {
     let rep = addPlugin.rectangle(0, 0, 1280, 720, 0x333333, 0.6).setOrigin(0, 0)
     return rep
   }
@@ -65,14 +64,16 @@ class WinScreenMaskRep implements Rep<GameObjects.GameObject> {
   }
 }
 
-const winScreenMixin = VisualMixin(Object,
+type things = GameObjects.Sprite | GameObjects.Image | GameObjects.Rectangle
+const winScreenMixin = VisualMixin<things, ConcreteConstructor<any>>(Object,
   [new WinScreenMaskRep(), new WinScreenFrameRep(), new WinScreenPlayAgainRep(), new WinScreenHomeRep()]
 )
+
 export class WinScreen extends winScreenMixin {
-  frame: spriteOrImage
-  playAgain: spriteOrImage
+  frame: things
+  playAgain: things
   playAgainButton: Button
-  homeScreen: spriteOrImage
+  homeScreen: things
   homeScreenButton: Button
 
   constructor(addPlugin: GameObjects.GameObjectFactory, x: number, y: number) {
@@ -89,7 +90,7 @@ export class WinScreen extends winScreenMixin {
     this.playAgainButton.bindInteraction(this.playAgain)
 
     this.homeScreenButton = new Button()
-    this.playAgainButton.bindInteraction(this.homeScreen)
+    this.homeScreenButton.bindInteraction(this.homeScreen)
   }
 
   initReps(x: number, y: number) {

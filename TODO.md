@@ -5,7 +5,6 @@ n change how neutral objectives spawn
 ! help text for all other characters
 ! turn display on button
 ! start screen
-! win screen
 Discord
 remove effect text
 animation bug

@@ -10,6 +10,7 @@ import { GameSounds } from '../lib/GameSounds';
 import { AnimationManager } from '../lib/AnimationManager';
 import { HCard } from '@common/HCard';
 import { attackMessage, moveMessage, spawnMessage } from '@common/CommunicationTypes.mjs';
+import { WinScreen } from '../lib/WinScreen';
 
 type CreatedScene = {
     add: GameObjects.GameObjectFactory,
@@ -20,14 +21,11 @@ type CreatedScene = {
 export class Game extends Scene {
 
     // socket?: Socket;
-    inputManager: InputManager
-    hCard: HCard
+    inputManager?: InputManager
+    hCard?: HCard
 
     constructor() {
         super('Game');
-        this.inputManager = new InputManager()
-        this.ichorDisplay = new IchorDisplay()
-        this.hCard = new HCard(10, 360, 10, 1000)
     }
 
     getCreatedScene(): CreatedScene {
@@ -41,7 +39,7 @@ export class Game extends Scene {
 
     board?: Board
     gameRules?: GameRules
-    ichorDisplay: IchorDisplay
+    ichorDisplay?: IchorDisplay
     hand: PieceKey[] = []
 
     connectToServer(): ColyseusSDK<any, any> {
@@ -66,12 +64,14 @@ export class Game extends Scene {
         let pieceType = pieceUtils.classFromKey(pieceTypeKey)
         scene.board.spawnPiece(pieceType, this.add, x, y, scene.board.otherPlayerNumber)
     }
+
     proccessMove = (message: moveMessage) => {
         let scene = this.getCreatedScene()
 
         let [startX, startY, endX, endY] = message;
         scene.board.movePiece(startX, startY, endX, endY, scene.board.otherPlayerNumber)
     }
+
     proccessAttack = (message: attackMessage) => {
         let scene = this.getCreatedScene()
 
@@ -85,6 +85,10 @@ export class Game extends Scene {
 
         this.gameRules = new GameRules(this.board)
 
+        this.inputManager = new InputManager()
+        this.ichorDisplay = new IchorDisplay()
+        this.hCard = new HCard(10, 360, 10, 1000)
+
         this.inputManager.initReps(this.add)
 
         this.ichorDisplay.initReps(this.add, 325, this.cameras.default.height - 50)
@@ -94,6 +98,9 @@ export class Game extends Scene {
 
         this.input.on('pointerdown', () => {
             let scene = this.getCreatedScene()
+
+            if (!this.inputManager)
+                throw new Error()
 
             this.inputManager.proccessClick(this.add, scene.board, this.input.x, this.input.y)
         })
@@ -116,6 +123,9 @@ export class Game extends Scene {
 
             GameSounds.drawCard()
             this.hand = hand;
+
+            if (!this.inputManager)
+                throw new Error()
             this.inputManager.updateHand(this.add, this.hand)
             scene.gameRules.startGame(this.add)
         })
@@ -126,6 +136,9 @@ export class Game extends Scene {
                 throw new Error("not sure where to replace card")
 
             this.hand[index] = card
+
+            if (!this.inputManager)
+                throw new Error()
             this.inputManager.updateHand(this.add, this.hand)
         })
 
@@ -138,6 +151,8 @@ export class Game extends Scene {
         room.onMessage('otherEndTurn', () => {
             let scene = this.getCreatedScene()
             scene.board.endTurn()
+            if (!this.ichorDisplay)
+                throw new Error()
             this.ichorDisplay.updateIchor(scene.board.myIchor)
         })
 
@@ -184,6 +199,9 @@ export class Game extends Scene {
                 return;
             if (scene.board.canMovePiece(...moveCoords)) {
                 scene.board.movePiece(...moveCoords)
+
+                if (!this.ichorDisplay)
+                    throw new Error()
                 this.ichorDisplay.updateIchor(scene.board.myIchor)
                 room.send('move', moveCoords)
             } else {
@@ -196,17 +214,22 @@ export class Game extends Scene {
 
             if (scene.board.canSpawnPiece(pieceType, x, y, this.hand, playerOwner)) {
                 scene.board.spawnPiece(pieceType, this.add, x, y)
+
+                if (!this.ichorDisplay)
+                    throw new Error()
                 this.ichorDisplay.updateIchor(scene.board.myIchor)
                 // this.socket.emit('spawn', [DefaultPiece.key, x, y])
                 let message: spawnMessage = [pieceType.key, x, y]
                 room.send('spawn', message)
 
+                if (!this.inputManager)
+                    throw new Error()
                 let buttonIndex = this.inputManager.selectionIndex
                 if (buttonIndex != undefined) {
                     this.hand[buttonIndex] = ""
 
                     // freeze interaction until we can draw a new card
-                    this.inputManager.iconButtons[buttonIndex].stopInteraction()
+                    this.inputManager.iconButtons[buttonIndex].button.unbindInteraction()
                 }
             } else {
                 console.log("illegal spawn")
@@ -217,6 +240,8 @@ export class Game extends Scene {
             let scene = this.getCreatedScene()
             if (scene.board.canAttackPiece(attackerX, attackerY, defenderX, defenderY)) {
                 scene.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
+                if (!this.ichorDisplay)
+                    throw new Error()
                 this.ichorDisplay.updateIchor(scene.board.myIchor)
                 room.send('attack', [attackerX, attackerY, defenderX, defenderY])
             } else {
@@ -225,6 +250,8 @@ export class Game extends Scene {
         }
 
         this.inputManager.onSelection = (pieceType: PieceType, piece?: Piece) => {
+            if (!this.hCard)
+                throw new Error()
             this.hCard.updateCard(this.add, pieceType, piece)
         }
 
@@ -244,8 +271,24 @@ export class Game extends Scene {
             let scene = this.getCreatedScene()
             if (scene.board.canEndTurn()) {
                 scene.board.endTurn()
+                if (!this.ichorDisplay)
+                    throw new Error()
                 this.ichorDisplay.updateIchor(scene.board.myIchor)
                 room.send('endTurn')
+            }
+        }
+
+        this.board.onWin = () => {
+            let winScreen = new WinScreen(this.add, 640, 360)
+
+            winScreen.playAgainButton.onClick = () => {
+                room.leave()
+                this.scene.restart()
+            }
+
+            winScreen.homeScreenButton.onClick = () => {
+                room.leave()
+                this.scene.start('MainMenu')
             }
         }
     }
