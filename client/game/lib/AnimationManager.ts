@@ -86,12 +86,10 @@ class SpawnAnimationLoop extends AnimationLoop {
 
   private originalScalesSpawning: size[] = []
   firstLoop(ref: Ref, index: number): void {
-    console.log("first loop")
     this.originalScalesSpawning[index] = [ref.scaleX, ref.scaleY]
   }
 
   loop(ref: Ref, index: number, frame: number): void {
-    console.log("loop")
     let ogScaleX = this.originalScalesSpawning[index][0]
     let ogScaleY = this.originalScalesSpawning[index][1]
 
@@ -100,10 +98,8 @@ class SpawnAnimationLoop extends AnimationLoop {
   }
 
   lastLoop(ref: Ref, index: number): void {
-    console.log("calling lastLoop")
     let ogScaleX = this.originalScalesSpawning[index][0]
     let ogScaleY = this.originalScalesSpawning[index][1]
-    console.log(ogScaleX, ogScaleY)
 
     ref.setScale(ogScaleX, ogScaleY)
     this.originalScalesSpawning.splice(index, 1)

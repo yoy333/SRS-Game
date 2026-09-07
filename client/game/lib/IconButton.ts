@@ -1,4 +1,3 @@
-import { InputManager } from './InputManager'
 import { GameObjects, Loader } from 'phaser'
 import { PieceKey, PieceType } from '@common/Piece.mjs'
 import { pieceUtils } from '@common/pieceRegistery.mjs'
@@ -25,31 +24,35 @@ class IconButtonBackground implements Rep<spriteOrImage> {
     }
 }
 
-const visualMixin = VisualMixin(Button, [new IconButtonBackground()])
+const visualMixin = VisualMixin(Object, [new IconButtonBackground()])
 export class IconButton extends visualMixin {
     pieceKey: string
 
-    background?: GameObjects.Sprite
-    // icon?: GameObjects.Image
-    button?: GameObjects.Image
+    background: GameObjects.Sprite
+    icon: GameObjects.Image
+    button: Button
 
-    constructor(inputManager: InputManager, key: string) {
+    constructor(addPlugin: GameObjects.GameObjectFactory, x: number, y: number, key: string) {
         super()
-        //this.dragable = this.reps[2]
+
         this.pieceKey = key
+        let reps = this.initReps(addPlugin, x, y)
+        this.background = reps[0]
+        this.icon = reps[1]
+
         // this.reps = this.createReps(addPlugin, x, y)
-        this.createInteraction()
+        this.button = new Button()
+        this.button.bindInteraction(this.icon)
     }
 
-    initReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): void {
+    initReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): [GameObjects.Sprite, GameObjects.Image] {
         let pieceClass = pieceUtils.classFromKey(this.pieceKey)
         let reps = IconButton.createReps(addPlugin, x, y, pieceClass)
 
         if (!(reps[0] instanceof GameObjects.Sprite))
             throw new Error("something very wrong")
 
-        this.background = reps[0]
-        this.button = reps[1]
+        return reps
     }
 
     static createReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number, pieceClass: PieceType = DefaultPiece)
@@ -75,7 +78,7 @@ export class IconButton extends visualMixin {
     updateIcon(addPlugin: GameObjects.GameObjectFactory, key: PieceKey) {
         this.pieceKey = key
 
-        let oldRep = this.button
+        let oldRep = this.icon
         if (!oldRep) {
             throw new Error("trying to update Icon when not init yet")
         }
@@ -86,6 +89,8 @@ export class IconButton extends visualMixin {
 
         let pieceClass = pieceUtils.classFromKey(this.pieceKey)
         let icon = IconButton.tryUseCard(addPlugin, pieceClass, x, y)
-        this.button = icon
+        this.icon = icon
+
+        this.button.bindInteraction(icon)
     }
 }

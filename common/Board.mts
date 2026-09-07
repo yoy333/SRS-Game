@@ -7,6 +7,7 @@ import { ConcreteConstructor } from "./utils.mjs"
 import { GameSounds } from "../client/game/lib/GameSounds.js"
 import { Effect } from "./Effect.mjs"
 import { StyleGuide } from "../client/game/lib/StyleGuides.js"
+import { WinScreen } from "../client/game/lib/WinScreen.js"
 
 export const BOARDSCALINGFACTOR = 5 / 8
 const tilemapImageKeys = [
@@ -102,6 +103,8 @@ export class Board extends visualMixin {
     isClientSide: boolean
     tilemap?: Tilemaps.Tilemap
 
+    addPlugin: GameObjects.GameObjectFactory
+
     static maxIchorPerTurn: number = 5;
     static startingIchorHandicap: number = 2
     private ichor: [number, number] = [Board.maxIchorPerTurn - Board.startingIchorHandicap, Board.maxIchorPerTurn];
@@ -117,8 +120,9 @@ export class Board extends visualMixin {
         return this.ichor[this.playerNumber]
     }
 
-    constructor(isClientSide: boolean) {
+    constructor(addPlugin: GameObjects.GameObjectFactory, isClientSide: boolean) {
         super()
+        this.addPlugin = addPlugin
         this.lookup = [];
         this.lookup.fill(null)
         this.isClientSide = isClientSide
@@ -443,8 +447,11 @@ export class Board extends visualMixin {
 
     startTurn() {
         // check for a win
-        if (this.hasWon(this.currentTurn) != -1) {
+        if (this.hasWon(this.currentTurn) != -1 || true) {
             console.log("this is where the win screen would go, be we haven't made that yet")
+            if (this.isClientSide) {
+                let winScreen = new WinScreen(this.addPlugin, 640, 360)
+            }
         }
 
         // apply callbacks

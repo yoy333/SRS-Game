@@ -1,19 +1,21 @@
 import { GameObjects } from "phaser"
 
-export abstract class Button {
-    abstract button?: GameObjects.Image | GameObjects.Sprite
+
+export class Button {
+    button?: GameObjects.GameObject
 
     onClick?: () => void
-    createInteraction() {
-        if (!this.button)
-            console.warn("no button but trying to create interactivity")
-        this.button?.setInteractive().on('pointerdown', () => {
+    bindInteraction(button: GameObjects.GameObject) {
+        this.button = button
+        button.setInteractive().on('pointerdown', () => {
             if (this.onClick)
                 this.onClick()
         })
     }
 
-    stopInteraction() {
-        this.button?.removeInteractive()
+    unbindInteraction() {
+        if (!this.button)
+            throw new Error("no bound buttont to unbind")
+        this.button.removeInteractive()
     }
 }

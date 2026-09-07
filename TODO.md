@@ -33,9 +33,9 @@ refactor objects to take bounds as they are constructed or initReps
 refactor to use board json data
 refactor to use anim info in the animation manager
 refactor tryToKill method
-refactor Visual and Reps to take a Scale argument, and also use a Map instead of an array
 refactor better client and server side
 refactor the way UI works
+refector reps to use objects instead of singleton classes
 Add more UI
 Change font for help text
 make it so that moves and attacks just pass around references to the pieces themselves
@@ -47,16 +47,8 @@ make Aries into Ares
 Map variations
 
 # Bugs
-<<<<<<< HEAD
-Offscreen Animation rendering
-Ichor Bug
-=======
-! desynced resps
-artmeis side hint bug
->>>>>>> b90efd4f4bb2f99a4a698e4531d9b2f5c2cea719
 
 # Extra
-Turn History
 Preset Turn Histories
 Assets
 Phaser plugins?

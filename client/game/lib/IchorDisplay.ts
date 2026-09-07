@@ -41,7 +41,9 @@ export class IchorDisplay extends visualMixin {
     }
 
     initReps(plugin: GameObjects.GameObjectFactory, x: number, y: number): void {
-        [this.drop, this.text] = IchorDisplay.createReps(plugin, x, y)
+        let reps = IchorDisplay.createReps(plugin, x, y)
+        this.drop = reps[0]
+        this.text = reps[1] as GameObjects.Sprite
     }
 
     updateIchor(ichor: number) {

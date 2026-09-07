@@ -127,10 +127,9 @@ export class InputManager extends visualMixin {
             let xPos = startX + xGrid * cellWidth;
             let yPos = startY + yGrid * cellHeight;
 
-            let button = new IconButton(this, Zeus.key)
-            button.initReps(addPlugin, xPos, yPos)
+            let button = new IconButton(addPlugin, xPos, yPos, Zeus.key)
 
-            button.onClick = () => {
+            button.button.onClick = () => {
                 this.selectForSpawn(pieceUtils.classFromKey(button.pieceKey));
                 this.selectionIndex = i
             }
@@ -140,8 +139,7 @@ export class InputManager extends visualMixin {
             )
         }
 
-        this.endTurnButton = new EndTurnButton()
-        this.endTurnButton.initReps(addPlugin, 1175, 655)
+        this.endTurnButton = new EndTurnButton(addPlugin, 1175, 655)
         this.endTurnButton.onClick = () => {
             if (this.onEndTurn)
                 this.onEndTurn()
@@ -153,7 +151,6 @@ export class InputManager extends visualMixin {
             throw new Error("Hand not equal to length of icon buttons")
         this.iconButtons.forEach((button: IconButton, index: number) => {
             button.updateIcon(addPlugin, hand[index])
-            button.createInteraction()
         })
     }
 

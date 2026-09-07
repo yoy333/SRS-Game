@@ -21,14 +21,15 @@ class EndTurnButtonRep implements Rep<GameObjects.Image> {
 
 const endTurnMixin = VisualMixin(Button, [new EndTurnButtonRep()])
 export class EndTurnButton extends endTurnMixin {
-    button?: GameObjects.Image
+    button: GameObjects.Image
 
-    constructor() {
+    constructor(plugin: visualPlugin, x: number, y: number) {
         super()
-    }
+        let reps = EndTurnButton.createReps(plugin, x, y)
+        if (!(reps[0] instanceof GameObjects.Image))
+            throw new Error("Reps for EndTurn not an image as expected")
+        this.button = reps[0]
 
-    initReps(plugin: visualPlugin, x: number, y: number): void {
-        [this.button] = (this.constructor as typeof endTurnMixin).createReps(plugin, x, y)
-        this.createInteraction()
+        this.bindInteraction(this.button)
     }
 }
