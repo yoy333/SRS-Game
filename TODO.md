@@ -7,7 +7,8 @@ n change how neutral objectives spawn
 ! start screen
 Discord
 remove effect text
-animation bug
+animation for winScreen
+sound for winScreen
 
 # characters balanced
 Zeus
@@ -25,16 +26,24 @@ Apollo
 ? Dionysius
 
 # Later
-refactor to global gamestate
-refactor board to be outside of gamestate
-refactor actions space inferface exposed to game
-refactor objects to take bounds as they are constructed or initReps
+refactor to game wrapper
+refactor to dependency injections
+refactor board to be within gamestate object
+
+refactor actions space inferface exposed to game (maybe)
+
+refactor objects to take bounds as they are constructed or initReps (maybe)
+ - so I'd use an opts table that would say how it would like to be constructed
+
 refactor to use board json data
+
 refactor to use anim info in the animation manager
+
 refactor tryToKill method
-refactor better client and server side
-refactor the way UI works
+
 refector reps to use objects instead of singleton classes
+refactor initReps to be consistent
+refactor HCardImage and Text to be seperate
 Add more UI
 Change font for help text
 make it so that moves and attacks just pass around references to the pieces themselves
