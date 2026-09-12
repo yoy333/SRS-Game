@@ -3,6 +3,7 @@ import { Loader } from "phaser";
 export type SoundManager = Phaser.Sound.NoAudioSoundManager | Phaser.Sound.HTML5AudioSoundManager | Phaser.Sound.WebAudioSoundManager
 
 let sound: SoundManager | undefined
+let scene: Phaser.Scene | undefined
 export class GameSounds {
   static canPlaySounds = false
 
@@ -17,28 +18,35 @@ export class GameSounds {
     loadPlugin.setPath()
   }
 
-  static initSound(soundManager: SoundManager) {
-    sound = soundManager
+  static initSound(myScene: Phaser.Scene) {
+    scene = myScene
+    sound = myScene.sound
+
   }
 
   static drawCard() {
-    sound!.play('draw_card')
+    if (scene!.game.hasFocus)
+      sound!.play('draw_card')
   }
 
   static click() {
-    sound!.play('click')
+    if (scene!.game.hasFocus)
+      sound!.play('click')
   }
 
   static doubleClick() {
-    sound!.play('double_click')
+    if (scene!.game.hasFocus)
+      sound!.play('double_click')
   }
 
   static place() {
-    sound!.play('place')
+    if (scene!.game.hasFocus)
+      sound!.play('place')
   }
 
   static capturePiece() {
-    sound!.play('capture_piece')
+    if (scene!.game.hasFocus)
+      sound!.play('capture_piece')
   }
 
   static endTurn() {

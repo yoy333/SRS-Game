@@ -1,3 +1,4 @@
+import { GameObjects } from 'phaser'
 import { Piece } from './Piece.mjs'
 
 export abstract class NeutralObjective {
@@ -14,6 +15,8 @@ export abstract class NeutralObjective {
     this.collisionEffect(piece)
     this.destroy()
   }
+
+  abstract initReps(plugin: GameObjects.GameObjectFactory, x: number, y: number): void
 
   abstract destroy(): void
 

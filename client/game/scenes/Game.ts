@@ -1,54 +1,111 @@
-import { Scene } from 'phaser';
+import { GameObjects, Scene } from 'phaser';
 import { InputManager } from '../lib/InputManager'
-import { PieceKey, PieceType } from '@common/Piece.mjs';
+import { Piece, PieceKey, PieceType } from '@common/Piece.mjs';
 import { Board } from '@common/Board.mjs';
 import { IchorDisplay } from '../lib/IchorDisplay';
-import { Client, Callbacks } from '@colyseus/sdk'
+import { Client, Callbacks, ColyseusSDK } from '@colyseus/sdk'
 import { pieceUtils } from '@common/pieceRegistery.mjs';
 import { GameRules } from '@common/GameRules.mjs';
 import { GameSounds } from '../lib/GameSounds';
 import { AnimationManager } from '../lib/AnimationManager';
 import { HCard } from '@common/HCard';
+import { attackMessage, moveMessage, spawnMessage } from '@common/CommunicationTypes.mjs';
+import { WinScreen } from '../lib/WinScreen';
+
+type CreatedScene = {
+    add: GameObjects.GameObjectFactory,
+    board: Board,
+    gameRules: GameRules
+}
 
 export class Game extends Scene {
 
     // socket?: Socket;
-    inputManager: InputManager
-    hCard: HCard
+    inputManager?: InputManager
+    hCard?: HCard
 
     constructor() {
         super('Game');
-        this.inputManager = new InputManager()
-        this.board = new Board(true)
-        this.ichorDisplay = new IchorDisplay()
-        this.gameRules = new GameRules(this.board)
-        this.hCard = new HCard(0, 300, 0, 1000)
+    }
+
+    getCreatedScene(): CreatedScene {
+        //@ts-ignore
+        return (this as CreatedScene)
     }
 
     preload() {
 
     }
 
-    board: Board
-    gameRules: GameRules
-    ichorDisplay: IchorDisplay
+    board?: Board
+    gameRules?: GameRules
+    ichorDisplay?: IchorDisplay
     hand: PieceKey[] = []
 
+    connectToServer(): ColyseusSDK<any, any> {
+        // 1. Determine if we need secure WebSockets (wss) for ngrok or standard (ws) for local
+        const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+
+        // 2. Get the current host (e.g., 'localhost:5173' or 'my-app.ngrok-free.app')
+        const host = window.location.host;
+
+        // 3. Build the dynamic URL
+        const url = `${protocol}://${host}/server`;
+
+        const client = new Client(url);
+        return client;
+    }
+
+    // use arrow functions to preserve scope and preseerve the value of this
+    proccessSpawn = (message: spawnMessage) => {
+        let scene = this.getCreatedScene()
+
+        let [pieceTypeKey, x, y] = message;
+        let pieceType = pieceUtils.classFromKey(pieceTypeKey)
+        scene.board.spawnPiece(pieceType, this.add, x, y, scene.board.otherPlayerNumber)
+    }
+
+    proccessMove = (message: moveMessage) => {
+        let scene = this.getCreatedScene()
+
+        let [startX, startY, endX, endY] = message;
+        scene.board.movePiece(startX, startY, endX, endY, scene.board.otherPlayerNumber)
+    }
+
+    proccessAttack = (message: attackMessage) => {
+        let scene = this.getCreatedScene()
+
+        let [attackerX, attackerY, defenderX, defenderY] = message;
+        scene.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
+    }
+
     async create() {
-        this.board.initReps(this.make, 300, 0)
+        this.board = new Board(this.add, true)
+        this.board.initReps(this.make, 325, -50)
+
+        this.gameRules = new GameRules(this.board)
+
+        this.inputManager = new InputManager()
+        this.ichorDisplay = new IchorDisplay()
+        this.hCard = new HCard(10, 360, 10, 1000)
 
         this.inputManager.initReps(this.add)
 
-        this.ichorDisplay.initReps(this.add, 250, 675)
-        this.ichorDisplay.updateIchor(Board.maxIchorPerTurn)
+        this.ichorDisplay.initReps(this.add, 325, this.cameras.default.height - 50)
+        this.ichorDisplay.updateIchor(this.board.myIchor)
 
-        GameSounds.initSound(this.sound)
+        GameSounds.initSound(this)
 
         this.input.on('pointerdown', () => {
-            this.inputManager.proccessClick(this.add, this.board, this.input.x, this.input.y)
+            let scene = this.getCreatedScene()
+
+            if (!this.inputManager)
+                throw new Error()
+
+            this.inputManager.proccessClick(this.add, scene.board, this.input.x, this.input.y)
         })
 
-        const client = new Client('http://localhost:2567');
+        const client = this.connectToServer()
 
         const room = await client.joinOrCreate('my_room', {
             /* custom join options */
@@ -56,15 +113,21 @@ export class Game extends Scene {
         const callbacks = Callbacks.get(room);
 
         room.onMessage("playerAssignment", (playerNumber: number) => {
+            let scene = this.getCreatedScene()
             console.log(`recieved player assignment, ${playerNumber}, from Colyseus`)
-            this.board.playerNumber = playerNumber;
+            scene.board.playerNumber = playerNumber;
         })
 
         room.onMessage("startingHand", (hand: PieceKey[]) => {
+            let scene = this.getCreatedScene()
+
             GameSounds.drawCard()
             this.hand = hand;
+
+            if (!this.inputManager)
+                throw new Error()
             this.inputManager.updateHand(this.add, this.hand)
-            this.gameRules.startGame(this.add)
+            scene.gameRules.startGame(this.add)
         })
 
         room.onMessage("drawCard", (card: PieceKey) => {
@@ -73,38 +136,73 @@ export class Game extends Scene {
                 throw new Error("not sure where to replace card")
 
             this.hand[index] = card
+
+            if (!this.inputManager)
+                throw new Error()
             this.inputManager.updateHand(this.add, this.hand)
         })
 
-        room.onMessage('otherSpawn', (message: any[]) => {
-            let [pieceTypeKey, x, y] = message;
-            let pieceType = pieceUtils.classFromKey(pieceTypeKey)
-            this.board.spawnPiece(pieceType, this.add, x, y, this.board.otherPlayerNumber)
-        })
-
-        room.onMessage('otherMove', (message: any[]) => {
-            let [startX, startY, endX, endY] = message;
-            this.board.movePiece(startX, startY, endX, endY, this.board.otherPlayerNumber)
-        })
-
-        room.onMessage('otherAttack', (message: any[]) => {
-            let [attackerX, attackerY, defenderX, defenderY] = message;
-            this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
-        })
+        // room.onMessage('otherSpawn', this.proccessSpawn)
+        //
+        // room.onMessage('otherMove', this.proccessMove)
+        //
+        // room.onMessage('otherAttack', this.proccessAttack)
 
         room.onMessage('otherEndTurn', () => {
-            this.board.endTurn()
-            this.ichorDisplay.updateIchor(this.board.myIchor)
+            let scene = this.getCreatedScene()
+            scene.board.endTurn()
+            if (!this.ichorDisplay)
+                throw new Error()
+            this.ichorDisplay.updateIchor(scene.board.myIchor)
+        })
+
+        // IDK what a ValueKeyCallback is but its just a callback to me
+        // @ts-ignore
+        callbacks.onAdd("turnHistory", (turn: string, sessionId: number) => {
+            let turnHistory: string[] = room.state.turnHistory as string[]
+            let turnNumber = turnHistory.indexOf(turn)
+
+            // console.log(turn)
+            // this function is only for proccessing enemy turns
+
+            let scene = this.getCreatedScene()
+
+            if (scene.board.isMyTurn())
+                return;
+            let [action, ...args] = turn.split('-')
+            if (action == "spawn") {
+                let key = args[0]
+                let x = parseInt(args[1])
+                let y = parseInt(args[2])
+                this.proccessSpawn([key, x, y])
+            } else if (action == "move") {
+                let message = args.map((arg => {
+                    return parseInt(arg)
+                })) as moveMessage
+
+                this.proccessMove(message)
+            } else if (action == "attack") {
+                let message = args.map((arg => {
+                    return parseInt(arg)
+                })) as attackMessage
+
+                this.proccessAttack(message)
+            }
         })
 
         this.inputManager.onMove = (startX: number, startY: number, endX: number, endY: number) => {
             let moveCoords = [startX, startY, endX, endY] as const
-            let piece = this.board.getPiece(startX, startY)
+
+            let scene = this.getCreatedScene()
+            let piece = scene.board.getPiece(startX, startY)
             if (!piece)
                 return;
-            if (this.board.canMovePiece(...moveCoords)) {
-                this.board.movePiece(...moveCoords)
-                this.ichorDisplay.updateIchor(this.board.myIchor)
+            if (scene.board.canMovePiece(...moveCoords)) {
+                scene.board.movePiece(...moveCoords)
+
+                if (!this.ichorDisplay)
+                    throw new Error()
+                this.ichorDisplay.updateIchor(scene.board.myIchor)
                 room.send('move', moveCoords)
             } else {
                 console.log("illegal move")
@@ -112,18 +210,26 @@ export class Game extends Scene {
         }
 
         this.inputManager.onSpawn = (pieceType: PieceType, x: number, y: number, playerOwner?: number) => {
-            if (this.board.canSpawnPiece(pieceType, x, y, this.hand, playerOwner)) {
-                this.board.spawnPiece(pieceType, this.add, x, y)
-                this.ichorDisplay.updateIchor(this.board.myIchor)
-                // this.socket.emit('spawn', [DefaultPiece.key, x, y])
-                room.send('spawn', [pieceType.key, x, y])
+            let scene = this.getCreatedScene()
 
+            if (scene.board.canSpawnPiece(pieceType, x, y, this.hand, playerOwner)) {
+                scene.board.spawnPiece(pieceType, this.add, x, y)
+
+                if (!this.ichorDisplay)
+                    throw new Error()
+                this.ichorDisplay.updateIchor(scene.board.myIchor)
+                // this.socket.emit('spawn', [DefaultPiece.key, x, y])
+                let message: spawnMessage = [pieceType.key, x, y]
+                room.send('spawn', message)
+
+                if (!this.inputManager)
+                    throw new Error()
                 let buttonIndex = this.inputManager.selectionIndex
                 if (buttonIndex != undefined) {
                     this.hand[buttonIndex] = ""
 
                     // freeze interaction until we can draw a new card
-                    this.inputManager.iconButtons[buttonIndex].stopInteraction()
+                    this.inputManager.iconButtons[buttonIndex].button.unbindInteraction()
                 }
             } else {
                 console.log("illegal spawn")
@@ -131,29 +237,64 @@ export class Game extends Scene {
         }
 
         this.inputManager.onAttack = (attackerX, attackerY, defenderX, defenderY) => {
-            if (this.board.canAttackPiece(attackerX, attackerY, defenderX, defenderY)) {
-                this.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
-                this.ichorDisplay.updateIchor(this.board.myIchor)
+            let scene = this.getCreatedScene()
+            if (scene.board.canAttackPiece(attackerX, attackerY, defenderX, defenderY)) {
+                scene.board.attackPiece(attackerX, attackerY, defenderX, defenderY)
+                if (!this.ichorDisplay)
+                    throw new Error()
+                this.ichorDisplay.updateIchor(scene.board.myIchor)
                 room.send('attack', [attackerX, attackerY, defenderX, defenderY])
             } else {
                 console.log("illegal attack")
             }
         }
 
-        this.inputManager.onSelection = (pieceType: PieceType) => {
-            this.hCard.updateCard(this.add, pieceType)
+        this.inputManager.onSelection = (pieceType: PieceType, piece?: Piece) => {
+            if (!this.hCard)
+                throw new Error()
+            this.hCard.updateCard(this.add, pieceType, piece)
+        }
+
+        this.inputManager.onSelectionForMove = (piece: Piece) => {
+            let scene = this.getCreatedScene()
+
+            scene.board.hintMoves(this.add, piece)
+        }
+
+        this.inputManager.onSelectionForAttack = (piece: Piece) => {
+            let scene = this.getCreatedScene()
+
+            scene.board.hintAttacks(this.add, piece)
         }
 
         this.inputManager.onEndTurn = () => {
-            if (this.board.canEndTurn()) {
-                this.board.endTurn()
-                this.ichorDisplay.updateIchor(this.board.myIchor)
+            let scene = this.getCreatedScene()
+            if (scene.board.canEndTurn()) {
+                scene.board.endTurn()
+                if (!this.ichorDisplay)
+                    throw new Error()
+                this.ichorDisplay.updateIchor(scene.board.myIchor)
                 room.send('endTurn')
+            }
+        }
+
+        this.board.onWin = () => {
+            let winScreen = new WinScreen(this.add, 640, 360)
+
+            winScreen.playAgainButton.onClick = () => {
+                room.leave()
+                this.scene.restart()
+            }
+
+            winScreen.homeScreenButton.onClick = () => {
+                room.leave()
+                this.scene.start('MainMenu')
             }
         }
     }
 
-    update() {
+
+    update(time: number, delta: number) {
         AnimationManager.update()
     }
 }

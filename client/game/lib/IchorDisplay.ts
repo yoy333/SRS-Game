@@ -1,7 +1,6 @@
 import { GameObjects, Loader } from "phaser";
 import { Rep, VisualMixin } from "./Visual";
 
-// TODO turn into object literals
 export class Drop implements Rep<GameObjects.Image> {
     createRep(plugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Image {
         let drop = plugin.image(x, y, 'ichor_drop')
@@ -30,7 +29,7 @@ class Text implements Rep<GameObjects.Sprite> {
     }
 }
 
-const visualMixin = VisualMixin(Object, [new Drop(), new Text])
+const visualMixin = VisualMixin(Object, [new Drop, new Text])
 export class IchorDisplay extends visualMixin {
     drop?: GameObjects.Image
     text?: GameObjects.Sprite
@@ -42,7 +41,9 @@ export class IchorDisplay extends visualMixin {
     }
 
     initReps(plugin: GameObjects.GameObjectFactory, x: number, y: number): void {
-        [this.drop, this.text] = IchorDisplay.createReps(plugin, x, y)
+        let reps = IchorDisplay.createReps(plugin, x, y)
+        this.drop = reps[0]
+        this.text = reps[1] as GameObjects.Sprite
     }
 
     updateIchor(ichor: number) {

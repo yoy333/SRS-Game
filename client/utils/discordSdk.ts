@@ -9,6 +9,7 @@ const initiateDiscordSDK = async () => {
   if (isEmbedded) {
     //@ts-ignore
     discordSdk = new DiscordSDK(import.meta.env.VITE_CLIENT_ID);
+    console.log(discordSdk.instanceId)
   } else {
     // We're using session storage for user_id, guild_id, and channel_id
     // This way the user/guild/channel will be maintained until the tab is closed, even if you refresh
@@ -31,7 +32,7 @@ const initiateDiscordSDK = async () => {
 
     discordSdk._updateCommandMocks({
       authenticate: async () => {
-        return await {
+        return {
           access_token: "mock_token",
           user: {
             username: mockUserId,

@@ -7,6 +7,7 @@ import { IchorDisplay } from '../lib/IchorDisplay';
 import { PieceType } from '@common/Piece.mjs';
 import { VisualConstructor } from '../lib/Visual';
 import { GameSounds, SoundManager } from '../lib/GameSounds';
+import { WinScreen } from '../lib/WinScreen';
 
 export class Preloader extends Scene {
     constructor() {
@@ -33,8 +34,8 @@ export class Preloader extends Scene {
         pieceTypeRegistery.forEach((pieceType: VisualConstructor & PieceType) => {
             pieceType.loadReps(this.load)
             pieceType.loadCard(this.load)
-            pieceType?.hCard_bg?.loadRep(this.load)
-            pieceType?.hCard_fg?.loadRep(this.load)
+            pieceType?.hCard?.bg?.loadRep(this.load)
+            pieceType?.hCard?.fg?.loadRep(this.load)
         })
         IconButton.loadReps(this.load)
 
@@ -46,6 +47,7 @@ export class Preloader extends Scene {
         IchorDisplay.loadReps(this.load)
 
         EndTurnButton.loadReps(this.load)
+        WinScreen.loadReps(this.load)
 
         GameSounds.loadSounds(this.load)
     }

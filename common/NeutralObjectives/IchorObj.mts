@@ -3,8 +3,19 @@ import { Piece } from "@common/Piece.mjs";
 import { GameObjects } from "phaser";
 import { VisualMixin } from "../../client/game/lib/Visual.js";
 import { Drop } from '../../client/game/lib/IchorDisplay.js'
+import { Effect } from "@common/Effect.mjs";
 
 const visualMixin = VisualMixin(NeutralObjective, [new Drop()])
+class Frozen extends Effect {
+  onPreMove = () => {
+    return false;
+  }
+
+  onEndTurn = () => {
+    this.remove()
+  };
+}
+
 export class IchorObj extends visualMixin {
   ichor: number
 
@@ -16,6 +27,7 @@ export class IchorObj extends visualMixin {
   collisionEffect(piece: Piece): void {
     let playerNumber = piece.playerOwner
     piece.board.addIchorToNextTurn(this.ichor, playerNumber)
+    piece.board.applyEffect(Frozen, piece)
   }
 
   drop?: GameObjects.Image

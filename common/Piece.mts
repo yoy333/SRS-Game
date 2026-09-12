@@ -1,7 +1,9 @@
 import { AnimationManager } from "../client/game/lib/AnimationManager.js";
-import { Rep, VisualConstructor } from "../client/game/lib/Visual.js";
+import { StyleGuide } from "../client/game/lib/StyleGuides.js";
+import { Rep, VisualConstructor, VisualMixin, visualPlugin } from "../client/game/lib/Visual.js";
 import { Board } from "./Board.mjs";
 import { GameObjects, Loader } from "phaser";
+import { Effect } from "./Effect.mjs";
 
 type sprite = GameObjects.Sprite
 type image = GameObjects.Image
@@ -11,18 +13,16 @@ const emptyPattern: pattern = new Set()
 
 export type PieceKey = string
 
-type hexColor = `#${string}`
-
 export type ColorPallete = {
-    fg_1: hexColor
-    fg_2: hexColor
-    muted: hexColor
-    accent: hexColor
-    bg_1: hexColor
-    bg_2: hexColor
-    bg_3: hexColor
-    bg_4: hexColor
-    text: hexColor
+    fg_1: number
+    fg_2: number
+    muted: number
+    accent: number
+    bg_1: number
+    bg_2: number
+    bg_3: number
+    bg_4: number
+    text: number
 }
 
 type PieceStatics = {
@@ -33,15 +33,50 @@ type PieceStatics = {
     spawnCost: number
     moveCost: number
     attackCost: number
-    colorPallete?: ColorPallete,
-    hCard_fg?: Rep<GameObjects.Image>
-    hCard_bg?: Rep<GameObjects.Image>
+    hCard?: HCardStyle
 }
+
+export type HCardStyle = {
+    colorPallete: ColorPallete
+    fg: Rep<GameObjects.Image>
+    bg: Rep<GameObjects.Image>
+    text: string
+}
+
+export class TeamRect implements Rep<GameObjects.Rectangle> {
+    createRep(plugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Rectangle {
+        let rect = plugin.rectangle(x, y, 72, 72)
+        // rect.setStrokeStyle(2, StyleGuide.myTeamHintColor)
+        return rect
+    }
+
+    loadRep(loadPlugin: Loader.LoaderPlugin): void {
+        // nothing
+    }
+}
+
+export class EffectHint implements Rep<GameObjects.Image> {
+    createRep(plugin: GameObjects.GameObjectFactory, x: number, y: number): GameObjects.Image {
+        let star = plugin.image(x, y, 'star')
+        star.setOrigin(-0.25, 1.25)
+        star.setScale(1 / 150)
+        star.setAlpha(0)
+        return star
+    }
+
+    loadRep(loadPlugin: Loader.LoaderPlugin): void {
+        loadPlugin.image('star', 'star.png')
+    }
+}
+
 type pieceConstructor = new (...args: any[]) => Piece
 export type PieceType = pieceConstructor & PieceStatics & VisualConstructor
 
-export abstract class Piece {
+const visualMixin = VisualMixin(Object, [new TeamRect(), new EffectHint()])
+export abstract class Piece extends visualMixin {
     token?: sprite | image
+    teamHint?: GameObjects.Rectangle
+    effectHint?: GameObjects.Image
     board: Board
 
     coordX: number
@@ -59,8 +94,10 @@ export abstract class Piece {
     relativeMovementPattern: pattern = emptyPattern;
     relativeAttackingPattern: pattern = emptyPattern;
 
+    activeEffects: Effect[] = []
+
     constructor(addPlugin: GameObjects.GameObjectFactory | undefined, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {
-        // super()
+        super()
         if (addPlugin == undefined && isClientSide) {
             throw new Error("add plugin must be provided for client side pieces")
         }
@@ -84,20 +121,45 @@ export abstract class Piece {
     }
 
     getWorldXYFromPerspective(x: number, y: number): [number, number] {
-        // console.log(`creating rep at ${x}, ${y}`)
         let tile = this.board.tilemap?.getTileAt(x, y)
         if (!tile)
             throw new Error(`no tile at (${x}, ${y})`)
-        return [tile.getCenterX(), tile.getCenterY()]
+        const ans: [number, number] = [tile.getCenterX(), tile.getCenterY()]
+        return ans
+    }
+
+    setTeamRectColor() {
+        const rectWeight = 2
+        if (this.playerOwner != this.board.playerNumber)
+            this.teamHint?.setStrokeStyle(rectWeight, StyleGuide.otherTeamHintColor)
+        else
+            this.teamHint?.setStrokeStyle(rectWeight, StyleGuide.myTeamHintColor)
+    }
+
+    linkEffects(effects: Effect[]) {
+        this.activeEffects = effects
+    }
+
+    updateEffectHint() {
+        let shownEffect = this.board.getShownEffect(this)
+        if (shownEffect)
+            this.effectHint?.setAlpha(1)
+        else
+            this.effectHint?.setAlpha(0)
     }
 
     initReps(addPlugin: GameObjects.GameObjectFactory, x: number, y: number): void {
         let [worldX, worldY] = this.getWorldXYFromPerspective(this.perspectiveX, this.perspectiveY) as [number, number]
 
         // this.initToken(addPlugin, worldX, worldY)
-        [this.token] = (this.constructor as VisualConstructor).createReps(addPlugin, worldX, worldY)
+        [this.teamHint, this.effectHint, this.token] = (this.constructor as VisualConstructor).createReps(addPlugin, worldX, worldY)
+
         if (!this!.token)
             throw new Error("create reps failed")
+
+        this.setTeamRectColor()
+        this.updateEffectHint()
+
         AnimationManager.addSpawnAnim(this!.token)
     }
 
@@ -106,21 +168,6 @@ export abstract class Piece {
         this.coordY = y;
 
         [this.perspectiveX, this.perspectiveY] = this.board.adjustIfFlip(x, y)
-
-        if (this.isClientSide)
-            this.updateRep();
-    }
-
-    updateRep() {
-        let tile = this.board.tilemap?.getTileAt(this.perspectiveX, this.perspectiveY)
-        if (!tile)
-            throw new Error(`no tile at (${this.coordX}, ${this.coordY})`)
-        let worldX = tile.getCenterX()
-        let worldY = tile.getCenterY()
-        // this.token?.setPosition(worldX, worldY)
-        if (!this.token)
-            throw new Error("no token. Sadge")
-        AnimationManager.addMoveAnim(this.token, worldX, worldY)
     }
 
     withinPattern(pattern: pattern, x: number, y: number) {
@@ -148,15 +195,44 @@ export abstract class Piece {
         return dynamicCost ?? staticCost;
     }
 
+
+    updateRep() {
+        if (!this.isClientSide)
+            return;
+
+        let tile = this.board.tilemap?.getTileAt(this.perspectiveX, this.perspectiveY)
+        if (!tile)
+            throw new Error(`no tile at (${this.coordX}, ${this.coordY})`)
+
+        let worldX = tile.getCenterX()
+        let worldY = tile.getCenterY()
+        if (!this.token || !this.teamHint || !this.effectHint)
+            throw new Error("no token. Sadge")
+        AnimationManager.addMoveAnim(this.token, worldX, worldY)
+        AnimationManager.addMoveAnim(this.effectHint, worldX, worldY)
+        AnimationManager.addMoveAnim(this.teamHint, worldX, worldY)
+    }
+
     canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber: number) {
         return (
             this.withinPattern(this.relativeMovementPattern, endX, endY)
         )
     }
 
-    movePiece(startX: number, startY: number, endX: number, endY: number) {
+    pushPiece(endX: number, endY: number) {
         // console.log(`moving from ${startX}, ${startY} to ${endX}, ${endY}`)
         this.setCoord(endX, endY)
+        if (!this.isClientSide)
+            return;
+
+        this.updateRep()
+
+        if (!this.token)
+            throw new Error("no token when trying to move")
+    }
+
+    onMovePiece(endX: number, endY: number) {
+
     }
 
     canAttackPiece(defenderX: number, defenderY: number, playerNumber: number) {
@@ -182,9 +258,28 @@ export abstract class Piece {
         return true;
     }
 
+    doesOverrideDefense(): boolean {
+        return false
+    }
+
     tryToKill(attackingPiece: Piece, override: boolean = false): boolean {
         if (this.canBeAttacked(attackingPiece, override)) {
+            if (!this.isClientSide) {
+                this.die()
+                return true;
+            }
+
+            if (!this.token)
+                throw new Error("no token when trying to kill")
+
+            let promise = AnimationManager.addDeathAnim(this.token)
             this.die()
+            promise.then(() => {
+                if (!attackingPiece.token)
+                    throw new Error("this should never happen")
+
+                attackingPiece.updateRep()
+            })
             return true
         }
         return false
@@ -196,6 +291,7 @@ export abstract class Piece {
 
     die() {
         this.token?.destroy(true)
+        this.teamHint?.destroy(true)
         this.board.killPiece(this.coordX, this.coordY)
     }
 }
