@@ -1,5 +1,5 @@
 import { Piece, pattern, forward_1, square_1, ColorPallete, HCardStyle } from "../Piece.mjs";
-import { Board } from "../Board.mjs";
+import { Board, playerNum } from "../Board.mjs";
 import { GameObjects, Loader } from "phaser";
 import { Rep, VisualMixin } from "../../client/game/lib/Visual.js";
 
@@ -69,7 +69,7 @@ export class Aries extends visualMixin {
   static attackCost = 2;
   dynAttackCost = Aries.attackCost;
 
-  constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {
+  constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: playerNum) {
     super(addPlugin, board, x, y, isClientSide, playerOwner)
   }
 

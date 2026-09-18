@@ -92,6 +92,8 @@ class TilemapBorderRep implements Rep<Tilemaps.Tilemap> {
     }
 }
 
+export type playerNum = -1 | 0 | 1
+
 const visualMixin = VisualMixin(Object, [new TilemapRep, new TilemapBorderRep])
 
 export class Board extends visualMixin {
@@ -99,7 +101,7 @@ export class Board extends visualMixin {
     static columns = 8
     numReps = 1
     lookup: (Piece | null)[]
-    playerNumber: number = 0;
+    playerNumber: playerNum = 0;
     //0 by default until assigned
     isClientSide: boolean
     tilemap?: Tilemaps.Tilemap
@@ -108,12 +110,21 @@ export class Board extends visualMixin {
 
     static maxIchorPerTurn: number = 5;
     static startingIchorHandicap: number = 2
-    private ichor: [number, number] = [Board.maxIchorPerTurn - Board.startingIchorHandicap, Board.maxIchorPerTurn];
-    private ichorForNextTurn: [number, number] = [0, 0]
+    // keyed by playerNum, so the spectator (-1) has a harmless slot of its own
+    private ichor: Record<playerNum, number> = {
+        [-1]: 0,
+        0: Board.maxIchorPerTurn - Board.startingIchorHandicap,
+        1: Board.maxIchorPerTurn
+    };
+    private ichorForNextTurn: Record<playerNum, number> = { [-1]: 0, 0: 0, 1: 0 }
     static maxSpawnsPerTurn: number = 1;
-    private spawnCreditsThisTurn: [number, number] = [Board.maxSpawnsPerTurn, Board.maxSpawnsPerTurn]
+    private spawnCreditsThisTurn: Record<playerNum, number> = {
+        [-1]: 0,
+        0: Board.maxSpawnsPerTurn,
+        1: Board.maxSpawnsPerTurn
+    }
 
-    addIchorToNextTurn(ichor: number, playerNumber: number) {
+    addIchorToNextTurn(ichor: number, playerNumber: playerNum) {
         this.ichorForNextTurn[playerNumber] += ichor
     }
 
@@ -121,9 +132,8 @@ export class Board extends visualMixin {
         return this.ichor[this.playerNumber]
     }
 
-    constructor(addPlugin: GameObjects.GameObjectFactory, isClientSide: boolean) {
+    constructor(isClientSide: boolean) {
         super()
-        this.addPlugin = addPlugin
         this.lookup = [];
         this.lookup.fill(null)
         this.isClientSide = isClientSide
@@ -158,7 +168,7 @@ export class Board extends visualMixin {
         this.nObjs.push(inst)
     }
 
-    isOnHomeRow(y: number, playerNumber?: number) {
+    isOnHomeRow(y: number, playerNumber?: playerNum) {
         if (!playerNumber)
             playerNumber = this.playerNumber
 
@@ -179,21 +189,21 @@ export class Board extends visualMixin {
         }
     }
 
-    isNotSpectator(playerNumber?: number): boolean {
+    isNotSpectator(playerNumber?: playerNum): boolean {
         if (!playerNumber)
             playerNumber = this.playerNumber
 
         return playerNumber >= 0
     }
 
-    doesHaveEnoughIchor(cost: number, playerNumber?: number) {
+    doesHaveEnoughIchor(cost: number, playerNumber?: playerNum) {
         if (!playerNumber)
             playerNumber = this.playerNumber
 
         return cost <= this.ichor[playerNumber]
     }
 
-    isMyTurn(playerNumber?: number): boolean {
+    isMyTurn(playerNumber?: playerNum): boolean {
         if (!playerNumber)
             playerNumber = this.playerNumber
 
@@ -204,7 +214,7 @@ export class Board extends visualMixin {
         return hand.includes(pieceType.key)
     }
 
-    withinMaxSpawn(playerNumber?: number) {
+    withinMaxSpawn(playerNumber?: playerNum) {
         if (!playerNumber)
             playerNumber = this.playerNumber
 
@@ -212,7 +222,7 @@ export class Board extends visualMixin {
     }
 
     // move to Game Rules
-    canSpawnPiece(pieceType: PieceType, x: number, y: number, hand: PieceKey[], playerNumber?: number) {
+    canSpawnPiece(pieceType: PieceType, x: number, y: number, hand: PieceKey[], playerNumber?: playerNum) {
         if (playerNumber == undefined)
             playerNumber = this.playerNumber
 
@@ -237,7 +247,7 @@ export class Board extends visualMixin {
             return false;
     }
 
-    spawnPiece(pieceType: PieceType, addPlugin: GameObjects.GameObjectFactory | undefined, x: number, y: number, playerOwner?: number): Piece {
+    spawnPiece(pieceType: PieceType, addPlugin: GameObjects.GameObjectFactory | undefined, x: number, y: number, playerOwner?: playerNum): Piece {
         if (this.isClientSide && addPlugin == undefined) {
             throw new Error("must specify add plugin for client side pieces")
         }
@@ -266,7 +276,7 @@ export class Board extends visualMixin {
     }
 
     // move to Game Rules
-    doesOwnPiece(piece: Piece, playerNumber?: number): boolean {
+    doesOwnPiece(piece: Piece, playerNumber?: playerNum): boolean {
         if (!playerNumber)
             playerNumber = this.playerNumber
 
@@ -297,7 +307,7 @@ export class Board extends visualMixin {
         )
     }
 
-    hasWon(playerNumber?: number): number {
+    hasWon(playerNumber?: playerNum): playerNum {
         if (playerNumber == undefined) {
             if (this.hasWon(0) != -1)
                 return 0
@@ -334,7 +344,7 @@ export class Board extends visualMixin {
         piece.pushPiece(endX, endY)
     }
 
-    canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber?: number): boolean {
+    canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber?: playerNum): boolean {
         if (!playerNumber)
             playerNumber = this.playerNumber;
 
@@ -380,7 +390,7 @@ export class Board extends visualMixin {
         })
     }
 
-    movePiece(startX: number, startY: number, endX: number, endY: number, playerOwner?: number) {
+    movePiece(startX: number, startY: number, endX: number, endY: number, playerOwner?: playerNum) {
         let piece = this.getPiece(startX, startY)
         if (!piece)
             return;
@@ -402,16 +412,16 @@ export class Board extends visualMixin {
             GameSounds.place()
     }
 
-    currentTurn = 0;
+    currentTurn: playerNum = 0;
 
-    canEndTurn(playerNumber?: number) {
+    canEndTurn(playerNumber?: playerNum) {
         if (!playerNumber)
             playerNumber = this.playerNumber
 
         return this.isMyTurn(playerNumber)
     }
 
-    piecesOfPlayer(playerNumber: number): Piece[] {
+    piecesOfPlayer(playerNumber: playerNum): Piece[] {
         let ans = []
         for (let piece of this.lookup) {
             if (piece?.playerOwner == playerNumber)
@@ -482,7 +492,7 @@ export class Board extends visualMixin {
 
     //move to Game Rules
     canAttackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number,
-        playerNumber?: number) {
+        playerNumber?: playerNum) {
 
         if (!playerNumber)
             playerNumber = this.playerNumber
@@ -688,7 +698,7 @@ export class Board extends visualMixin {
         }
     }
 
-    get otherPlayerNumber() {
+    get otherPlayerNumber(): playerNum {
         if (this.playerNumber == 0)
             return 1;
         else if (this.playerNumber == 1)

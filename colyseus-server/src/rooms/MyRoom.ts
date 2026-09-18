@@ -1,6 +1,6 @@
 import { Room, Client, CloseCode } from "colyseus";
 import { MyRoomState } from "./schema/MyRoomState.js";
-import { Board } from '@common/Board.mjs'
+import { Board, playerNum } from '@common/Board.mjs'
 import { Deck } from "../lib/Deck.js";
 import { Hand } from "@common/Hand.mjs";
 import { pieceUtils } from "@common/pieceRegistery.mjs";
@@ -142,7 +142,7 @@ export class MyRoom extends Room {
     console.log("room", this.roomId, "disposing...");
   }
 
-  tryAddPlayer(client: Client): number {
+  tryAddPlayer(client: Client): playerNum {
     if (this.clients[0].sessionId == client.sessionId) {
       return 0;
       // this.sendGameState(socket)
@@ -154,7 +154,7 @@ export class MyRoom extends Room {
     }
   }
 
-  getPlayerAssignment(id: string) {
+  getPlayerAssignment(id: string): playerNum {
     if (id == this.clients[0].sessionId)
       return 0;
     else if (id == this.clients[1]?.sessionId)

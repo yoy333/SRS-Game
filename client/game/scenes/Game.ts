@@ -1,7 +1,7 @@
 import { GameObjects, Scene } from 'phaser';
 import { InputManager } from '../lib/InputManager'
 import { Piece, PieceKey, PieceType } from '@common/Piece.mjs';
-import { Board } from '@common/Board.mjs';
+import { Board, playerNum } from '@common/Board.mjs';
 import { IchorDisplay } from '../lib/IchorDisplay';
 import { Client, Callbacks, ColyseusSDK } from '@colyseus/sdk'
 import { pieceUtils } from '@common/pieceRegistery.mjs';
@@ -80,7 +80,7 @@ export class Game extends Scene {
     }
 
     async create() {
-        this.board = new Board(this.add, true)
+        this.board = new Board(true)
         this.board.initReps(this.make, 325, -50)
 
         this.gameRules = new GameRules(this.board)
@@ -112,7 +112,7 @@ export class Game extends Scene {
         });
         const callbacks = Callbacks.get(room);
 
-        room.onMessage("playerAssignment", (playerNumber: number) => {
+        room.onMessage("playerAssignment", (playerNumber: playerNum) => {
             let scene = this.getCreatedScene()
             console.log(`recieved player assignment, ${playerNumber}, from Colyseus`)
             scene.board.playerNumber = playerNumber;
@@ -209,7 +209,7 @@ export class Game extends Scene {
             }
         }
 
-        this.inputManager.onSpawn = (pieceType: PieceType, x: number, y: number, playerOwner?: number) => {
+        this.inputManager.onSpawn = (pieceType: PieceType, x: number, y: number, playerOwner?: playerNum) => {
             let scene = this.getCreatedScene()
 
             if (scene.board.canSpawnPiece(pieceType, x, y, this.hand, playerOwner)) {

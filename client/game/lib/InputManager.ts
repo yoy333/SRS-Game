@@ -1,5 +1,5 @@
 import { GameObjects } from "phaser";
-import { Board } from "@common/Board.mjs";
+import { Board, playerNum } from "@common/Board.mjs";
 import { Piece, PieceKey, PieceType } from "@common/Piece.mjs";
 import { DefaultPiece } from "@common/Pieces/DefaultPiece.mjs";
 import { IconButton } from "./IconButton";
@@ -158,7 +158,7 @@ export class InputManager extends visualMixin {
 
     onMove?: (startX: number, startY: number, endX: number, endY: number) => void
 
-    onSpawn?: (pieceType: PieceType, x: number, y: number, playerOwner?: number) => void
+    onSpawn?: (pieceType: PieceType, x: number, y: number, playerOwner?: playerNum) => void
 
     onAttack?: (attackerX: number, attackerY: number, defenderX: number, defenderY: number) => void
 

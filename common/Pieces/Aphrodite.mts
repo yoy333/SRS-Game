@@ -1,5 +1,5 @@
 import { Piece, pattern, forward_1, square_1 } from "../Piece.mjs";
-import { Board } from "../Board.mjs";
+import { Board, playerNum } from "../Board.mjs";
 import { GameObjects, Loader } from "phaser";
 import { Rep, VisualMixin } from "../../client/game/lib/Visual.js";
 import { Effect, EffectHint } from "@common/Effect.mjs";
@@ -44,7 +44,7 @@ export class Aphrodite extends visualMixin {
   static moveCost = 1;
   static attackCost = 0;
 
-  constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {
+  constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: playerNum) {
     super(addPlugin, board, x, y, isClientSide, playerOwner)
   }
 

@@ -1,5 +1,5 @@
 import { Piece, pattern, forward_1, square_1 } from "../Piece.mjs";
-import { Board } from "../Board.mjs";
+import { Board, playerNum } from "../Board.mjs";
 import { GameObjects, Loader } from "phaser";
 import { Rep, VisualMixin } from "../../client/game/lib/Visual.js";
 
@@ -25,7 +25,7 @@ export class Poseidon extends visualMixin {
   static moveCost = 1;
   static attackCost = 1;
 
-  constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {
+  constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: playerNum) {
     super(addPlugin, board, x, y, isClientSide, playerOwner)
   }
 
@@ -57,7 +57,7 @@ export class Poseidon extends visualMixin {
     return y + (this.playerOwner === 0 ? -push : push)
   }
 
-  canAttackPiece(defenderX: number, defenderY: number, playerNumber: number): boolean {
+  canAttackPiece(defenderX: number, defenderY: number, playerNumber: playerNum): boolean {
     let defendingPiece = this.board.getPiece(defenderX, defenderY)
     if (!defendingPiece)
       return false

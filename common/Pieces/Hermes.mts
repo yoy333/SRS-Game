@@ -1,5 +1,5 @@
 import { Piece, pattern, square_1 } from "../Piece.mjs";
-import { Board } from "../Board.mjs";
+import { Board, playerNum } from "../Board.mjs";
 import { GameObjects, Loader } from "phaser";
 import { Rep, VisualMixin } from "../../client/game/lib/Visual.js";
 
@@ -33,7 +33,7 @@ export class Hermes extends visualMixin {
   static moveCost = 1;
   static attackCost = 1
 
-  constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {
+  constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: playerNum) {
     super(addPlugin, board, x, y, isClientSide, playerOwner)
   }
 
@@ -49,7 +49,7 @@ export class Hermes extends visualMixin {
   relativeMovementPattern: pattern = diamond_2_1;
   relativeAttackingPattern: pattern = square_1;
 
-  canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber: number): boolean {
+  canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber: playerNum): boolean {
     return !this.movedThisTurn
   }
 

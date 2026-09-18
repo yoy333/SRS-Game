@@ -1,5 +1,5 @@
 import { Piece, pattern, forward_1, square_1, PieceType } from "../Piece.mjs";
-import { Board } from "../Board.mjs";
+import { Board, playerNum } from "../Board.mjs";
 import { GameObjects, Loader } from "phaser";
 import { Rep, VisualMixin } from "../../client/game/lib/Visual.js";
 import { Effect, EffectHint } from "@common/Effect.mjs";
@@ -58,7 +58,7 @@ export class Apollo extends visualMixin {
   static moveCost = 1;
   static attackCost = 1;
 
-  constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {
+  constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: playerNum) {
     super(addPlugin, board, x, y, isClientSide, playerOwner)
   }
 
@@ -74,7 +74,7 @@ export class Apollo extends visualMixin {
   relativeMovementPattern: pattern = forward_1
   relativeAttackingPattern: pattern = square_1;
 
-  canAttackPiece(defenderX: number, defenderY: number, playerNumber: number) {
+  canAttackPiece(defenderX: number, defenderY: number, playerNumber: playerNum) {
     let defendingPiece = this.board.getPiece(defenderX, defenderY)
     if (!defendingPiece)
       return false;

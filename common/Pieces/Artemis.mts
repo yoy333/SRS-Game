@@ -1,5 +1,5 @@
 import { ColorPallete, HCardStyle, Piece, pattern, square_1 } from "../Piece.mjs";
-import { Board } from "../Board.mjs";
+import { Board, playerNum } from "../Board.mjs";
 import { GameObjects, Loader } from "phaser";
 import { Rep, VisualMixin, visualPlugin } from "../../client/game/lib/Visual.js";
 
@@ -78,7 +78,7 @@ export class Artemis extends visualMixin {
 
   static hCard = artemisHCard
 
-  constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {
+  constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: playerNum) {
     super(addPlugin, board, x, y, isClientSide, playerOwner)
     if (!this.isClientSide)
       return;

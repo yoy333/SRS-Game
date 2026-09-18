@@ -1,7 +1,7 @@
 import { AnimationManager } from "../client/game/lib/AnimationManager.js";
 import { StyleGuide } from "../client/game/lib/StyleGuides.js";
 import { Rep, VisualConstructor, VisualMixin, visualPlugin } from "../client/game/lib/Visual.js";
-import { Board } from "./Board.mjs";
+import { Board, playerNum } from "./Board.mjs";
 import { GameObjects, Loader } from "phaser";
 import { Effect } from "./Effect.mjs";
 
@@ -72,6 +72,7 @@ export class EffectHint implements Rep<GameObjects.Image> {
 type pieceConstructor = new (...args: any[]) => Piece
 export type PieceType = pieceConstructor & PieceStatics & VisualConstructor
 
+
 const visualMixin = VisualMixin(Object, [new TeamRect(), new EffectHint()])
 export abstract class Piece extends visualMixin {
     token?: sprite | image
@@ -89,14 +90,14 @@ export abstract class Piece extends visualMixin {
     dynAttackCost?: number
 
     isClientSide: boolean
-    playerOwner: number
+    playerOwner: playerNum
 
     relativeMovementPattern: pattern = emptyPattern;
     relativeAttackingPattern: pattern = emptyPattern;
 
     activeEffects: Effect[] = []
 
-    constructor(addPlugin: GameObjects.GameObjectFactory | undefined, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {
+    constructor(addPlugin: GameObjects.GameObjectFactory | undefined, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: playerNum) {
         super()
         if (addPlugin == undefined && isClientSide) {
             throw new Error("add plugin must be provided for client side pieces")
@@ -213,7 +214,7 @@ export abstract class Piece extends visualMixin {
         AnimationManager.addMoveAnim(this.teamHint, worldX, worldY)
     }
 
-    canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber: number) {
+    canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber: playerNum) {
         return (
             this.withinPattern(this.relativeMovementPattern, endX, endY)
         )
@@ -235,7 +236,7 @@ export abstract class Piece extends visualMixin {
 
     }
 
-    canAttackPiece(defenderX: number, defenderY: number, playerNumber: number) {
+    canAttackPiece(defenderX: number, defenderY: number, playerNumber: playerNum) {
         let defendingPiece = this.board.getPiece(defenderX, defenderY)
         if (!defendingPiece)
             return false;
