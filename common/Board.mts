@@ -7,7 +7,7 @@ import { ConcreteConstructor } from "./utils.mjs"
 import { GameSounds } from "../client/game/lib/GameSounds.js"
 import { Effect } from "./Effect.mjs"
 import { StyleGuide } from "../client/game/lib/StyleGuides.js"
-import { WinScreen } from "../client/game/lib/WinScreen.js"
+import { EndGameScreen } from "../client/game/lib/EndGameScreen.js"
 
 export const BOARDSCALINGFACTOR = 5 / 8
 const tilemapImageKeys = [
@@ -446,13 +446,15 @@ export class Board extends visualMixin {
         this.startTurn()
     }
 
-    onWin?: (...args: any[]) => any
+    onEndGame?: (winnerIsClient: boolean, ...args: any[]) => any
 
     startTurn() {
         // check for a win
-        if (this.hasWon(this.currentTurn) != -1) {
+        let winner = this.hasWon(this.currentTurn)
+        if (winner != -1) {
             if (this.isClientSide) {
-                this?.onWin?.()
+                const winnerIsClient = this.playerNumber == winner
+                this?.onEndGame?.(winnerIsClient)
             }
         }
 

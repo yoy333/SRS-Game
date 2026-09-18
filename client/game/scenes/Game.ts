@@ -10,7 +10,7 @@ import { GameSounds } from '../lib/GameSounds';
 import { AnimationManager } from '../lib/AnimationManager';
 import { HCard } from '@common/HCard';
 import { attackMessage, moveMessage, spawnMessage } from '@common/CommunicationTypes.mjs';
-import { WinScreen } from '../lib/WinScreen';
+import { EndGameScreen } from '../lib/EndGameScreen';
 
 type CreatedScene = {
     add: GameObjects.GameObjectFactory,
@@ -278,18 +278,9 @@ export class Game extends Scene {
             }
         }
 
-        this.board.onWin = () => {
-            let winScreen = new WinScreen(this.add, 640, 360)
-
-            winScreen.playAgainButton.onClick = () => {
-                room.leave()
-                this.scene.restart()
-            }
-
-            winScreen.homeScreenButton.onClick = () => {
-                room.leave()
-                this.scene.start('MainMenu')
-            }
+        this.board.onEndGame = (winnerIsClient: boolean) => {
+            let winScreen = new EndGameScreen(this.add, 640, 360, winnerIsClient)
+            winScreen.bindInteraction(room, this.scene)
         }
     }
 

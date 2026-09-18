@@ -7,7 +7,7 @@ import { IchorDisplay } from '../lib/IchorDisplay';
 import { PieceType } from '@common/Piece.mjs';
 import { VisualConstructor } from '../lib/Visual';
 import { GameSounds, SoundManager } from '../lib/GameSounds';
-import { WinScreen } from '../lib/WinScreen';
+import { EndGameScreen } from '../lib/EndGameScreen';
 
 export class Preloader extends Scene {
     constructor() {
@@ -47,7 +47,7 @@ export class Preloader extends Scene {
         IchorDisplay.loadReps(this.load)
 
         EndTurnButton.loadReps(this.load)
-        WinScreen.loadReps(this.load)
+        EndGameScreen.loadReps(this.load)
 
         GameSounds.loadSounds(this.load)
     }
