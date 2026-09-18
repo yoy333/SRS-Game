@@ -8,7 +8,7 @@ import { pieceUtils } from '@common/pieceRegistery.mjs';
 import { GameRules } from '@common/GameRules.mjs';
 import { GameSounds } from '../lib/GameSounds';
 import { AnimationManager } from '../lib/AnimationManager';
-import { HCard } from '@common/HCard';
+import { HelpSidebar } from '@common/HelpSidebar';
 import { attackMessage, moveMessage, spawnMessage } from '@common/CommunicationTypes.mjs';
 import { EndGameScreen } from '../lib/EndGameScreen';
 
@@ -22,7 +22,7 @@ export class Game extends Scene {
 
     // socket?: Socket;
     inputManager?: InputManager
-    hCard?: HCard
+    helpSidebar?: HelpSidebar
 
     constructor() {
         super('Game');
@@ -87,7 +87,7 @@ export class Game extends Scene {
 
         this.inputManager = new InputManager()
         this.ichorDisplay = new IchorDisplay()
-        this.hCard = new HCard(10, 360, 10, 1000)
+        this.helpSidebar = new HelpSidebar(10, 360, 10, 1000)
 
         this.inputManager.initReps(this.add)
 
@@ -249,21 +249,27 @@ export class Game extends Scene {
             }
         }
 
-        this.inputManager.onSelection = (pieceType: PieceType, piece?: Piece) => {
-            if (!this.hCard)
+        const updateHelpSidebar = (pieceType: PieceType, piece?: Piece) => {
+            if (!this.helpSidebar)
                 throw new Error()
-            this.hCard.updateCard(this.add, pieceType, piece)
+            this.helpSidebar.updateCard(this.add, pieceType, piece)
+        }
+
+        this.inputManager.onSelection = (pieceType: PieceType, piece?: Piece) => {
+            updateHelpSidebar(pieceType, piece)
         }
 
         this.inputManager.onSelectionForMove = (piece: Piece) => {
             let scene = this.getCreatedScene()
 
+            updateHelpSidebar(piece.constructor as PieceType, piece)
             scene.board.hintMoves(this.add, piece)
         }
 
         this.inputManager.onSelectionForAttack = (piece: Piece) => {
             let scene = this.getCreatedScene()
 
+            updateHelpSidebar(piece.constructor as PieceType, piece)
             scene.board.hintAttacks(this.add, piece)
         }
 
