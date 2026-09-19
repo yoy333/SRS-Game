@@ -6,7 +6,6 @@ n change how neutral objectives spawn
 ! turn display on button
 ! start screen
 Discord
-remove effect text
 animation for winScreen
 sound for winScreen
 
@@ -29,7 +28,6 @@ Apollo
 refactor to game wrapper
 refactor to dependency injections
 refactor board to be within gamestate object
-refactor HCardImage and Text to be seperate
 
 refactor actions space inferface exposed to game (maybe)
 

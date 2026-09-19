@@ -3,7 +3,7 @@ import { Board, playerNum } from "@common/Board.mjs";
 import { Piece, PieceKey, PieceType } from "@common/Piece.mjs";
 import { DefaultPiece } from "@common/Pieces/DefaultPiece.mjs";
 import { IconButton } from "./IconButton";
-import { EndTurnButton } from "./ImageButton";
+import { EndTurnButton } from "./EndTurnButton";
 import { Hand } from '@common/Hand.mjs';
 import { VisualMixin } from "./Visual";
 import { GameSounds } from "./GameSounds";
@@ -142,6 +142,14 @@ export class InputManager extends visualMixin {
             if (this.onEndTurn)
                 this.onEndTurn()
         }
+        // stays disabled until the game starts and the seat is known
+        this.endTurnButton.setActive(false)
+    }
+
+    updateEndTurnButton(board: Board) {
+        if (!this.endTurnButton)
+            throw new Error("no end turn button to update")
+        this.endTurnButton.setActive(board.canEndTurn())
     }
 
     updateHand(addPlugin: GameObjects.GameObjectFactory, hand: PieceKey[]) {

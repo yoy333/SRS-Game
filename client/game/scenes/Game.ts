@@ -8,7 +8,7 @@ import { pieceUtils } from '@common/pieceRegistery.mjs';
 import { GameRules } from '@common/GameRules.mjs';
 import { GameSounds } from '../lib/GameSounds';
 import { AnimationManager } from '../lib/AnimationManager';
-import { HelpSidebar } from '@common/HelpSidebar';
+import { HelpSidebar } from '../lib/HelpSidebar';
 import { attackMessage, moveMessage, spawnMessage } from '@common/CommunicationTypes.mjs';
 import { EndGameScreen } from '../lib/EndGameScreen';
 
@@ -127,6 +127,7 @@ export class Game extends Scene {
             if (!this.inputManager)
                 throw new Error()
             this.inputManager.updateHand(this.add, this.hand)
+            this.inputManager.updateEndTurnButton(scene.board)
             scene.gameRules.startGame(this.add)
         })
 
@@ -154,6 +155,9 @@ export class Game extends Scene {
             if (!this.ichorDisplay)
                 throw new Error()
             this.ichorDisplay.updateIchor(scene.board.myIchor)
+            if (!this.inputManager)
+                throw new Error()
+            this.inputManager.updateEndTurnButton(scene.board)
         })
 
         // IDK what a ValueKeyCallback is but its just a callback to me
@@ -281,6 +285,9 @@ export class Game extends Scene {
                     throw new Error()
                 this.ichorDisplay.updateIchor(scene.board.myIchor)
                 room.send('endTurn')
+                if (!this.inputManager)
+                    throw new Error()
+                this.inputManager.updateEndTurnButton(scene.board)
             }
         }
 

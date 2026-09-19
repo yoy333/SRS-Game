@@ -2,7 +2,7 @@ import { Scene } from 'phaser';
 import { pieceTypeRegistery } from '@common/pieceRegistery.mjs';
 import { Board } from '@common/Board.mjs';
 import { IconButton } from '../lib/IconButton';
-import { EndTurnButton } from '../lib/ImageButton';
+import { EndTurnButton } from '../lib/EndTurnButton';
 import { IchorDisplay } from '../lib/IchorDisplay';
 import { PieceType } from '@common/Piece.mjs';
 import { VisualConstructor } from '../lib/Visual';
