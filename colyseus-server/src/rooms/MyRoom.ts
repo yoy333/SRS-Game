@@ -1,10 +1,11 @@
 import { Room, Client, CloseCode } from "colyseus";
 import { MyRoomState } from "./schema/MyRoomState.js";
-import { Board } from '@common/Board.mjs'
+import { Board, playerNum } from '@common/Board.mjs'
 import { Deck } from "../lib/Deck.js";
 import { Hand } from "@common/Hand.mjs";
 import { pieceUtils } from "@common/pieceRegistery.mjs";
 import { GameRules } from "@common/GameRules.mjs";
+import { attackMessage, moveMessage, spawnMessage } from "@common/CommunicationTypes.mjs";
 
 export class MyRoom extends Room {
   maxClients = 4;
@@ -20,7 +21,7 @@ export class MyRoom extends Room {
   }
 
   messages = {
-    "spawn": (client: Client, message: any[]) => {
+    "spawn": (client: Client, message: spawnMessage) => {
       let [pieceTypeKey, x, y] = message;
       // this.state.turnHistory.push(`spawn ${pieceTypeKey} at (${x}, ${y})`)
       let pieceType = pieceUtils.classFromKey(pieceTypeKey)
@@ -41,12 +42,14 @@ export class MyRoom extends Room {
         this.hands[playerNumber].replace(oldCard, newCard)
 
         this.clients[playerNumber].send('drawCard', newCard)
+
+        this.state.turnHistory.push(`spawn-${message.join('-')}`)
       } else {
         console.log("hijacked spawn call")
       }
 
     },
-    "move": (client: Client, message: any[]) => {
+    "move": (client: Client, message: moveMessage) => {
       let [startX, startY, endX, endY] = message;
       let playerNumber = this.getPlayerAssignment(client.sessionId)
       if (this.board.canMovePiece(startX, startY, endX, endY, playerNumber)) {
@@ -54,11 +57,13 @@ export class MyRoom extends Room {
         this.broadcast('otherMove', message, {
           except: client
         })
+
+        this.state.turnHistory.push(`move-${message.join('-')}`)
       } else {
         console.log("hijacked move call")
       }
     },
-    "attack": (client: Client, message: any[]) => {
+    "attack": (client: Client, message: attackMessage) => {
       let [attackerX, attackerY, defenderX, defenderY] = message;
       let attackingPiece = this.board.getPiece(attackerX, attackerY)
       let defendingPiece = this.board.getPiece(defenderX, defenderY)
@@ -74,6 +79,7 @@ export class MyRoom extends Room {
         this.broadcast('otherAttack', message, {
           except: client
         })
+        this.state.turnHistory.push(`attack-${message.join('-')}`)
       } else {
         console.log("hijacked attack call")
       }
@@ -136,7 +142,7 @@ export class MyRoom extends Room {
     console.log("room", this.roomId, "disposing...");
   }
 
-  tryAddPlayer(client: Client): number {
+  tryAddPlayer(client: Client): playerNum {
     if (this.clients[0].sessionId == client.sessionId) {
       return 0;
       // this.sendGameState(socket)
@@ -148,7 +154,7 @@ export class MyRoom extends Room {
     }
   }
 
-  getPlayerAssignment(id: string) {
+  getPlayerAssignment(id: string): playerNum {
     if (id == this.clients[0].sessionId)
       return 0;
     else if (id == this.clients[1]?.sessionId)

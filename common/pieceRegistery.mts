@@ -6,7 +6,7 @@ import { Aries } from "./Pieces/Aries.mjs"
 import { Apollo } from "./Pieces/Apollo.mjs"
 
 import { GameObjects } from "phaser"
-import { Board } from "./Board.mjs"
+import { Board, playerNum } from "./Board.mjs"
 import { VisualConstructor } from "../client/game/lib/Visual.js"
 import { Nike } from "./Pieces/Nike.mjs"
 import { Hermes } from "./Pieces/Hermes.mjs"
@@ -25,13 +25,13 @@ export const pieceUtils = {
     return pt
   },
 
-  createFromKey: function (key: string, addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number): Piece {
+  createFromKey: function (key: string, addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: playerNum): Piece {
     let pieceType: ConcretePiece = (pieceUtils.classFromKey(key)) as ConcretePiece
     return new pieceType(addPlugin, board, x, y, true, playerOwner)
   }
 }
 
-pieceTypeRegistery.set(DefaultPiece.key, DefaultPiece)
+// pieceTypeRegistery.set(DefaultPiece.key, DefaultPiece)
 pieceTypeRegistery.set(Zeus.key, Zeus)
 pieceTypeRegistery.set(Artemis.key, Artemis)
 pieceTypeRegistery.set(Aries.key, Aries)

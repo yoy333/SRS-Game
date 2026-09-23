@@ -1,8 +1,8 @@
 import { Piece, pattern, forward_1, square_1, PieceType } from "../Piece.mjs";
-import { Board } from "../Board.mjs";
+import { Board, playerNum } from "../Board.mjs";
 import { GameObjects, Loader } from "phaser";
 import { Rep, VisualMixin } from "../../client/game/lib/Visual.js";
-import { Effect } from "@common/Effect.mjs";
+import { Effect, EffectHint } from "@common/Effect.mjs";
 
 
 class ApolloToken implements Rep<GameObjects.Image> {
@@ -13,11 +13,24 @@ class ApolloToken implements Rep<GameObjects.Image> {
   }
 
   loadRep(loadPlugin: Loader.LoaderPlugin): void {
-    loadPlugin.image(Apollo.key, 'apollo_v01.png')
+    loadPlugin.image(Apollo.key, 'apollo_v03.png')
   }
 }
 
+class BoostedEffectHint extends EffectHint {
+  constructor(effect: Effect) {
+    super(effect)
+  }
+
+  text = "This character can attack twice for free"
+}
+
 class Boosted extends Effect {
+  constructor(actionSpace: Board, originatingPiece: Piece, targetedPiece: Piece) {
+    super(actionSpace, originatingPiece, targetedPiece)
+    this.effectHint = new BoostedEffectHint(this)
+  }
+
   timesApplied = 0;
   static maxApplications = 2;
 
@@ -42,10 +55,10 @@ export class Apollo extends visualMixin {
   key = 'apollo'
 
   static spawnCost = 2;
-  static moveCost = 0;
+  static moveCost = 1;
   static attackCost = 1;
 
-  constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: number) {
+  constructor(addPlugin: GameObjects.GameObjectFactory, board: Board, x: number, y: number, isClientSide: boolean, playerOwner: playerNum) {
     super(addPlugin, board, x, y, isClientSide, playerOwner)
   }
 
@@ -61,7 +74,7 @@ export class Apollo extends visualMixin {
   relativeMovementPattern: pattern = forward_1
   relativeAttackingPattern: pattern = square_1;
 
-  canAttackPiece(defenderX: number, defenderY: number, playerNumber: number) {
+  canAttackPiece(defenderX: number, defenderY: number, playerNumber: playerNum) {
     let defendingPiece = this.board.getPiece(defenderX, defenderY)
     if (!defendingPiece)
       return false;

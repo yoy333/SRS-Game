@@ -1,56 +1,130 @@
 import { GameObjects, Tilemaps } from "phaser"
-import { Piece, PieceKey, PieceType } from "./Piece.mjs"
-import { Rep, VisualConstructor, VisualMixin } from "../client/game/lib/Visual.js"
+import { pattern as Pattern, Piece, PieceKey, PieceType } from "./Piece.mjs"
+import { Rep, VisualConstructor, VisualMixin, visualPlugin } from "../client/game/lib/Visual.js"
 import { Loader } from "phaser"
 import { NeutralObjective } from './NeutralObjective.mjs'
 import { ConcreteConstructor } from "./utils.mjs"
 import { GameSounds } from "../client/game/lib/GameSounds.js"
-import { AnimationManager } from "../client/game/lib/AnimationManager.js"
 import { Effect } from "./Effect.mjs"
+import { StyleGuide } from "../client/game/lib/StyleGuides.js"
+import { EndGameScreen } from "../client/game/lib/EndGameScreen.js"
 
+export const BOARDSCALINGFACTOR = 5 / 8
+const tilemapImageKeys = [
+    'V3_tiles_interior',
+    'V3_border_top_left',
+    'V3_border_top_right',
+    'V3_border_left',
+    'V3_border_bottom_left',
+    'V3_border_bottom_right',
+    'V3_border_bottom',
+    'V3_border_right',
+]
+
+const tilemapImagePaths = [
+    'tiles_interior.png',
+    'border_top_left.png',
+    'border_top_right.png',
+    'border_left.png',
+    'border_bottom_left.png',
+    'border_bottom_right.png',
+    'border_bottom.png',
+    'border_right.png',
+];
 class TilemapRep implements Rep<Tilemaps.Tilemap> {
     createRep(makePlugin: GameObjects.GameObjectCreator, x: number, y: number): Tilemaps.Tilemap {
         //Create the Tilemap
         let map = makePlugin.tilemap({ key: 'tilemap' })
 
         // add the tileset image we are using
-        const tiles = map.addTilesetImage('V2_Tiles')
-        const edges = map.addTilesetImage('V2_Edges')
+        let tilesetImages = tilemapImageKeys.map((key: string) => {
+            let image = map.addTilesetImage(key)
+            if (!image)
+                throw new Error(`tileset ${key} failed to load`)
+            return image
+        })
 
-        if (!tiles || !edges)
-            throw new Error("tileset failed to load")
 
-        let ground = map.createLayer(0, [tiles, edges], x, y)
-        ground!.setScale(5 / 8)
+        // assuming height and width are same here
+        let offset = map.tileHeight * BOARDSCALINGFACTOR
+
+        let ground = map.createLayer(0, tilesetImages, x + offset, y + offset)
+        ground!.setScale(BOARDSCALINGFACTOR)
 
         return map
     }
 
     loadRep(loadPlugin: Loader.LoaderPlugin): void {
-        loadPlugin.image('V2_Tiles', 'tilemap/V2_Tiles.png')
-        loadPlugin.image('V2_Edges', 'tilemap/V2_Edges.png')
-        loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/Board_V2.json')
+        for (let i = 0; i < tilemapImageKeys.length; i++) {
+            loadPlugin.image(tilemapImageKeys[i], 'tilemap/' + tilemapImagePaths[i]);
+        }
+        loadPlugin.tilemapTiledJSON('tilemap', 'tilemap/V3_Board.json');
     }
 }
 
-const visualMixin = VisualMixin(Object, [new TilemapRep])
+class TilemapBorderRep implements Rep<Tilemaps.Tilemap> {
+    // exclude the first element which includes the interior tileset
+    exteriorKeys: string[] = tilemapImageKeys.slice(1)
+    exteriorPaths: string[] = tilemapImagePaths.slice(1)
+
+    createRep(makePlugin: GameObjects.GameObjectCreator, x: number, y: number): Tilemaps.Tilemap {
+        let border = makePlugin.tilemap({ key: 'tilemapBorder' })
+
+        // add the tileset image we are using
+        let tilesetImages = this.exteriorKeys.map((key: string) => {
+            let image = border.addTilesetImage(key)
+            if (!image)
+                throw new Error(`tileset ${key} failed to load`)
+            return image
+        })
+
+        let ground = border.createLayer(0, tilesetImages, x, y)
+        ground!.setScale(BOARDSCALINGFACTOR)
+
+        return border
+    }
+
+    loadRep(loadPlugin: Loader.LoaderPlugin): void {
+        for (let i = 0; i < this.exteriorKeys.length; i++) {
+            loadPlugin.image(this.exteriorKeys[i], 'tilemap/' + this.exteriorPaths[i]);
+        }
+        loadPlugin.tilemapTiledJSON('tilemapBorder', 'tilemap/V3_Board_Border.json');
+    }
+}
+
+export type playerNum = -1 | 0 | 1
+
+const visualMixin = VisualMixin(Object, [new TilemapRep, new TilemapBorderRep])
+
 export class Board extends visualMixin {
     static rows = 8
     static columns = 8
     numReps = 1
     lookup: (Piece | null)[]
-    playerNumber: number = 0;
+    playerNumber: playerNum = 0;
     //0 by default until assigned
     isClientSide: boolean
     tilemap?: Tilemaps.Tilemap
 
-    static maxIchorPerTurn: number = 5;
-    private ichor: [number, number] = [Board.maxIchorPerTurn, Board.maxIchorPerTurn];
-    private ichorForNextTurn: [number, number] = [0, 0]
-    static maxSpawnsPerTurn: number = 1;
-    private spawnCreditsThisTurn: [number, number] = [Board.maxSpawnsPerTurn, Board.maxSpawnsPerTurn]
+    addPlugin: GameObjects.GameObjectFactory
 
-    addIchorToNextTurn(ichor: number, playerNumber: number) {
+    static maxIchorPerTurn: number = 5;
+    static startingIchorHandicap: number = 2
+    // keyed by playerNum, so the spectator (-1) has a harmless slot of its own
+    private ichor: Record<playerNum, number> = {
+        [-1]: 0,
+        0: Board.maxIchorPerTurn - Board.startingIchorHandicap,
+        1: Board.maxIchorPerTurn
+    };
+    private ichorForNextTurn: Record<playerNum, number> = { [-1]: 0, 0: 0, 1: 0 }
+    static maxSpawnsPerTurn: number = 1;
+    private spawnCreditsThisTurn: Record<playerNum, number> = {
+        [-1]: 0,
+        0: Board.maxSpawnsPerTurn,
+        1: Board.maxSpawnsPerTurn
+    }
+
+    addIchorToNextTurn(ichor: number, playerNumber: playerNum) {
         this.ichorForNextTurn[playerNumber] += ichor
     }
 
@@ -94,7 +168,7 @@ export class Board extends visualMixin {
         this.nObjs.push(inst)
     }
 
-    isOnHomeRow(y: number, playerNumber?: number) {
+    isOnHomeRow(y: number, playerNumber?: playerNum) {
         if (!playerNumber)
             playerNumber = this.playerNumber
 
@@ -115,21 +189,21 @@ export class Board extends visualMixin {
         }
     }
 
-    isNotSpectator(playerNumber?: number): boolean {
+    isNotSpectator(playerNumber?: playerNum): boolean {
         if (!playerNumber)
             playerNumber = this.playerNumber
 
         return playerNumber >= 0
     }
 
-    doesHaveEnoughIchor(cost: number, playerNumber?: number) {
+    doesHaveEnoughIchor(cost: number, playerNumber?: playerNum) {
         if (!playerNumber)
             playerNumber = this.playerNumber
 
         return cost <= this.ichor[playerNumber]
     }
 
-    isMyTurn(playerNumber?: number): boolean {
+    isMyTurn(playerNumber?: playerNum): boolean {
         if (!playerNumber)
             playerNumber = this.playerNumber
 
@@ -140,7 +214,7 @@ export class Board extends visualMixin {
         return hand.includes(pieceType.key)
     }
 
-    withinMaxSpawn(playerNumber?: number) {
+    withinMaxSpawn(playerNumber?: playerNum) {
         if (!playerNumber)
             playerNumber = this.playerNumber
 
@@ -148,7 +222,7 @@ export class Board extends visualMixin {
     }
 
     // move to Game Rules
-    canSpawnPiece(pieceType: PieceType, x: number, y: number, hand: PieceKey[], playerNumber?: number) {
+    canSpawnPiece(pieceType: PieceType, x: number, y: number, hand: PieceKey[], playerNumber?: playerNum) {
         if (playerNumber == undefined)
             playerNumber = this.playerNumber
 
@@ -173,7 +247,7 @@ export class Board extends visualMixin {
             return false;
     }
 
-    spawnPiece(pieceType: PieceType, addPlugin: GameObjects.GameObjectFactory | undefined, x: number, y: number, playerOwner?: number): Piece {
+    spawnPiece(pieceType: PieceType, addPlugin: GameObjects.GameObjectFactory | undefined, x: number, y: number, playerOwner?: playerNum): Piece {
         if (this.isClientSide && addPlugin == undefined) {
             throw new Error("must specify add plugin for client side pieces")
         }
@@ -202,7 +276,7 @@ export class Board extends visualMixin {
     }
 
     // move to Game Rules
-    doesOwnPiece(piece: Piece, playerNumber?: number): boolean {
+    doesOwnPiece(piece: Piece, playerNumber?: playerNum): boolean {
         if (!playerNumber)
             playerNumber = this.playerNumber
 
@@ -233,7 +307,7 @@ export class Board extends visualMixin {
         )
     }
 
-    hasWon(playerNumber?: number): number {
+    hasWon(playerNumber?: playerNum): playerNum {
         if (playerNumber == undefined) {
             if (this.hasWon(0) != -1)
                 return 0
@@ -256,12 +330,9 @@ export class Board extends visualMixin {
         return -1
     }
 
-    // returns -1 if no one won
     pushPiece(piece: Piece, endX: number, endY: number) {
         let startX = piece.coordX
         let startY = piece.coordY
-
-        piece.movePiece(startX, startY, endX, endY)
 
         this.setPiece(endX, endY, piece)
         this.setPiece(startX, startY, null)
@@ -270,12 +341,10 @@ export class Board extends visualMixin {
             objective.onCollision(piece)
         })
 
-        if (this.hasWon(piece.playerOwner) != -1) {
-            console.log("this is where the win screen would go, be we haven't made that yet")
-        }
+        piece.pushPiece(endX, endY)
     }
 
-    canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber?: number): boolean {
+    canMovePiece(startX: number, startY: number, endX: number, endY: number, playerNumber?: playerNum): boolean {
         if (!playerNumber)
             playerNumber = this.playerNumber;
 
@@ -321,7 +390,7 @@ export class Board extends visualMixin {
         })
     }
 
-    movePiece(startX: number, startY: number, endX: number, endY: number, playerOwner?: number) {
+    movePiece(startX: number, startY: number, endX: number, endY: number, playerOwner?: playerNum) {
         let piece = this.getPiece(startX, startY)
         if (!piece)
             return;
@@ -333,6 +402,7 @@ export class Board extends visualMixin {
         this.ichor[playerOwner] -= cost
 
         this.pushPiece(piece, endX, endY)
+        piece.onMovePiece(endX, endY)
 
         this.effects.get(piece)?.forEach((effect: Effect) => {
             effect.onPostMove?.(endX, endY)
@@ -342,16 +412,16 @@ export class Board extends visualMixin {
             GameSounds.place()
     }
 
-    currentTurn = 0;
+    currentTurn: playerNum = 0;
 
-    canEndTurn(playerNumber?: number) {
+    canEndTurn(playerNumber?: playerNum) {
         if (!playerNumber)
             playerNumber = this.playerNumber
 
         return this.isMyTurn(playerNumber)
     }
 
-    piecesOfPlayer(playerNumber: number): Piece[] {
+    piecesOfPlayer(playerNumber: playerNum): Piece[] {
         let ans = []
         for (let piece of this.lookup) {
             if (piece?.playerOwner == playerNumber)
@@ -363,6 +433,11 @@ export class Board extends visualMixin {
     endTurn() {
         this.ichor[this.currentTurn] = Board.maxIchorPerTurn + this.ichorForNextTurn[this.playerNumber]
         this.ichorForNextTurn[this.currentTurn] = 0
+
+        // posible to make effects apply after piece callback
+        for (let [piece, effects] of this.effects) {
+            effects.forEach(effect => effect?.onEndTurn?.())
+        }
 
         for (let piece of this.piecesOfPlayer(this.currentTurn)) {
             piece.onEndTurn()
@@ -378,6 +453,25 @@ export class Board extends visualMixin {
             throw new Error("how did we get here")
         }
 
+        this.startTurn()
+    }
+
+    onEndGame?: (winnerIsClient: boolean, ...args: any[]) => any
+
+    startTurn() {
+        // check for a win
+        let winner = this.hasWon(this.currentTurn)
+        if (winner != -1) {
+            if (this.isClientSide) {
+                const winnerIsClient = this.playerNumber == winner
+                this?.onEndGame?.(winnerIsClient)
+            }
+        }
+
+        // apply callbacks
+        for (let [piece, effects] of this.effects) {
+            effects.forEach(effect => effect?.onStartTurn?.())
+        }
         for (let piece of this.piecesOfPlayer(this.currentTurn)) {
             piece.onStartTurn()
         }
@@ -398,7 +492,7 @@ export class Board extends visualMixin {
 
     //move to Game Rules
     canAttackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number,
-        playerNumber?: number, override: boolean = false) {
+        playerNumber?: playerNum) {
 
         if (!playerNumber)
             playerNumber = this.playerNumber
@@ -421,13 +515,14 @@ export class Board extends visualMixin {
         }
 
         let cost = attackingPiece.getAttackCost()
-        console.log("cost: " + cost)
 
         // console.log(this.isMyTurn(playerNumber))
         // console.log(this.doesHaveEnoughIchor(cost, playerNumber))
-        // console.log(attackingPiece.canAttackPiece(attackerX, attackerY, defenderX, defenderY, playerNumber))
-        // console.log(defendingPiece.canBeAttacked(attackerX, attackerY, playerNumber))
+        // console.log(attackingPiece.canAttackPiece(defenderX, defenderY, playerNumber))
+        // console.log(defendingPiece.canBeAttacked(attackingPiece, override))
         // console.log(effectAllowsAttack)
+
+        let override = attackingPiece.doesOverrideDefense()
 
         return (
             this.isMyTurn(playerNumber) &&
@@ -456,10 +551,16 @@ export class Board extends visualMixin {
         // if no target coords are specified the piece is assumed to be targeting itself
 
         let effects = this.effects.get(targetedPiece)
-        if (!effects)
+        if (!effects) {
             effects = []
+            targetedPiece.linkEffects(effects)
+        }
         effects.push(effect)
         this.effects.set(targetedPiece, effects)
+
+        // console.log(targetedPiece)
+        targetedPiece.updateEffectHint()
+
         return effect
     }
 
@@ -473,9 +574,24 @@ export class Board extends visualMixin {
             throw new Error("no element at that index")
         }
         effects.splice(index, 1)
+
+        piece.updateEffectHint()
+    }
+
+    getShownEffect(piece: Piece): Effect | undefined {
+        let effectsArr = this.effects.get(piece)
+        if (!effectsArr)
+            return undefined
+        let shownEffect = effectsArr.find(effect => {
+            if (effect.effectHint)
+                return effect
+        })
+
+        return shownEffect
     }
 
     attackPiece(attackerX: number, attackerY: number, defenderX: number, defenderY: number) {
+        console.log("attack called")
         let attackingPiece = this.getPiece(attackerX, attackerY)
         let defendingPiece = this.getPiece(defenderX, defenderY)
         if (!attackingPiece)
@@ -526,6 +642,50 @@ export class Board extends visualMixin {
         this.lookup[i] = p
     }
 
+    hintMoves(addPlugin: GameObjects.GameObjectFactory, piece: Piece) {
+        this.hintSquares(addPlugin, piece, piece.relativeMovementPattern, StyleGuide.moveHintColor)
+    }
+
+    hintAttacks(addPlugin: GameObjects.GameObjectFactory, piece: Piece) {
+        this.hintSquares(addPlugin, piece, piece.relativeAttackingPattern, StyleGuide.attackHintColor)
+    }
+
+    hints: GameObjects.Rectangle[] = []
+    private hintSquares(addPlugin: GameObjects.GameObjectFactory, piece: Piece, pattern: Pattern, color: number = 0x000000) {
+        this.clearHints()
+        for (const relCoord of pattern) {
+            let [relX, relY] = relCoord
+            if (piece.playerOwner != this.playerNumber)
+                relY *= -1
+            const absX = piece.perspectiveX + relX
+            const absY = piece.perspectiveY + relY
+
+            if (!this.isInBounds(absX, absY))
+                continue;
+
+            let tile = this.tilemap?.getTileAt(absX, absY)
+            if (!tile)
+                throw new Error("no tilemap. me sad")
+
+            // tile.setAlpha(0)
+
+            let hint = addPlugin.rectangle(
+                // tile.getCenterX(), tile.getCenterX(),
+                tile.getCenterX(), tile.getCenterY(),
+                tile.getRight() - tile.getLeft(), tile.getBottom() - tile.getTop()
+            )
+            hint.setStrokeStyle(2, color)
+            this.hints.push(hint)
+        }
+    }
+
+    clearHints() {
+        for (let hint of this.hints) {
+            hint.destroy(true)
+        }
+        this.hints = []
+    }
+
     printBoardState() {
         console.log("board state")
         for (let y = 0; y < Board.rows; y++) {
@@ -538,7 +698,7 @@ export class Board extends visualMixin {
         }
     }
 
-    get otherPlayerNumber() {
+    get otherPlayerNumber(): playerNum {
         if (this.playerNumber == 0)
             return 1;
         else if (this.playerNumber == 1)

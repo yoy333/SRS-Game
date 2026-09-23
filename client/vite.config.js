@@ -8,11 +8,21 @@ export default ({ mode }) => {
     server: {
       proxy: {
         '/phaserAssets': 'http://localhost:8080',
-        '/http': 'https://localhost:8080'
+        '/server': {
+          target: 'http://localhost:2567',
+          changeOrigin: true,
+          ws: true,
+          rewrite: (path) => path.replace(/^\/server/, '')
+        }
       },
-      hmr: {
-        clientPort: 5173,
-      },
+      // check env variable USE_FORWARD to see if we should connect to vite via https (port 443)
+      // otherwise use default config
+      hmr: process.env.USE_FORWARD
+        ? {
+          host: 'localhost',
+          clientPort: 443,
+          protocol: 'wss'
+        } : undefined,
       allowedHosts: true
     },
     publicDir: 'game/assets',

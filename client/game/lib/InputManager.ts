@@ -1,13 +1,14 @@
 import { GameObjects } from "phaser";
-import { Board } from "@common/Board.mjs";
+import { Board, playerNum } from "@common/Board.mjs";
 import { Piece, PieceKey, PieceType } from "@common/Piece.mjs";
 import { DefaultPiece } from "@common/Pieces/DefaultPiece.mjs";
 import { IconButton } from "./IconButton";
-import { EndTurnButton } from "./ImageButton";
+import { EndTurnButton } from "./EndTurnButton";
 import { Hand } from '@common/Hand.mjs';
 import { VisualMixin } from "./Visual";
 import { GameSounds } from "./GameSounds";
 import { pieceUtils } from "@common/pieceRegistery.mjs";
+import { Zeus } from "@common/Pieces/Zeus.mjs";
 
 
 const visualMixin = VisualMixin(Object, [])
@@ -17,6 +18,7 @@ export class InputManager extends visualMixin {
     }
 
     proccessClick(addPlugin: GameObjects.GameObjectFactory, board: Board, worldX: number, worldY: number) {
+        board.clearHints()
         let tileClicked = board?.tilemap?.getTileAtWorldXY(worldX, worldY)
         if (!tileClicked) {
             if (this.selectionForAttack || this.selectionForMove)
@@ -39,7 +41,6 @@ export class InputManager extends visualMixin {
             let moveCoords = [this.selectionForMove.coordX, this.selectionForMove.coordY, x, y] as const
             //if double click
             if (moveCoords[0] == moveCoords[2] && moveCoords[1] == moveCoords[3]) {
-                // console.log("selection for attack")
                 this.selectForAttack(this.selectionForMove)
                 return;
             }
@@ -50,12 +51,15 @@ export class InputManager extends visualMixin {
         } else if (this.selectionForAttack) {
             if (this.onAttack)
                 this.onAttack(this.selectionForAttack.coordX, this.selectionForAttack.coordY, x, y)
+            this.clearSelection()
+            return;
         } else {
             this.clearSelection()
         }
 
         // if you click on a piece, select it for movement
         let selectedPiece = board.getPiece(x, y)
+        // console.log(selectedPiece)
         if (selectedPiece != null) {
             this.selectForMove(selectedPiece)
             return;
@@ -70,9 +74,13 @@ export class InputManager extends visualMixin {
         this.selectionForSpawn = undefined
         this.selectionForMove = undefined
         this.selectionForAttack = undefined
+        this?.onUnselection?.()
     }
 
-    onSelection?: (pieceType: PieceType) => void
+    onSelectionForMove?: (piece: Piece) => void
+    onSelectionForAttack?: (piece: Piece) => void
+    onSelection?: (pieceType: PieceType, piece?: Piece) => void
+    onUnselection?: () => void
 
     selectionIndex: number = 0
     selectForSpawn(pieceType: PieceType) {
@@ -86,7 +94,7 @@ export class InputManager extends visualMixin {
     selectForMove(piece: Piece) {
         this.selectionForSpawn = undefined;
         this.selectionForMove = piece;
-        this?.onSelection?.(piece.constructor as PieceType)
+        this?.onSelectionForMove?.(piece)
         GameSounds.click()
     }
 
@@ -94,7 +102,7 @@ export class InputManager extends visualMixin {
         this.selectionForAttack = piece;
         this.selectionForSpawn = undefined;
         this.selectionForMove = undefined
-        this?.onSelection?.(piece.constructor as PieceType)
+        this?.onSelectionForAttack?.(piece)
         GameSounds.doubleClick()
     }
 
@@ -117,10 +125,9 @@ export class InputManager extends visualMixin {
             let xPos = startX + xGrid * cellWidth;
             let yPos = startY + yGrid * cellHeight;
 
-            let button = new IconButton(this, DefaultPiece.key)
-            button.initReps(addPlugin, xPos, yPos)
+            let button = new IconButton(addPlugin, xPos, yPos, Zeus.key)
 
-            button.onClick = () => {
+            button.button.onClick = () => {
                 this.selectForSpawn(pieceUtils.classFromKey(button.pieceKey));
                 this.selectionIndex = i
             }
@@ -130,12 +137,19 @@ export class InputManager extends visualMixin {
             )
         }
 
-        this.endTurnButton = new EndTurnButton()
-        this.endTurnButton.initReps(addPlugin, 1050, 680)
+        this.endTurnButton = new EndTurnButton(addPlugin, 1175, 655)
         this.endTurnButton.onClick = () => {
             if (this.onEndTurn)
                 this.onEndTurn()
         }
+        // stays disabled until the game starts and the seat is known
+        this.endTurnButton.setActive(false)
+    }
+
+    updateEndTurnButton(board: Board) {
+        if (!this.endTurnButton)
+            throw new Error("no end turn button to update")
+        this.endTurnButton.setActive(board.canEndTurn())
     }
 
     updateHand(addPlugin: GameObjects.GameObjectFactory, hand: PieceKey[]) {
@@ -143,7 +157,6 @@ export class InputManager extends visualMixin {
             throw new Error("Hand not equal to length of icon buttons")
         this.iconButtons.forEach((button: IconButton, index: number) => {
             button.updateIcon(addPlugin, hand[index])
-            button.createInteraction()
         })
     }
 
@@ -151,7 +164,7 @@ export class InputManager extends visualMixin {
 
     onMove?: (startX: number, startY: number, endX: number, endY: number) => void
 
-    onSpawn?: (pieceType: PieceType, x: number, y: number, playerOwner?: number) => void
+    onSpawn?: (pieceType: PieceType, x: number, y: number, playerOwner?: playerNum) => void
 
     onAttack?: (attackerX: number, attackerY: number, defenderX: number, defenderY: number) => void
 
